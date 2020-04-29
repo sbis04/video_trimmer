@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/file_formats.dart';
 import 'package:video_trimmer/trim_editor.dart';
 
 /// Helps in loading video from file, saving trimmed video to a file
@@ -85,12 +86,17 @@ class Trimmer {
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
+    FileFormat outputFormat,
+    int fpsGIF,
+    int scaleGIF,
     String videoFolderName,
     String videoFileName,
   }) async {
     final String _videoPath = _videoFile.path;
     final String _videoName = basename(_videoPath).split('.')[0];
     // TODO: Add a limit to maximum video length (property in package)
+
+    String _command;
 
     // Formatting Date and Time
     String dateTime = DateFormat.yMMMd()
@@ -127,9 +133,32 @@ class Trimmer {
 
     print(path);
 
+    if (outputFormat == null) {
+      outputFormat = FileFormat.mkv;
+      print('OUTPUT: $outputFormat');
+    }
+
+    String _trimLengthCommand =
+        '-i $_videoPath -ss $startPoint -t ${endPoint - startPoint}';
+
+    _command = '$_trimLengthCommand -c copy ';
+
+    if (outputFormat == FileFormat.gif) {
+      if (fpsGIF == null) {
+        fpsGIF = 10;
+      }
+      if (scaleGIF == null) {
+        scaleGIF = 480;
+      }
+      _command =
+          '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+    }
+
+    _command += '$path$videoFileName$outputFormat';
+
+    // '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 $path$videoFileName.gif'
     await _flutterFFmpeg
-        .execute(
-            '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -c copy $path$videoFileName.flv')
+        .execute(_command)
         .whenComplete(() {
       print('Got value');
       _resultString = 'Video successfuly saved';
