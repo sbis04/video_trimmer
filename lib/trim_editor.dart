@@ -11,6 +11,12 @@ class TrimEditor extends StatefulWidget {
   final double viewerWidth;
   final double viewerHeight;
   final File videoFile;
+  final double circleSize;
+  final double circleSizeOnDrag;
+  final Color circlePaintColor;
+  final Color borderPaintColor;
+  final Color scrubberPaintColor;
+  final int thumbnailQuality;
   final Function(double startValue) onChangeStart;
   final Function(double endValue) onChangeEnd;
   final Function(bool isPlaying) onChangePlaybackState;
@@ -19,12 +25,24 @@ class TrimEditor extends StatefulWidget {
     @required this.viewerWidth,
     @required this.viewerHeight,
     @required this.videoFile,
+    this.circleSize = 5.0,
+    this.circleSizeOnDrag = 8.0,
+    this.circlePaintColor = Colors.white,
+    this.borderPaintColor = Colors.white,
+    this.scrubberPaintColor = Colors.white,
+    this.thumbnailQuality = 75,
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
   })  : assert(viewerWidth != null),
         assert(viewerHeight != null),
-        assert(videoFile != null);
+        assert(videoFile != null),
+        assert(circleSize != null),
+        assert(circleSizeOnDrag != null),
+        assert(circlePaintColor != null),
+        assert(borderPaintColor != null),
+        assert(scrubberPaintColor != null),
+        assert(thumbnailQuality != null);
 
   @override
   _TrimEditorState createState() => _TrimEditorState();
@@ -52,10 +70,9 @@ class _TrimEditorState extends State<TrimEditor> {
   double _thumbnailViewerW = 0.0;
   double _thumbnailViewerH = 0.0;
 
-  // final double _thumbnailViewerW = 50.0 * 8;
-  // final double _thumbnailViewerH = 50.0;
+  int _numberOfThumbnails = 0;
 
-  double _circleSize = 5.0;
+  double _circleSize;
 
   ThumbnailViewer thumbnailWidget;
 
@@ -94,8 +111,13 @@ class _TrimEditorState extends State<TrimEditor> {
       _videoEndPos = _videoDuration.toDouble();
       widget.onChangeEnd(_videoEndPos);
 
-      final ThumbnailViewer _thumbnailWidget =
-          ThumbnailViewer(_videoFile, _videoDuration);
+      final ThumbnailViewer _thumbnailWidget = ThumbnailViewer(
+        videoFile: _videoFile,
+        videoDuration: _videoDuration,
+        thumbnailHeight: _thumbnailViewerH,
+        numberOfThumbnails: _numberOfThumbnails,
+        quality: widget.thumbnailQuality,
+      );
       thumbnailWidget = _thumbnailWidget;
       // widget.onChangePlaybackState(false);
     }
@@ -128,9 +150,14 @@ class _TrimEditorState extends State<TrimEditor> {
   @override
   void initState() {
     super.initState();
+    _circleSize = widget.circleSize;
+
     _videoFile = widget.videoFile;
-    _thumbnailViewerW = widget.viewerWidth;
     _thumbnailViewerH = widget.viewerHeight;
+
+    _numberOfThumbnails = widget.viewerWidth ~/ _thumbnailViewerH;
+    print('Number of thumbnails generated: $_numberOfThumbnails');
+    _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
 
     _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
     initializeVideoController();
@@ -179,7 +206,7 @@ class _TrimEditorState extends State<TrimEditor> {
       },
       onHorizontalDragEnd: (DragEndDetails details) {
         setState(() {
-          _circleSize = 5.0;
+          _circleSize = widget.circleSize;
         });
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
@@ -187,21 +214,23 @@ class _TrimEditorState extends State<TrimEditor> {
         print("START POINT: ${_startPos.dx + details.delta.dx}");
         print("END POINT: ${_endPos.dx + details.delta.dx}");
 
-        _circleSize = 8.0;
+        _circleSize = widget.circleSizeOnDrag;
 
         if (_endPos.dx >= _startPos.dx) {
           _isLeftDrag = false;
           if (_canUpdateStart && _startPos.dx + details.delta.dx > 0) {
             _isLeftDrag = false; // To prevent from scrolling over
             _setVideoStartPosition(details);
-          } else if (!_canUpdateStart && _endPos.dx + details.delta.dx < 400) {
+          } else if (!_canUpdateStart &&
+              _endPos.dx + details.delta.dx < _thumbnailViewerW) {
             _isLeftDrag = true; // To prevent from scrolling over
             _setVideoEndPosition(details);
           }
         } else {
           if (_isLeftDrag && _startPos.dx + details.delta.dx > 0) {
             _setVideoStartPosition(details);
-          } else if (!_isLeftDrag && _endPos.dx + details.delta.dx < 400) {
+          } else if (!_isLeftDrag &&
+              _endPos.dx + details.delta.dx < _thumbnailViewerW) {
             _setVideoEndPosition(details);
           }
         }
@@ -212,9 +241,9 @@ class _TrimEditorState extends State<TrimEditor> {
           endPos: _endPos,
           currentPos: _currentPos,
           circleSize: _circleSize,
-          circlePaintColor: Colors.purpleAccent,
-          borderPaintColor: Colors.amber,
-          scrubberPaintColor: Colors.black,
+          circlePaintColor: widget.circlePaintColor,
+          borderPaintColor: widget.borderPaintColor,
+          scrubberPaintColor: widget.scrubberPaintColor,
         ),
         child: Container(
           color: Colors.grey[900],
