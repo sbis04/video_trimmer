@@ -17,10 +17,13 @@ class TrimEditor extends StatefulWidget {
   final Color borderPaintColor;
   final Color scrubberPaintColor;
   final int thumbnailQuality;
+  final bool showDuration;
+  final TextStyle durationTextStyle;
   final Function(double startValue) onChangeStart;
   final Function(double endValue) onChangeEnd;
   final Function(bool isPlaying) onChangePlaybackState;
 
+  /// The Trim
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
@@ -31,6 +34,10 @@ class TrimEditor extends StatefulWidget {
     this.borderPaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
     this.thumbnailQuality = 75,
+    this.showDuration = true,
+    this.durationTextStyle = const TextStyle(
+      color: Colors.white,
+    ),
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
@@ -42,7 +49,9 @@ class TrimEditor extends StatefulWidget {
         assert(circlePaintColor != null),
         assert(borderPaintColor != null),
         assert(scrubberPaintColor != null),
-        assert(thumbnailQuality != null);
+        assert(thumbnailQuality != null),
+        assert(showDuration != null),
+        assert(durationTextStyle != null);
 
   @override
   _TrimEditorState createState() => _TrimEditorState();
@@ -235,22 +244,52 @@ class _TrimEditorState extends State<TrimEditor> {
           }
         }
       },
-      child: CustomPaint(
-        foregroundPainter: TrimEditorPainter(
-          startPos: _startPos,
-          endPos: _endPos,
-          currentPos: _currentPos,
-          circleSize: _circleSize,
-          circlePaintColor: widget.circlePaintColor,
-          borderPaintColor: widget.borderPaintColor,
-          scrubberPaintColor: widget.scrubberPaintColor,
-        ),
-        child: Container(
-          color: Colors.grey[900],
-          height: _thumbnailViewerH,
-          width: _thumbnailViewerW,
-          child: thumbnailWidget == null ? Column() : thumbnailWidget,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          widget.showDuration
+              ? Container(
+                  width: _thumbnailViewerW,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Text(
+                            Duration(milliseconds: _videoStartPos.toInt())
+                                .toString()
+                                .split('.')[0],
+                            style: widget.durationTextStyle),
+                        Text(
+                          Duration(milliseconds: _videoEndPos.toInt())
+                              .toString()
+                              .split('.')[0],
+                          style: widget.durationTextStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Container(),
+          CustomPaint(
+            foregroundPainter: TrimEditorPainter(
+              startPos: _startPos,
+              endPos: _endPos,
+              currentPos: _currentPos,
+              circleSize: _circleSize,
+              circlePaintColor: widget.circlePaintColor,
+              borderPaintColor: widget.borderPaintColor,
+              scrubberPaintColor: widget.scrubberPaintColor,
+            ),
+            child: Container(
+              color: Colors.grey[900],
+              height: _thumbnailViewerH,
+              width: _thumbnailViewerW,
+              child: thumbnailWidget == null ? Column() : thumbnailWidget,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -11,12 +11,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/trim_editor.dart';
 
-/// Flutter Video Trimmer.
+/// Helps in loading video from file, saving trimmed video to a file
+/// and gives video playback controls. Some of the helpful methods
+/// are:
+/// * loadVideo()
+/// * saveTrimmerVideo()
+/// * videPlaybackControl()
 class Trimmer {
   File _videoFile;
 
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
+  /// Loads a video from the file system.
+  ///
+  /// Returns the loaded video file.
   Future<File> loadVideo() async {
     File _video = await ImagePicker.pickVideo(source: ImageSource.gallery);
     if (_video != null) {
@@ -60,7 +68,21 @@ class Trimmer {
     }
   }
 
-  Future<void> saveTrimmedVideo({
+  /// Saves the trimmed video to file system.
+  ///
+  /// The required parameters are [startValue] & [endValue].
+  ///
+  /// The optional parameter [videoFolderName] is used to
+  /// pass a folder name which will be used for creating a new
+  /// folder in the selected directory. The default value for
+  /// it is `Trimmer`.
+  ///
+  /// The optional parameter [videoFileName] is used for giving
+  /// a new name to the trimmed video file. By default the
+  /// trimmed video is named as `<original_file_name>_trimmed.mp4`.
+  ///
+  /// Also the video format available for saving is `mp4`.
+  Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
     String videoFolderName,
@@ -68,18 +90,27 @@ class Trimmer {
   }) async {
     final String _videoPath = _videoFile.path;
     final String _videoName = basename(_videoPath).split('.')[0];
-
-    // TODO: Take the video file name from the user --> DONE
-    // TODO: Take the folder name to store the file --> DONE
-
     // TODO: Add a limit to maximum video length (property in package)
+
+    // Formatting Date and Time
+    String dateTime = DateFormat.yMMMd()
+        .addPattern('-')
+        .add_Hms()
+        .format(DateTime.now())
+        .toString();
+
+    String _resultString;
+    String formattedDateTime = dateTime.replaceAll(' ', '');
+
+    print("DateTime: $dateTime");
+    print("Formatted: $formattedDateTime");
 
     if (videoFolderName == null) {
       videoFolderName = "Trimmer";
     }
 
     if (videoFileName == null) {
-      videoFileName = _videoName;
+      videoFileName = "${_videoName}_trimmed:$formattedDateTime";
     }
 
     videoFileName = videoFileName.replaceAll(' ', '_');
@@ -96,26 +127,18 @@ class Trimmer {
 
     print(path);
 
-    // Formatting Date and Time
-    String dateTime = DateFormat.yMMMd()
-        .addPattern('-')
-        .add_Hms()
-        .format(DateTime.now())
-        .toString();
-
-    String formattedDateTime = dateTime.replaceAll(' ', '');
-
-    print("DateTime: $dateTime");
-    print("Formatted: $formattedDateTime");
-
-    _flutterFFmpeg
+    await _flutterFFmpeg
         .execute(
-            '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -c copy $path${videoFileName}_trimmed:$formattedDateTime.mp4')
-        .then((value) {
-      print('Got value ');
+            '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -c copy $path$videoFileName.flv')
+        .whenComplete(() {
+      print('Got value');
+      _resultString = 'Video successfuly saved';
     }).catchError((error) {
       print('Error');
+      _resultString = 'Couldn\'t save the video';
     });
+
+    return _resultString;
   }
 
   Future<bool> videPlaybackControl({

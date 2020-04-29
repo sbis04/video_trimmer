@@ -34,9 +34,12 @@ class HomePage extends StatelessWidget {
             child: Text("LOAD VIDEO"),
             onPressed: () async {
               File _vfile = await _trimmer.loadVideo();
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return TrimmerView(_vfile, _trimmer);
-              }));
+              if (_vfile != null) {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) {
+                  return TrimmerView(_vfile, _trimmer);
+                }));
+              }
             },
           ),
         ),
@@ -73,68 +76,76 @@ class _TrimmerViewState extends State<TrimmerView> {
       appBar: AppBar(
         title: Text("Video Trimmer"),
       ),
-      body: Center(
-        child: Container(
-          color: Colors.black,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              RaisedButton(
-                onPressed: () {
-                  widget._trimmer.saveTrimmedVideo(
-                    startValue: _startValue,
-                    endValue: _endValue,
-                  );
-                },
-                child: Text("SAVE"),
-              ),
-              Expanded(
-                child: VideoViewer(),
-              ),
-              Center(
-                child: TrimEditor(
-                  viewerHeight: 50.0,
-                  viewerWidth: 50.0 * 8,
-                  videoFile: _file,
-                  onChangeStart: (value) {
-                    _startValue = value;
-                  },
-                  onChangeEnd: (value) {
-                    _endValue = value;
-                  },
-                  onChangePlaybackState: (value) {
-                    setState(() {
-                      _isPlaying = value;
+      body: Builder(
+        builder: (context) => Center(
+          child: Container(
+            padding: EdgeInsets.only(top: 20.0, bottom: 30.0),
+            color: Colors.black,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: () async {
+                    await widget._trimmer
+                        .saveTrimmedVideo(
+                      startValue: _startValue,
+                      endValue: _endValue,
+                    )
+                        .then((value) {
+                      final snackBar = SnackBar(content: Text(value));
+                      Scaffold.of(context).showSnackBar(snackBar);
                     });
-                    // _isPlaying = value;
                   },
+                  child: Text("SAVE"),
                 ),
-              ),
-              FlatButton(
-                child: _isPlaying
-                    ? Icon(
-                        Icons.pause,
-                        size: 80.0,
-                        color: Colors.white,
-                      )
-                    : Icon(
-                        Icons.play_arrow,
-                        size: 80.0,
-                        color: Colors.white,
-                      ),
-                onPressed: () async {
-                  bool playbackState =
-                      await widget._trimmer.videPlaybackControl(
-                    startValue: _startValue,
-                    endValue: _endValue,
-                  );
-                  setState(() {
-                    _isPlaying = playbackState;
-                  });
-                },
-              )
-            ],
+                Expanded(
+                  child: VideoViewer(),
+                ),
+                Center(
+                  child: TrimEditor(
+                    viewerHeight: 50.0,
+                    viewerWidth: MediaQuery.of(context).size.width,
+                    videoFile: _file,
+                    onChangeStart: (value) {
+                      _startValue = value;
+                    },
+                    onChangeEnd: (value) {
+                      _endValue = value;
+                    },
+                    onChangePlaybackState: (value) {
+                      setState(() {
+                        _isPlaying = value;
+                      });
+                      // _isPlaying = value;
+                    },
+                  ),
+                ),
+                FlatButton(
+                  child: _isPlaying
+                      ? Icon(
+                          Icons.pause,
+                          size: 80.0,
+                          color: Colors.white,
+                        )
+                      : Icon(
+                          Icons.play_arrow,
+                          size: 80.0,
+                          color: Colors.white,
+                        ),
+                  onPressed: () async {
+                    bool playbackState =
+                        await widget._trimmer.videPlaybackControl(
+                      startValue: _startValue,
+                      endValue: _endValue,
+                    );
+                    setState(() {
+                      _isPlaying = playbackState;
+                    });
+                  },
+                )
+              ],
+            ),
           ),
         ),
       ),
