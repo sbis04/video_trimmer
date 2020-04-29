@@ -63,11 +63,31 @@ class _TrimmerViewState extends State<TrimmerView> {
   double _endValue = 0.0;
 
   bool _isPlaying = false;
+  bool _progressVisibility = false;
 
   @override
   void initState() {
     _file = widget._videoFile;
     super.initState();
+  }
+
+  Future<String> _saveVideo() async {
+    setState(() {
+      _progressVisibility = true;
+    });
+
+    String _value;
+
+    await widget._trimmer
+        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
+        .then((value) {
+      setState(() {
+        _progressVisibility = false;
+        _value = value;
+      });
+    });
+
+    return _value;
   }
 
   @override
@@ -79,24 +99,27 @@ class _TrimmerViewState extends State<TrimmerView> {
       body: Builder(
         builder: (context) => Center(
           child: Container(
-            padding: EdgeInsets.only(top: 20.0, bottom: 30.0),
+            padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.black,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
+                Visibility(
+                  visible: _progressVisibility,
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
                 RaisedButton(
-                  onPressed: () async {
-                    await widget._trimmer
-                        .saveTrimmedVideo(
-                      startValue: _startValue,
-                      endValue: _endValue,
-                    )
-                        .then((value) {
-                      final snackBar = SnackBar(content: Text(value));
-                      Scaffold.of(context).showSnackBar(snackBar);
-                    });
-                  },
+                  onPressed: _progressVisibility
+                      ? null
+                      : () async {
+                          _saveVideo().then((value) {
+                            final snackBar = SnackBar(content: Text(value));
+                            Scaffold.of(context).showSnackBar(snackBar);
+                          });
+                        },
                   child: Text("SAVE"),
                 ),
                 Expanded(
