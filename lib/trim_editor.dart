@@ -88,6 +88,7 @@ class TrimEditor extends StatefulWidget {
   /// 
   /// * [onChangePlaybackState] is a callback to the video playback
   /// state to know whether it is currently playing or paused.
+  /// 
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,

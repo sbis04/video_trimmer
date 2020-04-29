@@ -99,15 +99,18 @@ class Trimmer {
   /// The parameters [fpsGIF] & [scaleGIF] are used only if the
   /// selected output format is `FileFormat.gif`.
   ///
-  /// * [fpsGIF] -> for providing a FPS value (by default it is set
+  /// * [fpsGIF] for providing a FPS value (by default it is set
   /// to `10`)
-  /// * [scaleGIF] -> for proving a width to output GIF, the height
+  /// 
+  /// 
+  /// * [scaleGIF] for proving a width to output GIF, the height
   /// is selected by maintaining the aspect ratio automatically (by
   /// default it is set to `480`)
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
     FileFormat outputFormat,
+    String ffmpegCommand,
     int fpsGIF,
     int scaleGIF,
     String videoFolderName,

@@ -1,5 +1,12 @@
-/// The video file formats available for 
+/// The video file formats available for
 /// generating the output trimmed video.
+///
+/// The available formats are `mp4`, `mkv`,
+/// `mov`, `flv`, `avi`, `wmv`& `gif`.
+///
+/// If you define a custom `FFmpeg` command
+/// then this will be ignored. 
+/// 
 class FileFormat {
   const FileFormat._(this.index);
 
