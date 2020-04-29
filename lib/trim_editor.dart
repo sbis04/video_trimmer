@@ -23,7 +23,71 @@ class TrimEditor extends StatefulWidget {
   final Function(double endValue) onChangeEnd;
   final Function(bool isPlaying) onChangePlaybackState;
 
-  /// The Trim
+  /// Widget for displaying the video trimmer.
+  ///
+  /// This has frame wise preview of the video with a
+  /// slider for selecting the part of the video to be
+  /// trimmed.
+  ///
+  /// The required parameters are [viewerWidth], [viewerHeight]
+  /// & [videoFile].
+  /// 
+  /// * [viewerWidth] to define the total trimmer area width.
+  /// 
+  /// 
+  /// * [viewerHeight] to define the total trimmer area height.
+  /// 
+  /// 
+  /// * [videoFile] for passing the video file.
+  ///
+  ///
+  /// The optional parameters are: 
+  /// 
+  /// * [circleSize] for specifying a size to the holder at the
+  /// two ends of the video trimmer area, while it is `idle`. 
+  /// By default it is set to `5.0`.
+  /// 
+  /// 
+  /// * [circleSizeOnDrag] for specifying a size to the holder at 
+  /// the two ends of the video trimmer area, while it is being 
+  /// `dragged`. By default it is set to `8.0`.
+  ///  
+  /// 
+  /// * [circlePaintColor] for specifying a color to the circle.
+  /// By default it is set to `Colors.white`.
+  /// 
+  /// 
+  /// * [borderPaintColor] for specifying a color to the border of 
+  /// the trim area. By default it is set to `Colors.white`.
+  /// 
+  /// 
+  /// * [scrubberPaintColor] for specifying a color to the video 
+  /// scrubber inside the trim area. By default it is set to
+  /// `Colors.white`.
+  /// 
+  /// 
+  /// * [thumbnailQuality] for specifying the quality of each 
+  /// generated image thumbnail, to be displayed in the trimmer
+  /// area. 
+  /// 
+  /// 
+  /// * [showDuration] for showing the start and the end point of the 
+  /// video on top of the trimmer area. By default it is set to `true`.
+  /// 
+  /// 
+  /// * [durationTextStyle] is for providing a `TextStyle` to the 
+  /// duration text. By default it is set to 
+  /// `TextStyle(color: Colors.white)`
+  /// 
+  /// 
+  /// * [onChangeStart] is a callback to the video start position.  
+  /// 
+  /// 
+  /// * [onChangeEnd] is a callback to the video end position.
+  /// 
+  /// 
+  /// * [onChangePlaybackState] is a callback to the video playback
+  /// state to know whether it is currently playing or paused.
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
@@ -85,7 +149,7 @@ class _TrimEditorState extends State<TrimEditor> {
 
   ThumbnailViewer thumbnailWidget;
 
-  Future<void> initializeVideoController() async {
+  Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
       videoPlayerController.addListener(() {
         final bool isPlaying = videoPlayerController.value.isPlaying;
@@ -169,7 +233,7 @@ class _TrimEditorState extends State<TrimEditor> {
     _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
 
     _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
-    initializeVideoController();
+    _initializeVideoController();
   }
 
   @override
