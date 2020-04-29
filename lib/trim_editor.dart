@@ -175,7 +175,6 @@ class _TrimEditorState extends State<TrimEditor> {
           });
         }
       });
-      // videoPlayerController.pause();
 
       videoPlayerController.setVolume(1.0);
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
@@ -192,7 +191,6 @@ class _TrimEditorState extends State<TrimEditor> {
         quality: widget.thumbnailQuality,
       );
       thumbnailWidget = _thumbnailWidget;
-      // widget.onChangePlaybackState(false);
     }
   }
 
