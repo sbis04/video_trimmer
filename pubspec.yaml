@@ -1,7 +1,6 @@
 name: video_trimmer
 description: A Flutter package for trimming videos
 version: 0.1.0
-author: Souvik Biswas <sbis1999@gmail.com>
 homepage: 
 
 environment:
