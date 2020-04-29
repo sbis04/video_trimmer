@@ -101,16 +101,28 @@ class Trimmer {
   ///
   /// * [fpsGIF] for providing a FPS value (by default it is set
   /// to `10`)
-  /// 
-  /// 
+  ///
+  ///
   /// * [scaleGIF] for proving a width to output GIF, the height
   /// is selected by maintaining the aspect ratio automatically (by
   /// default it is set to `480`)
+  ///
+  /// ADVANCED OPTION:
+  ///
+  /// If you want to give custom `FFmpeg` command, then define
+  /// [ffmpegCommand] & [customVideoFormat] strings. The `input path`,
+  /// `output path`, `start` and `end` position is already define.
+  /// 
+  /// NOTE: The advanced options does not provide any safety check, so if wrong
+  /// video format is passed in [customVideoFormat], then the app may
+  /// crash.
+  /// 
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
     FileFormat outputFormat,
     String ffmpegCommand,
+    String customVideoFormat,
     int fpsGIF,
     int scaleGIF,
     String videoFolderName,
@@ -129,6 +141,7 @@ class Trimmer {
         .toString();
 
     String _resultString;
+    String _outputFormatString;
     String formattedDateTime = dateTime.replaceAll(' ', '');
 
     print("DateTime: $dateTime");
@@ -158,26 +171,47 @@ class Trimmer {
 
     if (outputFormat == null) {
       outputFormat = FileFormat.mp4;
-      print('OUTPUT: $outputFormat');
+      _outputFormatString = outputFormat.toString();
+      print('OUTPUT: $_outputFormatString');
+    } else {
+      _outputFormatString = outputFormat.toString();
     }
 
     String _trimLengthCommand =
         '-i $_videoPath -ss $startPoint -t ${endPoint - startPoint}';
 
-    _command = '$_trimLengthCommand -c copy ';
+    if (ffmpegCommand == null) {
+      _command = '$_trimLengthCommand -c copy ';
 
-    if (outputFormat == FileFormat.gif) {
-      if (fpsGIF == null) {
-        fpsGIF = 10;
+      if (outputFormat == FileFormat.gif) {
+        if (fpsGIF == null) {
+          fpsGIF = 10;
+        }
+        if (scaleGIF == null) {
+          scaleGIF = 480;
+        }
+        _command =
+            '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
       }
-      if (scaleGIF == null) {
-        scaleGIF = 480;
-      }
-      _command =
-          '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+    } else {
+      _command = '$_trimLengthCommand $ffmpegCommand ';
+      _outputFormatString = customVideoFormat;
     }
 
-    _command += '$path$videoFileName$outputFormat';
+    // _command = '$_trimLengthCommand -c copy ';
+
+    // if (outputFormat == FileFormat.gif) {
+    //   if (fpsGIF == null) {
+    //     fpsGIF = 10;
+    //   }
+    //   if (scaleGIF == null) {
+    //     scaleGIF = 480;
+    //   }
+    //   _command =
+    //       '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+    // }
+
+    _command += '$path$videoFileName$_outputFormatString';
 
     // '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 $path$videoFileName.gif'
     await _flutterFFmpeg.execute(_command).whenComplete(() {
