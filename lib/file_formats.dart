@@ -1,3 +1,5 @@
+/// The video file formats available for 
+/// generating the output trimmed video.
 class FileFormat {
   const FileFormat._(this.index);
 
