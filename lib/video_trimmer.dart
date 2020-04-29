@@ -115,7 +115,6 @@ class Trimmer {
   }) async {
     final String _videoPath = _videoFile.path;
     final String _videoName = basename(_videoPath).split('.')[0];
-    // TODO: Add a limit to maximum video length (property in package)
 
     String _command;
 
@@ -155,7 +154,7 @@ class Trimmer {
     print(path);
 
     if (outputFormat == null) {
-      outputFormat = FileFormat.mkv;
+      outputFormat = FileFormat.mp4;
       print('OUTPUT: $outputFormat');
     }
 
@@ -196,7 +195,7 @@ class Trimmer {
   ///
   /// * [startValue] is the current starting point of the video.
   /// * [endValue] is the current ending point of the video.
-  /// 
+  ///
   /// Returns a `Future<bool>`, if `true` then video is playing
   /// otherwise paused.
   Future<bool> videPlaybackControl({
