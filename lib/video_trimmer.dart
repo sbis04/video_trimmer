@@ -15,9 +15,9 @@ import 'package:video_trimmer/trim_editor.dart';
 /// Helps in loading video from file, saving trimmed video to a file
 /// and gives video playback controls. Some of the helpful methods
 /// are:
-/// * loadVideo()
-/// * saveTrimmerVideo()
-/// * videPlaybackControl()
+/// * [loadVideo()]
+/// * [saveTrimmerVideo()]
+/// * [videPlaybackControl()]
 class Trimmer {
   File _videoFile;
 
@@ -73,16 +73,37 @@ class Trimmer {
   ///
   /// The required parameters are [startValue] & [endValue].
   ///
-  /// The optional parameter [videoFolderName] is used to
+  /// The optional parameters are [videoFolderName], [videoFileName],
+  /// [outputFormat], [fpsGIF], [scaleGIF].
+  ///
+  /// The `@required` parameter [startValue] is for providing a starting point
+  /// to the trimmed video.
+  ///
+  /// The `@required` parameter [endValue] is for providing an ending point
+  /// to the trimmed video.
+  ///
+  /// The parameter [videoFolderName] is used to
   /// pass a folder name which will be used for creating a new
   /// folder in the selected directory. The default value for
   /// it is `Trimmer`.
   ///
-  /// The optional parameter [videoFileName] is used for giving
+  /// The parameter [videoFileName] is used for giving
   /// a new name to the trimmed video file. By default the
   /// trimmed video is named as `<original_file_name>_trimmed.mp4`.
   ///
-  /// Also the video format available for saving is `mp4`.
+  /// The parameter [outputFormat] is used for providing a
+  /// file format to the trimmed video. This only accepts value
+  /// of [FileFormat] type. By default it is set to `FileFormat.mp4`,
+  /// which is for `mp4` files.
+  ///
+  /// The parameters [fpsGIF] & [scaleGIF] are used only if the
+  /// selected output format is `FileFormat.gif`.
+  ///
+  /// * [fpsGIF] -> for providing a FPS value (by default it is set
+  /// to `10`)
+  /// * [scaleGIF] -> for proving a width to output GIF, the height
+  /// is selected by maintaining the aspect ratio automatically (by
+  /// default it is set to `480`)
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
@@ -157,9 +178,7 @@ class Trimmer {
     _command += '$path$videoFileName$outputFormat';
 
     // '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 $path$videoFileName.gif'
-    await _flutterFFmpeg
-        .execute(_command)
-        .whenComplete(() {
+    await _flutterFFmpeg.execute(_command).whenComplete(() {
       print('Got value');
       _resultString = 'Video successfuly saved';
     }).catchError((error) {
@@ -170,6 +189,16 @@ class Trimmer {
     return _resultString;
   }
 
+  /// For getting the video controller state, to know whether the
+  /// video is playing or paused currently.
+  ///
+  /// The two required parameters are [startValue] & [endValue]
+  ///
+  /// * [startValue] is the current starting point of the video.
+  /// * [endValue] is the current ending point of the video.
+  /// 
+  /// Returns a `Future<bool>`, if `true` then video is playing
+  /// otherwise paused.
   Future<bool> videPlaybackControl({
     @required double startValue,
     @required double endValue,
