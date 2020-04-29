@@ -6,6 +6,22 @@ class VideoViewer extends StatefulWidget {
   final Color borderColor;
   final double borderWidth;
   final EdgeInsets padding;
+  
+  /// For showing the video playback area.
+  /// 
+  /// This only contains optional parameters. They are:
+  /// 
+  /// * [borderColor] for specifying the color of the video
+  /// viewer area border. By default it is set to `Colors.transparent`.
+  /// 
+  /// 
+  /// * [borderWidth] for specifying the border width around
+  /// the video viewer area. By default it is set to `0.0`.
+  /// 
+  /// 
+  /// * [padding] for specifying a padding around the video viewer
+  /// area. By default it is set to `EdgeInsets.all(0.0)`.
+  /// 
   VideoViewer({
     this.borderColor = Colors.transparent,
     this.borderWidth = 0.0,
