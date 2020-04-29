@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/thumbnail_viewer.dart';
 import 'package:video_trimmer/trim_editor_painter.dart';
-import 'package:video_trimmer/video_trimmer.dart';
 
 VideoPlayerController videoPlayerController;
 
@@ -23,15 +22,15 @@ class TrimEditor extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
-  });
+  })  : assert(viewerWidth != null),
+        assert(viewerHeight != null),
+        assert(videoFile != null);
 
   @override
   _TrimEditorState createState() => _TrimEditorState();
 }
 
 class _TrimEditorState extends State<TrimEditor> {
-  // Trimmer _trimmer;
-
   File _videoFile;
 
   double _videoStartPos = 0.0;
@@ -129,21 +128,18 @@ class _TrimEditorState extends State<TrimEditor> {
   @override
   void initState() {
     super.initState();
-    // _trimmer = Trimmer();
     _videoFile = widget.videoFile;
     _thumbnailViewerW = widget.viewerWidth;
     _thumbnailViewerH = widget.viewerHeight;
 
     _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
-    // _videoStartPos = _trimmer.getVideoStartPos();
-    // _videoEndPos = _trimmer.getVideoEndPos();
     initializeVideoController();
   }
 
   @override
   void dispose() {
     videoPlayerController.pause();
-    // widget.onChangePlaybackState(false);
+    widget.onChangePlaybackState(false);
     if (widget.videoFile != null) {
       videoPlayerController.setVolume(0.0);
       videoPlayerController.pause();

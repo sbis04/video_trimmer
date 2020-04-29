@@ -7,7 +7,11 @@ class ThumbnailViewer extends StatelessWidget {
   final videoFile;
   final videoDuration;
 
-  ThumbnailViewer(this.videoFile, this.videoDuration);
+  ThumbnailViewer(
+    this.videoFile,
+    this.videoDuration,
+  )   : assert(videoFile != null),
+        assert(videoDuration != null);
 
   Stream<List<Uint8List>> generateThumbnail() async* {
     final String _videoPath = videoFile.path;

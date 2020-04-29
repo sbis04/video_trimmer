@@ -22,7 +22,16 @@ class TrimEditorPainter extends CustomPainter {
     this.borderPaintColor = Colors.white,
     this.circlePaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
-  });
+  })  : assert(startPos != null),
+        assert(endPos != null),
+        assert(currentPos != null),
+        assert(circleSize != null),
+        assert(borderWidth != null),
+        assert(scrubberWidth != null),
+        assert(showScrubber != null),
+        assert(borderPaintColor != null),
+        assert(circlePaintColor != null),
+        assert(scrubberPaintColor != null);
 
   @override
   void paint(Canvas canvas, Size size) {
