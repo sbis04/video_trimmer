@@ -182,11 +182,11 @@ class HomePage extends StatelessWidget {
           child: RaisedButton(
             child: Text("LOAD VIDEO"),
             onPressed: () async {
-              File _vfile = await _trimmer.loadVideo();
-              if (_vfile != null) {
+              File _videoFile = await _trimmer.loadVideo();
+              if (_videoFile != null) {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) {
-                  return TrimmerView(_vfile, _trimmer);
+                  return TrimmerView(_videoFile, _trimmer);
                 }));
               }
             },
@@ -289,7 +289,6 @@ class _TrimmerViewState extends State<TrimmerView> {
                       setState(() {
                         _isPlaying = value;
                       });
-                      // _isPlaying = value;
                     },
                   ),
                 ),
@@ -324,5 +323,4 @@ class _TrimmerViewState extends State<TrimmerView> {
     );
   }
 }
-
 ```
