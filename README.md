@@ -13,8 +13,7 @@ Also, supports conversion to **GIF**.
 
 ## Screenshots
 <p align="center">
-  <img width=300 src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer_1.png" alt="Trimmer"/>
-  <img width=300 src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer_2.png" alt="Trimmer"/>
+  <img width=300 src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
 </p>
 
 ## Usage
