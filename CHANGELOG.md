@@ -1,3 +1,3 @@
-## 0.1.0 - beta
+## 0.1.1 - beta
 
 * Initial Open Source release
