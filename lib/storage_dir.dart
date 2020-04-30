@@ -11,14 +11,14 @@ class StorageDir {
 
   final int index;
 
-  static const StorageDir getTemporaryDirectory = StorageDir._(0);
-  static const StorageDir getApplicationDocumentsDirectory = StorageDir._(1);
-  static const StorageDir getExternalStorageDirectory = StorageDir._(2);
+  static const StorageDir temporaryDirectory = StorageDir._(0);
+  static const StorageDir applicationDocumentsDirectory = StorageDir._(1);
+  static const StorageDir externalStorageDirectory = StorageDir._(2);
 
   static const List<StorageDir> values = <StorageDir>[
-    getTemporaryDirectory,
-    getApplicationDocumentsDirectory,
-    getExternalStorageDirectory,
+    temporaryDirectory,
+    applicationDocumentsDirectory,
+    externalStorageDirectory,
   ];
 
   @override
