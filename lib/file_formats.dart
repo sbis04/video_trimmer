@@ -5,8 +5,8 @@
 /// `mov`, `flv`, `avi`, `wmv`& `gif`.
 ///
 /// If you define a custom `FFmpeg` command
-/// then this will be ignored. 
-/// 
+/// then this will be ignored.
+///
 class FileFormat {
   const FileFormat._(this.index);
 

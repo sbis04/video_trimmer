@@ -31,64 +31,64 @@ class TrimEditor extends StatefulWidget {
   ///
   /// The required parameters are [viewerWidth], [viewerHeight]
   /// & [videoFile].
-  /// 
+  ///
   /// * [viewerWidth] to define the total trimmer area width.
-  /// 
-  /// 
+  ///
+  ///
   /// * [viewerHeight] to define the total trimmer area height.
-  /// 
-  /// 
+  ///
+  ///
   /// * [videoFile] for passing the video file.
   ///
   ///
-  /// The optional parameters are: 
-  /// 
+  /// The optional parameters are:
+  ///
   /// * [circleSize] for specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`. 
+  /// two ends of the video trimmer area, while it is `idle`.
   /// By default it is set to `5.0`.
-  /// 
-  /// 
-  /// * [circleSizeOnDrag] for specifying a size to the holder at 
-  /// the two ends of the video trimmer area, while it is being 
+  ///
+  ///
+  /// * [circleSizeOnDrag] for specifying a size to the holder at
+  /// the two ends of the video trimmer area, while it is being
   /// `dragged`. By default it is set to `8.0`.
-  ///  
-  /// 
+  ///
+  ///
   /// * [circlePaintColor] for specifying a color to the circle.
   /// By default it is set to `Colors.white`.
-  /// 
-  /// 
-  /// * [borderPaintColor] for specifying a color to the border of 
+  ///
+  ///
+  /// * [borderPaintColor] for specifying a color to the border of
   /// the trim area. By default it is set to `Colors.white`.
-  /// 
-  /// 
-  /// * [scrubberPaintColor] for specifying a color to the video 
+  ///
+  ///
+  /// * [scrubberPaintColor] for specifying a color to the video
   /// scrubber inside the trim area. By default it is set to
   /// `Colors.white`.
-  /// 
-  /// 
-  /// * [thumbnailQuality] for specifying the quality of each 
+  ///
+  ///
+  /// * [thumbnailQuality] for specifying the quality of each
   /// generated image thumbnail, to be displayed in the trimmer
-  /// area. 
-  /// 
-  /// 
-  /// * [showDuration] for showing the start and the end point of the 
+  /// area.
+  ///
+  ///
+  /// * [showDuration] for showing the start and the end point of the
   /// video on top of the trimmer area. By default it is set to `true`.
-  /// 
-  /// 
-  /// * [durationTextStyle] is for providing a `TextStyle` to the 
-  /// duration text. By default it is set to 
+  ///
+  ///
+  /// * [durationTextStyle] is for providing a `TextStyle` to the
+  /// duration text. By default it is set to
   /// `TextStyle(color: Colors.white)`
-  /// 
-  /// 
-  /// * [onChangeStart] is a callback to the video start position.  
-  /// 
-  /// 
+  ///
+  ///
+  /// * [onChangeStart] is a callback to the video start position.
+  ///
+  ///
   /// * [onChangeEnd] is a callback to the video end position.
-  /// 
-  /// 
+  ///
+  ///
   /// * [onChangePlaybackState] is a callback to the video playback
   /// state to know whether it is currently playing or paused.
-  /// 
+  ///
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
