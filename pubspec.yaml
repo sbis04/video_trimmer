@@ -1,7 +1,7 @@
 name: video_trimmer
 description: A Flutter package for trimming videos
 version: 0.1.0
-homepage: 
+homepage: https://github.com/sbis04/video_trimmer
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
