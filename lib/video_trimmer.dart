@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/file_formats.dart';
+import 'package:video_trimmer/storage_dir.dart';
 import 'package:video_trimmer/trim_editor.dart';
 
 /// Helps in loading video from file, saving trimmed video to a file
@@ -42,30 +43,44 @@ class Trimmer {
     return _video;
   }
 
-  Future<String> _createFolderInAppDocDir(String folderName) async {
-    //Get this App Document Directory
-    final Directory _appDocDir = await getExternalStorageDirectory();
+  Future<String> _createFolderInAppDocDir(
+    String folderName,
+    StorageDir storageDir,
+  ) async {
+    Directory _directory;
 
-    // print(_appDocDir.path);
+    if (storageDir == null) {
+      _directory = await getApplicationDocumentsDirectory();
+    } else {
+      switch (storageDir.toString()) {
+        case 'temporaryDirectory':
+          _directory = await getTemporaryDirectory();
+          break;
 
-    // return _appDocDir.path;
+        case 'applicationDocumentsDirectory':
+          _directory = await getApplicationDocumentsDirectory();
+          break;
 
-    // App Document Directory + folder name
-    final Directory _appDocDirFolder =
-        Directory('${_appDocDir.path}/$folderName/');
+        case 'externalStorageDirectory':
+          _directory = await getExternalStorageDirectory();
+          break;
+      }
+    }
 
-    // print(_appDocDirFolder.path);
+    // Directory + folder name
+    final Directory _directoryFolder =
+        Directory('${_directory.path}/$folderName/');
 
-    if (await _appDocDirFolder.exists()) {
-      //if folder already exists return path
+    if (await _directoryFolder.exists()) {
+      // If folder already exists return path
       print('Exists');
-      return _appDocDirFolder.path;
+      return _directoryFolder.path;
     } else {
       print('Creating');
-      //if folder not exists create folder and then return its path
-      final Directory _appDocDirNewFolder =
-          await _appDocDirFolder.create(recursive: true);
-      return _appDocDirNewFolder.path;
+      // If folder does not exists create folder and then return its path
+      final Directory _directoryNewFolder =
+          await _directoryFolder.create(recursive: true);
+      return _directoryNewFolder.path;
     }
   }
 
@@ -96,6 +111,18 @@ class Trimmer {
   /// of [FileFormat] type. By default it is set to `FileFormat.mp4`,
   /// which is for `mp4` files.
   ///
+  /// The parameter [storageDir] can be used for providing a storage
+  /// location option. It accepts only [StorageDir] values. By default
+  /// it is set to [applicationDocumentsDirectory]. Some of the
+  /// storage types are:
+  ///
+  /// * [temporaryDirectory] (Only accessible from inside the app, can be
+  /// cleared at anytime)
+  ///
+  /// * [applicationDocumentsDirectory] (Only accessible from inside the app)
+  ///
+  /// * [externalStorageDirectory] (Supports only `Android`, accessible externally)
+  ///
   /// The parameters [fpsGIF] & [scaleGIF] are used only if the
   /// selected output format is `FileFormat.gif`.
   ///
@@ -112,11 +139,11 @@ class Trimmer {
   /// If you want to give custom `FFmpeg` command, then define
   /// [ffmpegCommand] & [customVideoFormat] strings. The `input path`,
   /// `output path`, `start` and `end` position is already define.
-  /// 
+  ///
   /// NOTE: The advanced options does not provide any safety check, so if wrong
   /// video format is passed in [customVideoFormat], then the app may
   /// crash.
-  /// 
+  ///
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
@@ -127,6 +154,7 @@ class Trimmer {
     int scaleGIF,
     String videoFolderName,
     String videoFileName,
+    StorageDir storageDir,
   }) async {
     final String _videoPath = _videoFile.path;
     final String _videoName = basename(_videoPath).split('.')[0];
@@ -157,7 +185,10 @@ class Trimmer {
 
     videoFileName = videoFileName.replaceAll(' ', '_');
 
-    String path = await _createFolderInAppDocDir(videoFolderName).whenComplete(
+    String path = await _createFolderInAppDocDir(
+      videoFolderName,
+      storageDir,
+    ).whenComplete(
       () => print("Retrieved Trimmer folder"),
     );
 
@@ -198,22 +229,8 @@ class Trimmer {
       _outputFormatString = customVideoFormat;
     }
 
-    // _command = '$_trimLengthCommand -c copy ';
-
-    // if (outputFormat == FileFormat.gif) {
-    //   if (fpsGIF == null) {
-    //     fpsGIF = 10;
-    //   }
-    //   if (scaleGIF == null) {
-    //     scaleGIF = 480;
-    //   }
-    //   _command =
-    //       '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
-    // }
-
     _command += '$path$videoFileName$_outputFormatString';
 
-    // '-i $_videoPath -ss ${startPoint.toString()} -t ${(endPoint - startPoint).toString()} -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 $path$videoFileName.gif'
     await _flutterFFmpeg.execute(_command).whenComplete(() {
       print('Got value');
       _resultString = 'Video successfuly saved';
