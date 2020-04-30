@@ -68,17 +68,6 @@ target 'Runner' do
 
   # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
   # referring to absolute paths on developers' machines.
-  # system('rm -rf .symlinks')
-  # system('mkdir -p .symlinks/plugins')
-  # plugin_pods = parse_KV_file('../.flutter-plugins')
-  # plugin_pods.each do |name, path|
-  #   symlink = File.join('.symlinks', 'plugins', name)
-  #   File.symlink(path, symlink)
-  #   pod name, :path => File.join(symlink, 'ios')
-  # end
-
-  # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
-  # referring to absolute paths on developers' machines.
   system('rm -rf .symlinks')
   system('mkdir -p .symlinks/plugins')
   plugin_pods = parse_KV_file('../.flutter-plugins')
