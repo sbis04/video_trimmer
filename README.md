@@ -16,7 +16,7 @@ A Flutter package for trimming videos.
 ### iOS
 
 * Add the following keys to your **Info.plist** file, located in `<project root>/ios/Runner/Info.plist`:
-  ```plist
+  ```
   <key>NSCameraUsageDescription</key>
   <string>Used to demonstrate image picker plugin</string>
   <key>NSMicrophoneUsageDescription</key>
@@ -27,13 +27,13 @@ A Flutter package for trimming videos.
 
 * Set the platform version in `ios/Podfile`:
 
-   ```Podfile
+   ```
    platform :ios, '9.3'
    ```
 
 * Replace with the following in the `# Plugin Pods` section of the `ios/Podfile`: 
 
-   ```Podfile
+   ```
    # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
    # referring to absolute paths on developers' machines.
 
