@@ -9,6 +9,7 @@ A Flutter package for trimming videos.
 ### Android
 
 * Go to `build.gradle` file in the path `<project root>/android/app/` and set the `minSdkVersion` to **24**:
+
    ```gradle
    minSdkVersion 24
    ```
