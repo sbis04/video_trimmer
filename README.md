@@ -2,6 +2,21 @@
 
 A Flutter package for trimming videos.
 
+#### Features
+
+* Customizable video trimmer
+* Video playback control
+* Retrieving and storing video file
+
+Also, supports conversion to **GIF**.
+
+
+## Screenshots
+<p align="center">
+  <img width="400" src="https://github.com/sbis04/video_trimmer/blob/master/screenshots/video_trimmer_1.png">
+  <img width="400" src="https://github.com/sbis04/video_trimmer/blob/master/screenshots/video_trimmer_2.png">
+</p>
+
 ## Usage
 
 * Add the dependency `video_trimmer` to your **pubspec.yaml** file.
