@@ -12,8 +12,12 @@
 
 Also, supports conversion to **GIF**.
 
+<p align="center">
+  <img width=500 src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
+</p>
 
-## Screenshots
+<h4 align="center">TRIM EDITOR</h4>
+
 <p align="center">
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
 </p>
