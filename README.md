@@ -4,7 +4,7 @@
 
 <h4 align="center">A Flutter package for trimming videos.</h4>
 
-#### Features
+### Features
 
 * Customizable video trimmer
 * Video playback control
@@ -13,7 +13,7 @@
 Also, supports conversion to **GIF**.
 
 <p align="center">
-  <img width=500 src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
 </p>
 
 <h4 align="center">TRIM EDITOR</h4>
