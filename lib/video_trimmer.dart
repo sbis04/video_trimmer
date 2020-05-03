@@ -140,7 +140,7 @@ class Trimmer {
   /// [ffmpegCommand] & [customVideoFormat] strings. The `input path`,
   /// `output path`, `start` and `end` position is already define.
   ///
-  /// NOTE: The advanced options does not provide any safety check, so if wrong
+  /// NOTE: The advanced option does not provide any safety check, so if wrong
   /// video format is passed in [customVideoFormat], then the app may
   /// crash.
   ///
