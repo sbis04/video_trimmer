@@ -1,3 +1,8 @@
+## 0.1.3 - beta
+
+* Code improvements
+* Update Readme
+
 ## 0.1.2 - beta
 
 * Changed `StorageDir` format naming
