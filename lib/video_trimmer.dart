@@ -28,9 +28,8 @@ class Trimmer {
   ///
   /// Returns the loaded video file.
   Future<File> loadVideo() async {
-    File _video = await ImagePicker.pickVideo(source: ImageSource.gallery);
-    if (_video != null) {
-      _videoFile = _video;
+    _videoFile = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    if (_videoFile != null) {
       videoPlayerController = VideoPlayerController.file(_videoFile);
       await videoPlayerController.initialize().then((_) {});
       TrimEditor(
@@ -38,9 +37,8 @@ class Trimmer {
         viewerWidth: 50.0 * 8,
         videoFile: _videoFile,
       );
-      return _video;
     }
-    return _video;
+    return _videoFile;
   }
 
   Future<String> _createFolderInAppDocDir(
