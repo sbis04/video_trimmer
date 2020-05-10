@@ -2,7 +2,7 @@
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/cover.png" alt="Video Trimmer" />
 </p>
 
-<h4 align="center">A Flutter package for trimming videos.</h4>
+<h4 align="center">A Flutter package for trimming videos</h4>
 
 ### Features
 
