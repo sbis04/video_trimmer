@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 class TrimEditorPainter extends CustomPainter {
   final Offset startPos;
   final Offset endPos;
-  final Offset currentPos;
+  final double scrubberAnimationDx;
   final double circleSize;
   final double borderWidth;
   final double scrubberWidth;
-  final double scrubberAnimationDx;
   final bool showScrubber;
   final Color borderPaintColor;
   final Color circlePaintColor;
@@ -15,18 +14,17 @@ class TrimEditorPainter extends CustomPainter {
   TrimEditorPainter({
     @required this.startPos,
     @required this.endPos,
-    @required this.currentPos,
+    @required this.scrubberAnimationDx,
     this.circleSize = 0.5,
     this.borderWidth = 3,
     this.scrubberWidth = 1,
-    this.scrubberAnimationDx,
     this.showScrubber = true,
     this.borderPaintColor = Colors.white,
     this.circlePaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
   })  : assert(startPos != null),
         assert(endPos != null),
-        assert(currentPos != null),
+        assert(scrubberAnimationDx != null),
         assert(circleSize != null),
         assert(borderWidth != null),
         assert(scrubberWidth != null),

@@ -1,3 +1,7 @@
+## 0.1.4 - beta
+
+* Smoothen the scrubber animation
+
 ## 0.1.3 - beta
 
 * Code improvements

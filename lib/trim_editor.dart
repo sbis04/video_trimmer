@@ -122,8 +122,6 @@ class TrimEditor extends StatefulWidget {
   _TrimEditorState createState() => _TrimEditorState();
 }
 
-// TODO: If the animation works, remove the _currentPos variable
-// to be passed to the Trim Painter
 class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   File _videoFile;
 
@@ -135,7 +133,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
   Offset _startPos = Offset(0, 0);
   Offset _endPos = Offset(0, 0);
-  Offset _currentPos = Offset(0, 0);
 
   double _startFraction = 0.0;
   double _endFraction = 1.0;
@@ -178,10 +175,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                 widget.onChangePlaybackState(true);
                 _animationController.forward();
               }
-              _currentPos = Offset(
-                (_currentPosition / _videoDuration) * _thumbnailViewerW,
-                0,
-              );
             }
           });
         } else {
@@ -391,7 +384,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
               startPos: _startPos,
               endPos: _endPos,
               scrubberAnimationDx: _scrubberAnimation.value,
-              currentPos: _currentPos,
               circleSize: _circleSize,
               circlePaintColor: widget.circlePaintColor,
               borderPaintColor: widget.borderPaintColor,
