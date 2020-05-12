@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class TrimEditorPainter extends CustomPainter {
   final Offset startPos;
   final Offset endPos;
-  final Offset currentPos;
+  final double scrubberAnimationDx;
   final double circleSize;
   final double borderWidth;
   final double scrubberWidth;
@@ -14,7 +14,7 @@ class TrimEditorPainter extends CustomPainter {
   TrimEditorPainter({
     @required this.startPos,
     @required this.endPos,
-    @required this.currentPos,
+    @required this.scrubberAnimationDx,
     this.circleSize = 0.5,
     this.borderWidth = 3,
     this.scrubberWidth = 1,
@@ -24,7 +24,7 @@ class TrimEditorPainter extends CustomPainter {
     this.scrubberPaintColor = Colors.white,
   })  : assert(startPos != null),
         assert(endPos != null),
-        assert(currentPos != null),
+        assert(scrubberAnimationDx != null),
         assert(circleSize != null),
         assert(borderWidth != null),
         assert(scrubberWidth != null),
@@ -57,8 +57,8 @@ class TrimEditorPainter extends CustomPainter {
 
     if (showScrubber) {
       canvas.drawLine(
-        currentPos,
-        currentPos + Offset(0, endPos.dy),
+        Offset(scrubberAnimationDx, 0),
+        Offset(scrubberAnimationDx, 0) + Offset(0, endPos.dy),
         scrubberPaint,
       );
     }
