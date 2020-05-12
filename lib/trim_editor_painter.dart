@@ -7,6 +7,7 @@ class TrimEditorPainter extends CustomPainter {
   final double circleSize;
   final double borderWidth;
   final double scrubberWidth;
+  final double scrubberAnimationDx;
   final bool showScrubber;
   final Color borderPaintColor;
   final Color circlePaintColor;
@@ -18,6 +19,7 @@ class TrimEditorPainter extends CustomPainter {
     this.circleSize = 0.5,
     this.borderWidth = 3,
     this.scrubberWidth = 1,
+    this.scrubberAnimationDx,
     this.showScrubber = true,
     this.borderPaintColor = Colors.white,
     this.circlePaintColor = Colors.white,
@@ -57,8 +59,8 @@ class TrimEditorPainter extends CustomPainter {
 
     if (showScrubber) {
       canvas.drawLine(
-        currentPos,
-        currentPos + Offset(0, endPos.dy),
+        Offset(scrubberAnimationDx, 0),
+        Offset(scrubberAnimationDx, 0) + Offset(0, endPos.dy),
         scrubberPaint,
       );
     }
