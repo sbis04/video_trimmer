@@ -1,3 +1,7 @@
+## 0.1.5 - beta
+
+* Fix for paths having white spaces
+
 ## 0.1.4 - beta
 
 * Smoothen the scrubber animation

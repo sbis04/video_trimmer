@@ -207,7 +207,7 @@ class Trimmer {
     }
 
     String _trimLengthCommand =
-        '-i $_videoPath -ss $startPoint -t ${endPoint - startPoint}';
+        '-i "$_videoPath" -ss $startPoint -t ${endPoint - startPoint}';
 
     if (ffmpegCommand == null) {
       _command = '$_trimLengthCommand -c copy ';
@@ -227,7 +227,7 @@ class Trimmer {
       _outputFormatString = customVideoFormat;
     }
 
-    _command += '$path$videoFileName$_outputFormatString';
+    _command += '"$path$videoFileName$_outputFormatString"';
 
     await _flutterFFmpeg.execute(_command).whenComplete(() {
       print('Got value');
