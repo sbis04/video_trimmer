@@ -17,7 +17,7 @@ import 'package:video_trimmer/trim_editor.dart';
 /// and gives video playback controls. Some of the helpful methods
 /// are:
 /// * [loadVideo()]
-/// * [saveTrimmerVideo()]
+/// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
   File _videoFile;
