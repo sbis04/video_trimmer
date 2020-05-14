@@ -36,10 +36,15 @@ Also, supports conversion to **GIF**.
 
 ### Android
 
-* Go to `build.gradle` file in the path `<project root>/android/app/` and set the `minSdkVersion` to **24**:
+* Go to `<project root>/android/app/build.gradle` and set the `minSdkVersion` to **24**:
 
    ```gradle
    minSdkVersion 24
+   ```
+* Go to `<project root>/android/build.gradle` and add the following line:
+
+   ```gradle
+   ext.flutterFFmpegPackage = 'full'
    ```
 
 ### iOS
