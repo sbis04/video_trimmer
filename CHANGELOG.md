@@ -1,3 +1,9 @@
+## 0.2.0 - beta
+
+* BREAKING CHANGE: `loadVideo()` method implementation changed.
+  Now, you can pass the video file to the method.
+* Fix issue related to animation controller improperly disposing
+
 ## 0.1.5 - beta
 
 * Fix for paths having white spaces

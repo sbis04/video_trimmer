@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/thumbnail_viewer.dart';
 import 'package:video_trimmer/trim_editor_painter.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
 VideoPlayerController videoPlayerController;
 
 class TrimEditor extends StatefulWidget {
   final double viewerWidth;
   final double viewerHeight;
-  final File videoFile;
   final double circleSize;
   final double circleSizeOnDrag;
   final Color circlePaintColor;
@@ -29,16 +29,12 @@ class TrimEditor extends StatefulWidget {
   /// slider for selecting the part of the video to be
   /// trimmed.
   ///
-  /// The required parameters are [viewerWidth], [viewerHeight]
-  /// & [videoFile].
+  /// The required parameters are [viewerWidth] & [viewerHeight]
   ///
   /// * [viewerWidth] to define the total trimmer area width.
   ///
   ///
   /// * [viewerHeight] to define the total trimmer area height.
-  ///
-  ///
-  /// * [videoFile] for passing the video file.
   ///
   ///
   /// The optional parameters are:
@@ -92,7 +88,6 @@ class TrimEditor extends StatefulWidget {
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
-    @required this.videoFile,
     this.circleSize = 5.0,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
@@ -108,7 +103,6 @@ class TrimEditor extends StatefulWidget {
     this.onChangePlaybackState,
   })  : assert(viewerWidth != null),
         assert(viewerHeight != null),
-        assert(videoFile != null),
         assert(circleSize != null),
         assert(circleSizeOnDrag != null),
         assert(circlePaintColor != null),
@@ -169,7 +163,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
               widget.onChangePlaybackState(false);
               videoPlayerController.pause();
               _animationController.stop();
-              // _animationController.reset();
             } else {
               if (!_animationController.isAnimating) {
                 widget.onChangePlaybackState(true);
@@ -249,7 +242,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     super.initState();
     _circleSize = widget.circleSize;
 
-    _videoFile = widget.videoFile;
+    _videoFile = Trimmer.currentVideoFile;
     _thumbnailViewerH = widget.viewerHeight;
 
     _numberOfThumbnails = widget.viewerWidth ~/ _thumbnailViewerH;
@@ -280,10 +273,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _animationController.dispose();
     videoPlayerController.pause();
     widget.onChangePlaybackState(false);
-    if (widget.videoFile != null) {
+    if (_videoFile != null) {
       videoPlayerController.setVolume(0.0);
       videoPlayerController.pause();
       videoPlayerController.dispose();

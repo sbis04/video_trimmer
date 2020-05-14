@@ -5,7 +5,6 @@ import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -20,25 +19,30 @@ import 'package:video_trimmer/trim_editor.dart';
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  File _videoFile;
+  static File currentVideoFile;
 
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-  /// Loads a video from the file system.
+  /// Loads a video using the path provided.
   ///
   /// Returns the loaded video file.
-  Future<File> loadVideo() async {
-    _videoFile = await ImagePicker.pickVideo(source: ImageSource.gallery);
-    if (_videoFile != null) {
-      videoPlayerController = VideoPlayerController.file(_videoFile);
-      await videoPlayerController.initialize().then((_) {});
-      TrimEditor(
-        viewerHeight: 50,
-        viewerWidth: 50.0 * 8,
-        videoFile: _videoFile,
-      );
+  Future<void> loadVideo({@required File videoFile}) async {
+    currentVideoFile = videoFile;
+    if (currentVideoFile != null) {
+      videoPlayerController = VideoPlayerController.file(currentVideoFile);
+      await videoPlayerController.initialize().then((_) {
+        TrimEditor(
+          viewerHeight: 50,
+          viewerWidth: 50.0 * 8,
+          // currentVideoFile: currentVideoFile,
+        );
+      });
+      // TrimEditor(
+      //   viewerHeight: 50,
+      //   viewerWidth: 50.0 * 8,
+      //   // currentVideoFile: currentVideoFile,
+      // );
     }
-    return _videoFile;
   }
 
   Future<String> _createFolderInAppDocDir(
@@ -154,7 +158,7 @@ class Trimmer {
     String videoFileName,
     StorageDir storageDir,
   }) async {
-    final String _videoPath = _videoFile.path;
+    final String _videoPath = currentVideoFile.path;
     final String _videoName = basename(_videoPath).split('.')[0];
 
     String _command;
@@ -272,6 +276,6 @@ class Trimmer {
   }
 
   File getVideoFile() {
-    return _videoFile;
+    return currentVideoFile;
   }
 }
