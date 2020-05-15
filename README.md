@@ -89,11 +89,9 @@ Also, supports conversion to **GIF**.
 
 ### Loading input video file
 
-Returns the video file that was loaded.
-
 ```dart
 final Trimmer _trimmer = Trimmer();
-File _videoFile = await _trimmer.loadVideo();
+await _trimmer.loadVideo(videoFile: file);
 ```
 
 ### Saving trimmed video
@@ -163,7 +161,6 @@ VideoViewer()
 TrimEditor(
   viewerHeight: 50.0,
   viewerWidth: MediaQuery.of(context).size.width,
-  videoFile: _file,
   onChangeStart: (value) {
     _startValue = value;
   },
@@ -175,7 +172,7 @@ TrimEditor(
       _isPlaying = value;
     });
   },
-),
+)
 ```
 
 ## Example
