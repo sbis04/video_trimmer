@@ -184,6 +184,7 @@ TrimEditor(
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import 'package:video_trimmer/video_viewer.dart';
@@ -216,11 +217,14 @@ class HomePage extends StatelessWidget {
           child: RaisedButton(
             child: Text("LOAD VIDEO"),
             onPressed: () async {
-              File _videoFile = await _trimmer.loadVideo();
-              if (_videoFile != null) {
+              File file = await ImagePicker.pickVideo(
+                source: ImageSource.gallery,
+              );
+              if (file != null) {
+                await _trimmer.loadVideo(videoFile: file);
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) {
-                  return TrimmerView(_videoFile, _trimmer);
+                  return TrimmerView(_trimmer);
                 }));
               }
             },
@@ -232,27 +236,18 @@ class HomePage extends StatelessWidget {
 }
 
 class TrimmerView extends StatefulWidget {
-  final File _videoFile;
   final Trimmer _trimmer;
-  TrimmerView(this._videoFile, this._trimmer);
+  TrimmerView(this._trimmer);
   @override
   _TrimmerViewState createState() => _TrimmerViewState();
 }
 
 class _TrimmerViewState extends State<TrimmerView> {
-  File _file;
-
   double _startValue = 0.0;
   double _endValue = 0.0;
 
   bool _isPlaying = false;
   bool _progressVisibility = false;
-
-  @override
-  void initState() {
-    _file = widget._videoFile;
-    super.initState();
-  }
 
   Future<String> _saveVideo() async {
     setState(() {
@@ -312,7 +307,6 @@ class _TrimmerViewState extends State<TrimmerView> {
                   child: TrimEditor(
                     viewerHeight: 50.0,
                     viewerWidth: MediaQuery.of(context).size.width,
-                    videoFile: _file,
                     onChangeStart: (value) {
                       _startValue = value;
                     },
