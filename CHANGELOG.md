@@ -3,6 +3,7 @@
 * BREAKING CHANGE: `loadVideo()` method implementation changed.
   Now, you can pass the video file to the method.
 * Fix issue related to animation controller improperly disposing
+* Update Docs
 
 ## 0.1.5 - beta
 
