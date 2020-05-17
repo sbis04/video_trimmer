@@ -1,3 +1,7 @@
+## 0.2.1 - beta
+
+* Fix over-scrolling && scroll-over issue
+
 ## 0.2.0 - beta
 
 * BREAKING CHANGE: `loadVideo()` method implementation changed.
