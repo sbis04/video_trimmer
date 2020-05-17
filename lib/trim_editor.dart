@@ -204,37 +204,45 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   }
 
   void _setVideoStartPosition(DragUpdateDetails details) async {
-    setState(() {
-      _startPos += details.delta;
-      _startFraction = (_startPos.dx / _thumbnailViewerW);
-      print("START PERCENT: $_startFraction");
-      _videoStartPos = _videoDuration * _startFraction;
-      widget.onChangeStart(_videoStartPos);
-    });
-    await videoPlayerController.pause();
-    await videoPlayerController
-        .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
-    _linearTween.begin = _startPos.dx;
-    _animationController.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController.reset();
+    if (!(_startPos.dx + details.delta.dx < 0) &&
+        !(_startPos.dx + details.delta.dx > _thumbnailViewerW) &&
+        !(_startPos.dx + details.delta.dx > _endPos.dx)) {
+      setState(() {
+        _startPos += details.delta;
+        _startFraction = (_startPos.dx / _thumbnailViewerW);
+        print("START PERCENT: $_startFraction");
+        _videoStartPos = _videoDuration * _startFraction;
+        widget.onChangeStart(_videoStartPos);
+      });
+      await videoPlayerController.pause();
+      await videoPlayerController
+          .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+      _linearTween.begin = _startPos.dx;
+      _animationController.duration =
+          Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
+      _animationController.reset();
+    }
   }
 
   void _setVideoEndPosition(DragUpdateDetails details) async {
-    setState(() {
-      _endPos += details.delta;
-      _endFraction = _endPos.dx / _thumbnailViewerW;
-      print("END PERCENT: $_endFraction");
-      _videoEndPos = _videoDuration * _endFraction;
-      widget.onChangeEnd(_videoEndPos);
-    });
-    await videoPlayerController.pause();
-    await videoPlayerController
-        .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
-    _linearTween.end = _endPos.dx;
-    _animationController.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController.reset();
+    if (!(_endPos.dx + details.delta.dx > _thumbnailViewerW) &&
+        !(_endPos.dx + details.delta.dx < 0) &&
+        !(_endPos.dx + details.delta.dx < _startPos.dx)) {
+      setState(() {
+        _endPos += details.delta;
+        _endFraction = _endPos.dx / _thumbnailViewerW;
+        print("END PERCENT: $_endFraction");
+        _videoEndPos = _videoDuration * _endFraction;
+        widget.onChangeEnd(_videoEndPos);
+      });
+      await videoPlayerController.pause();
+      await videoPlayerController
+          .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+      _linearTween.end = _endPos.dx;
+      _animationController.duration =
+          Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
+      _animationController.reset();
+    }
   }
 
   @override
