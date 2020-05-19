@@ -87,6 +87,8 @@ class Trimmer {
   }
 
   /// Saves the trimmed video to file system.
+  /// 
+  /// Returns the output video path
   ///
   /// The required parameters are [startValue] & [endValue].
   ///
@@ -170,7 +172,8 @@ class Trimmer {
         .format(DateTime.now())
         .toString();
 
-    String _resultString;
+    // String _resultString;
+    String _outputPath;
     String _outputFormatString;
     String formattedDateTime = dateTime.replaceAll(' ', '');
 
@@ -231,17 +234,21 @@ class Trimmer {
       _outputFormatString = customVideoFormat;
     }
 
-    _command += '"$path$videoFileName$_outputFormatString"';
+    _outputPath = '"$path$videoFileName$_outputFormatString"';
+
+    _command += _outputPath;
 
     await _flutterFFmpeg.execute(_command).whenComplete(() {
       print('Got value');
-      _resultString = 'Video successfuly saved';
+      debugPrint('Video successfuly saved');
+      // _resultString = 'Video successfuly saved';
     }).catchError((error) {
       print('Error');
-      _resultString = 'Couldn\'t save the video';
+      // _resultString = 'Couldn\'t save the video';
+      debugPrint('Couldn\'t save the video');
     });
 
-    return _resultString;
+    return _outputPath;
   }
 
   /// For getting the video controller state, to know whether the

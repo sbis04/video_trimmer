@@ -1,3 +1,9 @@
+## 0.2.2 - beta
+
+* Change implementation of the `saveTrimmedVideo()` method
+* `saveTrimmedVideo()` now returns the output video path
+* Update Docs
+
 ## 0.2.1 - beta
 
 * Fix over-scrolling && scroll-over issue
