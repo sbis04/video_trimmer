@@ -290,8 +290,9 @@ class _TrimmerViewState extends State<TrimmerView> {
                   onPressed: _progressVisibility
                       ? null
                       : () async {
-                          _saveVideo().then((value) {
-                            final snackBar = SnackBar(content: Text(value));
+                          _saveVideo().then((outputPath) {
+                            print('OUTPUT PATH: $outputPath');
+                            final snackBar = SnackBar(content: Text('Video Saved successfully'));
                             Scaffold.of(context).showSnackBar(snackBar);
                           });
                         },
