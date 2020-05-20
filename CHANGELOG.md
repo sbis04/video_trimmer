@@ -1,3 +1,7 @@
+## 0.2.3 - beta
+
+* Fix issue with path returned
+
 ## 0.2.2 - beta
 
 * Change implementation of the `saveTrimmedVideo()` method
