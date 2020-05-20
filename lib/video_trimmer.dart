@@ -87,7 +87,7 @@ class Trimmer {
   }
 
   /// Saves the trimmed video to file system.
-  /// 
+  ///
   /// Returns the output video path
   ///
   /// The required parameters are [startValue] & [endValue].
@@ -234,9 +234,9 @@ class Trimmer {
       _outputFormatString = customVideoFormat;
     }
 
-    _outputPath = '"$path$videoFileName$_outputFormatString"';
+    _outputPath = '$path$videoFileName$_outputFormatString';
 
-    _command += _outputPath;
+    _command += '"$_outputPath"';
 
     await _flutterFFmpeg.execute(_command).whenComplete(() {
       print('Got value');
