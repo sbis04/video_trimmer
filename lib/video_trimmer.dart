@@ -214,7 +214,7 @@ class Trimmer {
     }
 
     String _trimLengthCommand =
-        '-i "$_videoPath" -ss $startPoint -t ${endPoint - startPoint}';
+        '-i "$_videoPath" -ss ${startPoint.inSeconds} -t ${endPoint.inSeconds - startPoint.inSeconds}';
 
     if (ffmpegCommand == null) {
       _command = '$_trimLengthCommand -c copy ';

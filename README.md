@@ -49,16 +49,20 @@ Also, supports conversion to **GIF**.
 
 ### Android
 
-* Go to `<project root>/android/app/build.gradle` and set the `minSdkVersion` to **24**:
+* Go to `<project root>/android/app/build.gradle` and set the proper `minSdkVersion`, **24** for **Main Release** or **16** for **LTS Release**. 
+  
+  > Refer to the [FFmpeg Release](#ffmpeg-release) section.
 
    ```gradle
-   minSdkVersion 24
+   minSdkVersion <version>
    ```
 * Go to `<project root>/android/build.gradle` and add the following line:
 
    ```gradle
-   ext.flutterFFmpegPackage = 'full'
+   ext.flutterFFmpegPackage = '<package name>'
    ```
+
+   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
 
 ### iOS
 
@@ -72,10 +76,12 @@ Also, supports conversion to **GIF**.
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile`:
+* Set the platform version in `ios/Podfile`, **12.1** for **Main Release** or **9.3** for **LTS Release**.
+  
+  > Refer to the [FFmpeg Release](#ffmpeg-release) section.
 
    ```
-   platform :ios, '9.3'
+   platform :ios, '<version>'
    ```
 
 * Replace with the following in the `# Plugin Pods` section of the `ios/Podfile`: 
@@ -91,12 +97,76 @@ Also, supports conversion to **GIF**.
      symlink = File.join('.symlinks', 'plugins', name)
      File.symlink(path, symlink)
      if name == 'flutter_ffmpeg'
-         pod name+'/full', :path => File.join(symlink, 'ios')
+         pod name+'/<package name>', :path => File.join(symlink, 'ios')
      else
          pod name, :path => File.join(symlink, 'ios')
      end
    end
    ```
+
+   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
+
+
+### FFmpeg Release
+
+In reference to the releases specified in the [flutter_ffmpeg](https://pub.dev/packages/flutter_ffmpeg) package.
+
+<table>
+<thead>
+    <tr>
+        <th align="center"></th>
+        <th align="center">Main Release</th>
+        <th align="center">LTS Release</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td align="center">Android API Level</td>
+        <td align="center">24</td>
+        <td align="center">16</td>
+    </tr>
+    <tr>
+        <td align="center">Android Camera Access</td>
+        <td align="center">Yes</td>
+        <td align="center">-</td>
+    </tr>
+    <tr>
+        <td align="center">Android Architectures</td>
+        <td align="center">arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
+        <td align="center">arm-v7a<br>arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
+    </tr>
+    <tr>
+        <td align="center">Xcode Support</td>
+        <td align="center">10.1</td>
+        <td align="center">7.3.1</td>
+    </tr>
+    <tr>
+        <td align="center">iOS SDK</td>
+        <td align="center">12.1</td>
+        <td align="center">9.3</td>
+    </tr>
+    <tr>
+        <td align="center">iOS Architectures</td>
+        <td align="center">arm64<br>arm64e<br>x86-64</td>
+        <td align="center">armv7<br>arm64<br>i386<br>x86-64</td>
+    </tr>
+</tbody>
+</table>
+
+### Packages List
+
+The following **FFmpeg Packages** List is in reference to the [flutter_ffmpeg](https://pub.dev/packages/flutter_ffmpeg) package.
+
+| Package | Main Release | LTS Release |
+| :----: | :----: | :----: |
+| min | min  | min-lts |
+| min-gpl | min-gpl | min-gpl-lts |
+| https | https | https-lts |
+| https-gpl | https-gpl | https-gpl-lts |
+| audio | audio | audio-lts |
+| video | video | video-lts |
+| full | full | full-lts |
+| full-gpl | full-gpl | full-gpl-lts |
 
 ## Functionalities
 
