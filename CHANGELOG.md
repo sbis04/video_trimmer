@@ -1,3 +1,9 @@
+## 0.2.4 - beta
+
+* Fix output video freezing during start and end
+* Update the example app to use LTS version of FFmpeg (for wider device support)
+* Update Readme
+
 ## 0.2.3 - beta
 
 * Fix issue with path returned
