@@ -156,6 +156,7 @@ class Trimmer {
     String customVideoFormat,
     int fpsGIF,
     int scaleGIF,
+    String videoBitRate = '1M'
     String videoFolderName,
     String videoFileName,
     StorageDir storageDir,
@@ -217,7 +218,7 @@ class Trimmer {
         '-i "$_videoPath" -ss ${startPoint.inSeconds} -t ${endPoint.inSeconds - startPoint.inSeconds}';
 
     if (ffmpegCommand == null) {
-      _command = '$_trimLengthCommand -c copy ';
+      _command = '$_trimLengthCommand -b:v $videoBitRate';
 
       if (outputFormat == FileFormat.gif) {
         if (fpsGIF == null) {
