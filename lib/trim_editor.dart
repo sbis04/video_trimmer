@@ -11,6 +11,7 @@ VideoPlayerController videoPlayerController;
 class TrimEditor extends StatefulWidget {
   final double viewerWidth;
   final double viewerHeight;
+  final Duration maxVideoLength; // TODO: Update Docs
   final double circleSize;
   final double circleSizeOnDrag;
   final Color circlePaintColor;
@@ -88,6 +89,7 @@ class TrimEditor extends StatefulWidget {
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
+    this.maxVideoLength = const Duration(milliseconds: 0),
     this.circleSize = 5.0,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
@@ -103,6 +105,7 @@ class TrimEditor extends StatefulWidget {
     this.onChangePlaybackState,
   })  : assert(viewerWidth != null),
         assert(viewerHeight != null),
+        assert(maxVideoLength != null),
         assert(circleSize != null),
         assert(circleSizeOnDrag != null),
         assert(circlePaintColor != null),
@@ -190,6 +193,18 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       print(_videoFile.path);
 
       _videoEndPos = _videoDuration.toDouble();
+
+      // print(_numberOfThumbnails * _thumbnailViewerH);
+
+      // if (widget.maxVideoLength.inMilliseconds < _videoEndPos) {
+      //   _videoEndPos = widget.maxVideoLength.inMilliseconds.toDouble();
+      //   _thumbnailViewerW = (_numberOfThumbnails * _thumbnailViewerH) *
+      //       _videoEndPos /
+      //       _videoDuration;
+      //   print(_thumbnailViewerW);
+      //   widget.onChangeEnd(_videoEndPos);
+      // }
+      // _videoEndPos = _videoDuration.toDouble();
       widget.onChangeEnd(_videoEndPos);
 
       final ThumbnailViewer _thumbnailWidget = ThumbnailViewer(
@@ -208,7 +223,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         !(_startPos.dx + details.delta.dx > _thumbnailViewerW) &&
         !(_startPos.dx + details.delta.dx > _endPos.dx)) {
       setState(() {
-        _startPos += details.delta;
+        _startPos.dx + details.delta.dx < 0 ? null : _startPos += details.delta;
+        // _startPos += details.delta;
         _startFraction = (_startPos.dx / _thumbnailViewerW);
         print("START PERCENT: $_startFraction");
         _videoStartPos = _videoDuration * _startFraction;
@@ -257,8 +273,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     print('Number of thumbnails generated: $_numberOfThumbnails');
     _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
 
-    _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
+    // _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
     _initializeVideoController();
+    _endPos = Offset(_thumbnailViewerW, _thumbnailViewerH);
 
     // Defining the tween points
     _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
@@ -321,14 +338,17 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         }
       },
       onHorizontalDragEnd: (DragEndDetails details) {
+        print("END DRAG >> " +
+            "START POINT: ${_startPos.dx}, " +
+            "END POINT: ${_endPos.dx}");
         setState(() {
           _circleSize = widget.circleSize;
         });
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
-        print("UPDATE");
-        print("START POINT: ${_startPos.dx + details.delta.dx}");
-        print("END POINT: ${_endPos.dx + details.delta.dx}");
+        print("TO BE UPDATED >> " +
+            "START POINT: ${_startPos.dx + details.delta.dx}, " +
+            "END POINT: ${_endPos.dx + details.delta.dx}");
 
         _circleSize = widget.circleSizeOnDrag;
 
