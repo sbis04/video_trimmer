@@ -3,8 +3,16 @@ import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/trim_editor.dart';
 
 class VideoViewer extends StatefulWidget {
+  /// For specifying the color of the video
+  /// viewer area border. By default it is set to `Colors.transparent`.
   final Color borderColor;
+
+  /// For specifying the border width around
+  /// the video viewer area. By default it is set to `0.0`.
   final double borderWidth;
+
+  /// For specifying a padding around the video viewer
+  /// area. By default it is set to `EdgeInsets.all(0.0)`.
   final EdgeInsets padding;
 
   /// For showing the video playback area.

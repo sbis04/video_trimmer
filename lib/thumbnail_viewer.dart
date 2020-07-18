@@ -10,6 +10,8 @@ class ThumbnailViewer extends StatelessWidget {
   final int numberOfThumbnails;
   final int quality;
 
+  /// For showing the thumbnails generated from the video,
+  /// like a frame by frame preview
   ThumbnailViewer({
     @required this.videoFile,
     @required this.videoDuration,

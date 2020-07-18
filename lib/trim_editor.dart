@@ -9,18 +9,57 @@ import 'package:video_trimmer/video_trimmer.dart';
 VideoPlayerController videoPlayerController;
 
 class TrimEditor extends StatefulWidget {
+  /// For defining the total trimmer area width
   final double viewerWidth;
+
+  /// For defining the total trimmer area height
   final double viewerHeight;
+
+  /// For specifying a size to the holder at the
+  /// two ends of the video trimmer area, while it is `idle`.
+  /// By default it is set to `5.0`.
   final double circleSize;
+
+  /// For specifying a size to the holder at
+  /// the two ends of the video trimmer area, while it is being
+  /// `dragged`. By default it is set to `8.0`.
   final double circleSizeOnDrag;
+
+  /// For specifying a color to the circle.
+  /// By default it is set to `Colors.white`.
   final Color circlePaintColor;
+
+  /// For specifying a color to the border of
+  /// the trim area. By default it is set to `Colors.white`.
   final Color borderPaintColor;
+
+  /// For specifying a color to the video
+  /// scrubber inside the trim area. By default it is set to
+  /// `Colors.white`.
   final Color scrubberPaintColor;
+
+  /// For specifying the quality of each
+  /// generated image thumbnail, to be displayed in the trimmer
+  /// area.
   final int thumbnailQuality;
+
+  /// For showing the start and the end point of the
+  /// video on top of the trimmer area. By default it is set to `true`.
   final bool showDuration;
+
+  /// For providing a `TextStyle` to the
+  /// duration text. By default it is set to
+  /// `TextStyle(color: Colors.white)`
   final TextStyle durationTextStyle;
+
+  /// Callback to the video start position
   final Function(double startValue) onChangeStart;
+
+  /// Callback to the video end position.
   final Function(double endValue) onChangeEnd;
+
+  /// Callback to the video playback
+  /// state to know whether it is currently playing or paused.
   final Function(bool isPlaying) onChangePlaybackState;
 
   /// Widget for displaying the video trimmer.
