@@ -1,3 +1,8 @@
+## 0.2.5 - beta
+
+* Update Docs
+* Reverted the FFmpeg trimmed video start & end position to **milliseconds** (earlier it was changed to **seconds** in `v0.2.4` to fix video freezing, but after testing it was found that the issue still persists)
+
 ## 0.2.4 - beta
 
 * Fix output video freezing during start and end
