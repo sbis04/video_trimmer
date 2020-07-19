@@ -53,13 +53,20 @@ class TrimEditor extends StatefulWidget {
   final TextStyle durationTextStyle;
 
   /// Callback to the video start position
+  ///
+  /// Returns the selected video start position in `milliseconds`.
   final Function(double startValue) onChangeStart;
 
   /// Callback to the video end position.
+  ///
+  /// Returns the selected video end position in `milliseconds`.
   final Function(double endValue) onChangeEnd;
 
   /// Callback to the video playback
   /// state to know whether it is currently playing or paused.
+  ///
+  /// Returns a `boolean` value. If `true`, video is currently
+  /// playing, otherwise paused.
   final Function(bool isPlaying) onChangePlaybackState;
 
   /// Widget for displaying the video trimmer.

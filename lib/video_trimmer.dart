@@ -96,10 +96,10 @@ class Trimmer {
   /// [outputFormat], [fpsGIF], [scaleGIF].
   ///
   /// The `@required` parameter [startValue] is for providing a starting point
-  /// to the trimmed video.
+  /// to the trimmed video. To be specified in `milliseconds`.
   ///
   /// The `@required` parameter [endValue] is for providing an ending point
-  /// to the trimmed video.
+  /// to the trimmed video. To be specified in `milliseconds`.
   ///
   /// The parameter [videoFolderName] is used to
   /// pass a folder name which will be used for creating a new
