@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/thumbnail_viewer.dart';
 import 'package:video_trimmer/trim_editor_painter.dart';
@@ -193,6 +195,16 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   AnimationController _animationController;
   Tween<double> _linearTween;
 
+  TextEditingController _startHourCtrl = TextEditingController();
+  TextEditingController _startMinCtrl = TextEditingController();
+  TextEditingController _startSecCtrl = TextEditingController();
+  TextEditingController _startFracsCtrl = TextEditingController();
+
+  TextEditingController _endHourCtrl = TextEditingController();
+  TextEditingController _endMinCtrl = TextEditingController();
+  TextEditingController _endSecCtrl = TextEditingController();
+  TextEditingController _endFracsCtrl = TextEditingController();
+
   Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
       videoPlayerController.addListener(() {
@@ -249,6 +261,51 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     }
   }
 
+  // Sets the start value of video.
+  // Assumes that ThumbnailViewer is screen width - 10
+  void _setVideoStartByCtrl(double time) async {
+    double widgetWidth = MediaQuery
+        .of(context)
+        .size
+        .width - 10;
+    setState(() {
+      _videoStartPos = time;
+      _startFraction = _videoStartPos / _videoDuration;
+      _startPos = Offset(_startFraction * widgetWidth, _startPos.dy);
+      widget.onChangeStart(_videoStartPos);
+    });
+
+    await videoPlayerController
+        .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+    _linearTween.begin = _startPos.dx;
+    _animationController.duration =
+        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
+    _animationController.reset();
+  }
+
+  // Sets the end value of video.
+  // Assumes that ThumbnailViewer is screen width - 10
+  void _setVideoEndByCtrl(double time) async {
+    double widgetWidth = MediaQuery
+        .of(context)
+        .size
+        .width - 10;
+    setState(() {
+      _videoEndPos = time;
+      _endFraction = _videoEndPos / _videoDuration;
+      _endPos = Offset(_endFraction * widgetWidth, _endPos.dy);
+
+      widget.onChangeEnd(_videoEndPos);
+    });
+
+    await videoPlayerController
+        .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+    _linearTween.end = _endPos.dx;
+    _animationController.duration =
+        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
+    _animationController.reset();
+  }
+
   void _setVideoStartPosition(DragUpdateDetails details) async {
     if (!(_startPos.dx + details.delta.dx < 0) &&
         !(_startPos.dx + details.delta.dx > _thumbnailViewerW) &&
@@ -289,6 +346,340 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
       _animationController.reset();
     }
+  }
+
+  // Checks if start or end time inputted to dialog is valid,
+  // if not valid, moves start or end to valid area
+  validateTime({bool start}) {
+    int inputtedMillis = inputToMillis(start: start);
+    if (inputtedMillis == null) {
+      return;
+    }
+    if (start && inputtedMillis > _videoEndPos) {
+      setCtrlTimes(_videoEndPos, start: start);
+      return;
+    }
+    else if (!start && inputtedMillis < _videoStartPos) {
+      setCtrlTimes(_videoStartPos, start: start);
+      return;
+    }
+    if (inputtedMillis > _videoDuration) {
+      setCtrlTimes(_videoDuration.toDouble(), start: start);
+      return;
+    }
+    if (inputtedMillis < 0) {
+      setCtrlTimes(0, start: start);
+      return;
+    }
+  }
+
+
+  // Returns TextFields' summed value in milliseconds
+  // or null if field is empty or invalid
+  int inputToMillis({bool start}) {
+    int inputtedMillis = 0;
+    try {
+      if (start) {
+        inputtedMillis += (int.parse(_startHourCtrl.value.text) * 3600000);
+        inputtedMillis += (int.parse(_startMinCtrl.value.text) * 60000);
+        inputtedMillis += (int.parse(_startSecCtrl.value.text) * 1000);
+        inputtedMillis += (int.parse(_startFracsCtrl.value.text) * 100);
+      } else {
+        inputtedMillis += (int.parse(_endHourCtrl.value.text) * 3600000);
+        inputtedMillis += (int.parse(_endMinCtrl.value.text) * 60000);
+        inputtedMillis += (int.parse(_endSecCtrl.value.text) * 1000);
+        inputtedMillis += (int.parse(_endFracsCtrl.value.text) * 100);
+      }
+      return inputtedMillis;
+    }
+    catch (e) {
+      return null;
+    }
+  }
+
+
+  void setCtrlTimes(double time, {bool start,}) {
+    int hours = time ~/ 3600000;
+    int mins = (time - hours * 3600000) ~/ 60000;
+    int secs = (time - (hours * 3600000) - (mins * 60000)) ~/ 1000;
+    int fracs = (time - (hours * 3600000) - (mins * 60000) -
+        (secs * 1000)) ~/ 100;
+    if (start) {
+      _startHourCtrl.text = hours.toString();
+      _startMinCtrl.text = mins.toString();
+      _startSecCtrl.text = secs.toString();
+      _startFracsCtrl.text = fracs.toString();
+    }
+    else {
+      _endHourCtrl.text = hours.toString();
+      _endMinCtrl.text = mins.toString();
+      _endSecCtrl.text = secs.toString();
+      _endFracsCtrl.text = fracs.toString();
+    }
+  }
+
+
+  timeInputArrowTap({bool start, int amount}) {
+    int millis = inputToMillis(start: start);
+    if (millis == null) {
+      setCtrlTimes(0, start: start);
+    }
+    else {
+      setCtrlTimes(millis.toDouble() + amount, start: start);
+    }
+    validateTime(start: start);
+  }
+
+
+  openTimePicker({bool start}) {
+    videoPlayerController.pause();
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius:
+                BorderRadius.circular(20.0)),
+
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FittedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Column(
+                          children: <Widget>[
+                            Text("h"),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(
+                                    start: start, amount: 3600000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58134, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                            Container(
+                              width: 30,
+                              child: TextField(
+                                style: TextStyle(fontSize: 20),
+                                controller: start
+                                    ? _startHourCtrl
+                                    : _endHourCtrl,
+                                onChanged: (str) {
+                                  validateTime(start: start)
+
+                                  ;
+                                },
+                                decoration: InputDecoration(hintText: 'h'),
+                                inputFormatters: [
+                                  WhitelistingTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(1),
+                                ],
+                                keyboardType: TextInputType.number,),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(
+                                    start: start, amount: -3600000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58131, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Container(height: 20,),
+                            Text(":"),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Text("m"),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: 60000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58134, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                            Container(
+                              width: 30,
+                              child: TextField(
+                                style: TextStyle(fontSize: 20),
+                                onChanged: (str) {
+                                  validateTime(start: start);
+                                },
+                                controller: start ? _startMinCtrl : _endMinCtrl,
+                                decoration: InputDecoration(hintText: 'm'),
+                                inputFormatters: [
+                                  WhitelistingTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(2),
+                                  WhitelistingTextInputFormatter(
+                                      RegExp("^[1-5]?[0-9]\$")),
+                                ],
+                                keyboardType: TextInputType.number,),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: -60000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58131, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Container(height: 20,),
+                            Text(":"),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Text("s"),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: 1000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58134, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                            Container(
+                              width: 30,
+                              child: TextField(
+                                style: TextStyle(fontSize: 20),
+                                onChanged: (str) {
+                                  validateTime(start: start);
+                                },
+                                controller: start ? _startSecCtrl : _endSecCtrl,
+                                decoration: InputDecoration(hintText: 's'),
+                                inputFormatters: [
+                                  WhitelistingTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(2),
+                                  WhitelistingTextInputFormatter(
+                                      RegExp("^[1-5]?[0-9]\$")),
+                                ],
+                                keyboardType: TextInputType.number,),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: -1000);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58131, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Container(height: 20,),
+                            Text("."),
+                          ],
+                        ),
+                        Column(
+
+                          children: <Widget>[
+                            Text(""),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: 100);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58134, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                            Container(
+                              width: 30,
+                              child: TextField(
+                                style: TextStyle(fontSize: 20),
+                                onChanged: (str) {
+                                  validateTime(start: start);
+                                },
+                                controller: start
+                                    ? _startFracsCtrl
+                                    : _endFracsCtrl,
+                                decoration: InputDecoration(hintText: 'ms'),
+                                inputFormatters: [
+                                  WhitelistingTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(1),
+                                ],
+                                keyboardType: TextInputType.number,),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                timeInputArrowTap(start: start, amount: -100);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  height: 60,
+                                  child: Icon(IconData(
+                                      58131, fontFamily: 'MaterialIcons'),
+                                    size: 50,)),
+                            ),
+                          ],
+                        ),
+                      ],),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        CupertinoButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("Cancel"),),
+                        CupertinoButton(
+                          onPressed: () {
+                            int millis = inputToMillis(start: start);
+                            if (millis != null) {
+                              Navigator.pop(context);
+                              start ? _setVideoStartByCtrl(millis.toDouble())
+                                  : _setVideoEndByCtrl(millis.toDouble());
+                            }
+                          }, child: Text("Ok"),),
+                      ],),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   @override
@@ -335,6 +726,14 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       videoPlayerController.dispose();
       widget.onChangePlaybackState(false);
     }
+    _startHourCtrl.dispose();
+    _startMinCtrl.dispose();
+    _startSecCtrl.dispose();
+    _startFracsCtrl.dispose();
+    _endHourCtrl.dispose();
+    _endMinCtrl.dispose();
+    _endSecCtrl.dispose();
+    _endFracsCtrl.dispose();
     super.dispose();
   }
 
@@ -409,16 +808,28 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
-                        Text(
-                            Duration(milliseconds: _videoStartPos.toInt())
+                        GestureDetector(
+                          onTap: () {
+                            setCtrlTimes(_videoStartPos, start: true);
+                            openTimePicker(start: true);
+                          },
+                          child: Text(
+                              Duration(milliseconds: _videoStartPos.toInt())
+                                  .toString()
+                                  .split('.')[0],
+                              style: widget.durationTextStyle),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setCtrlTimes(_videoEndPos, start: false);
+                            openTimePicker(start: false);
+                          },
+                          child: Text(
+                            Duration(milliseconds: _videoEndPos.toInt())
                                 .toString()
                                 .split('.')[0],
-                            style: widget.durationTextStyle),
-                        Text(
-                          Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
-                          style: widget.durationTextStyle,
+                            style: widget.durationTextStyle,
+                          ),
                         ),
                       ],
                     ),
