@@ -261,17 +261,12 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     }
   }
 
-  // Sets the start value of video.
-  // Assumes that ThumbnailViewer is screen width - 10
+
   void _setVideoStartByCtrl(double time) async {
-    double widgetWidth = MediaQuery
-        .of(context)
-        .size
-        .width - 10;
     setState(() {
       _videoStartPos = time;
       _startFraction = _videoStartPos / _videoDuration;
-      _startPos = Offset(_startFraction * widgetWidth, _startPos.dy);
+      _startPos = Offset(_startFraction * widget.viewerWidth, _startPos.dy);
       widget.onChangeStart(_videoStartPos);
     });
 
@@ -283,17 +278,13 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     _animationController.reset();
   }
 
-  // Sets the end value of video.
-  // Assumes that ThumbnailViewer is screen width - 10
+  
   void _setVideoEndByCtrl(double time) async {
-    double widgetWidth = MediaQuery
-        .of(context)
-        .size
-        .width - 10;
+
     setState(() {
       _videoEndPos = time;
       _endFraction = _videoEndPos / _videoDuration;
-      _endPos = Offset(_endFraction * widgetWidth, _endPos.dy);
+      _endPos = Offset(_endFraction * widget.viewerWidth, _endPos.dy);
 
       widget.onChangeEnd(_videoEndPos);
     });
