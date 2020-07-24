@@ -1,3 +1,12 @@
+## 0.2.6 - beta
+
+* Add a new property called `fit` to `TrimEditor` widget which will let you specify the image fit type of each thumbnail image.
+* Add a new property to `saveTrimmedVideo()` method called `applyVideoEncoding` which will let you specify whether to re-encode the trimmed video. 
+  
+  **NOTE:** Applying this will take significantly greater amount of time to process the output video.
+
+* Improve Docs
+
 ## 0.2.5 - beta
 
 * Update Docs

@@ -93,7 +93,7 @@ class Trimmer {
   /// The required parameters are [startValue] & [endValue].
   ///
   /// The optional parameters are [videoFolderName], [videoFileName],
-  /// [outputFormat], [fpsGIF], [scaleGIF].
+  /// [outputFormat], [fpsGIF], [scaleGIF], [applyVideoEncoding].
   ///
   /// The `@required` parameter [startValue] is for providing a starting point
   /// to the trimmed video. To be specified in `milliseconds`.
@@ -138,6 +138,11 @@ class Trimmer {
   /// is selected by maintaining the aspect ratio automatically (by
   /// default it is set to `480`)
   ///
+  ///
+  /// * [applyVideoEncoding] for specifying whether to apply video
+  /// encoding (by default it is set to `false`).
+  ///
+  ///
   /// ADVANCED OPTION:
   ///
   /// If you want to give custom `FFmpeg` command, then define
@@ -151,6 +156,7 @@ class Trimmer {
   Future<String> saveTrimmedVideo({
     @required double startValue,
     @required double endValue,
+    bool applyVideoEncoding = false,
     FileFormat outputFormat,
     String ffmpegCommand,
     String customVideoFormat,
@@ -217,7 +223,11 @@ class Trimmer {
         '-i "$_videoPath" -ss $startPoint -t ${endPoint - startPoint}';
 
     if (ffmpegCommand == null) {
-      _command = '$_trimLengthCommand -c copy ';
+      _command = '$_trimLengthCommand -c:a copy ';
+
+      if (!applyVideoEncoding) {
+        _command += '-c:v copy ';
+      }
 
       if (outputFormat == FileFormat.gif) {
         if (fpsGIF == null) {

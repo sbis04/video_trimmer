@@ -15,27 +15,39 @@ class TrimEditor extends StatefulWidget {
   /// For defining the total trimmer area height
   final double viewerHeight;
 
+  /// For defining the image fit type of each thumbnail image.
+  ///
+  /// By default it is set to `BoxFit.fitHeight`.
+  final BoxFit fit;
+
   /// For specifying a size to the holder at the
   /// two ends of the video trimmer area, while it is `idle`.
+  ///
   /// By default it is set to `5.0`.
   final double circleSize;
 
   /// For specifying a size to the holder at
   /// the two ends of the video trimmer area, while it is being
-  /// `dragged`. By default it is set to `8.0`.
+  /// `dragged`.
+  ///
+  /// By default it is set to `8.0`.
   final double circleSizeOnDrag;
 
   /// For specifying a color to the circle.
+  ///
   /// By default it is set to `Colors.white`.
   final Color circlePaintColor;
 
   /// For specifying a color to the border of
-  /// the trim area. By default it is set to `Colors.white`.
+  /// the trim area.
+  ///
+  /// By default it is set to `Colors.white`.
   final Color borderPaintColor;
 
   /// For specifying a color to the video
-  /// scrubber inside the trim area. By default it is set to
-  /// `Colors.white`.
+  /// scrubber inside the trim area.
+  ///
+  /// By default it is set to `Colors.white`.
   final Color scrubberPaintColor;
 
   /// For specifying the quality of each
@@ -44,12 +56,15 @@ class TrimEditor extends StatefulWidget {
   final int thumbnailQuality;
 
   /// For showing the start and the end point of the
-  /// video on top of the trimmer area. By default it is set to `true`.
+  /// video on top of the trimmer area.
+  ///
+  /// By default it is set to `true`.
   final bool showDuration;
 
   /// For providing a `TextStyle` to the
-  /// duration text. By default it is set to
-  /// `TextStyle(color: Colors.white)`
+  /// duration text.
+  ///
+  /// By default it is set to `TextStyle(color: Colors.white)`
   final TextStyle durationTextStyle;
 
   /// Callback to the video start position
@@ -84,6 +99,10 @@ class TrimEditor extends StatefulWidget {
   ///
   ///
   /// The optional parameters are:
+  ///
+  /// * [fit] for specifying the image fit type of each thumbnail image.
+  /// By default it is set to `BoxFit.fitHeight`.
+  ///
   ///
   /// * [circleSize] for specifying a size to the holder at the
   /// two ends of the video trimmer area, while it is `idle`.
@@ -134,6 +153,7 @@ class TrimEditor extends StatefulWidget {
   TrimEditor({
     @required this.viewerWidth,
     @required this.viewerHeight,
+    this.fit = BoxFit.fitHeight,
     this.circleSize = 5.0,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
@@ -149,6 +169,7 @@ class TrimEditor extends StatefulWidget {
     this.onChangePlaybackState,
   })  : assert(viewerWidth != null),
         assert(viewerHeight != null),
+        assert(fit != null),
         assert(circleSize != null),
         assert(circleSizeOnDrag != null),
         assert(circlePaintColor != null),
@@ -241,6 +262,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       final ThumbnailViewer _thumbnailWidget = ThumbnailViewer(
         videoFile: _videoFile,
         videoDuration: _videoDuration,
+        fit: widget.fit,
         thumbnailHeight: _thumbnailViewerH,
         numberOfThumbnails: _numberOfThumbnails,
         quality: widget.thumbnailQuality,
