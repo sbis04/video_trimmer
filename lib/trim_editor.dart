@@ -278,7 +278,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     _animationController.reset();
   }
 
-  
+
   void _setVideoEndByCtrl(double time) async {
 
     setState(() {
@@ -810,6 +810,15 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                                   .split('.')[0],
                               style: widget.durationTextStyle),
                         ),
+                        ValueListenableBuilder(
+                          valueListenable: videoPlayerController,
+                          builder: (context, VideoPlayerValue value, child) {
+                            return Text(
+                                value.position.toString().split('.')[0],
+                                style: widget.durationTextStyle);
+                          },
+                        ),
+
                         GestureDetector(
                           onTap: () {
                             setCtrlTimes(_videoEndPos, start: false);
