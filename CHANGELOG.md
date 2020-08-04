@@ -1,3 +1,8 @@
+## 0.2.7 - beta
+
+* Add a new property called `maxVideoLength` for specifying the max length of the output video.
+* Update Docs
+
 ## 0.2.6 - beta
 
 * Add a new property called `fit` to `TrimEditor` widget which will let you specify the image fit type of each thumbnail image.
