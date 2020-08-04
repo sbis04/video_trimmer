@@ -20,6 +20,7 @@ class TrimEditor extends StatefulWidget {
   /// By default it is set to `BoxFit.fitHeight`.
   final BoxFit fit;
 
+  /// For defining the maximum length of the output video.
   final Duration maxVideoLength;
 
   /// For specifying a size to the holder at the
@@ -311,7 +312,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
               ? null
               : _startPos += details.delta;
           _startFraction = (_startPos.dx / _thumbnailViewerW);
-          // print("START PERCENT: $_startFraction");
+
           _videoStartPos = _videoDuration * _startFraction;
           widget.onChangeStart(_videoStartPos);
         });
