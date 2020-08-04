@@ -290,9 +290,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       if (maxLengthPixels != null) {
         if (!(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels)) {
           setState(() {
-            _startPos.dx + details.delta.dx < 0
-                ? null
-                : _startPos += details.delta;
+            if (!(_startPos.dx + details.delta.dx < 0))
+              _startPos += details.delta;
+
             _startFraction = (_startPos.dx / _thumbnailViewerW);
 
             _videoStartPos = _videoDuration * _startFraction;
@@ -308,9 +308,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         }
       } else {
         setState(() {
-          _startPos.dx + details.delta.dx < 0
-              ? null
-              : _startPos += details.delta;
+          if (!(_startPos.dx + details.delta.dx < 0))
+            _startPos += details.delta;
+
           _startFraction = (_startPos.dx / _thumbnailViewerW);
 
           _videoStartPos = _videoDuration * _startFraction;
