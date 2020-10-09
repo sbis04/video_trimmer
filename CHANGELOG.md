@@ -1,7 +1,7 @@
 ## 0.3.1 - beta
 
-* Improve file structure of the package
-* Now, you just have have to import one file for using the package
+* Improve the file structure of the package
+* Now, you just have to import one file for using the package
 
 ## 0.3.0 - beta
 
