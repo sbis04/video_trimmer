@@ -1,6 +1,6 @@
 ## 0.3.0 - beta
 
-* Updated the plugin versions
+* Update the plugin versions
 * Update example app (now includes how to retrieve the trimmed video)
 * Update Readme
 * Fixes some memory leak issues
