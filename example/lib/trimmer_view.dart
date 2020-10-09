@@ -1,8 +1,6 @@
 import 'package:example/preview.dart';
 import 'package:flutter/material.dart';
-import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
-import 'package:video_trimmer/video_viewer.dart';
 
 class TrimmerView extends StatefulWidget {
   final Trimmer _trimmer;
