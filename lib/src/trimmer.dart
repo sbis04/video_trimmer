@@ -6,9 +6,9 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/scr/file_formats.dart';
-import 'package:video_trimmer/scr/storage_dir.dart';
-import 'package:video_trimmer/scr/trim_editor.dart';
+import 'package:video_trimmer/src/file_formats.dart';
+import 'package:video_trimmer/src/storage_dir.dart';
+import 'package:video_trimmer/src/trim_editor.dart';
 
 /// Helps in loading video from file, saving trimmed video to a file
 /// and gives video playback controls. Some of the helpful methods
