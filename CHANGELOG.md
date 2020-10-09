@@ -1,3 +1,8 @@
+## 0.3.1 - beta
+
+* Improve file structure of the package
+* Now, you just have have to import one file for using the package
+
 ## 0.3.0 - beta
 
 * Update the plugin versions
