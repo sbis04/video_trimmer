@@ -1,3 +1,10 @@
+## 0.3.0 - beta
+
+* Update the plugin versions
+* Update example app (now includes how to retrieve the trimmed video)
+* Update Readme
+* Fixes some memory leak issues
+
 ## 0.2.7 - beta
 
 * Add a new property called `maxVideoLength` for specifying the max length of the output video.

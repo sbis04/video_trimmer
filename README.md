@@ -76,7 +76,7 @@ Also, supports conversion to **GIF**.
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile`, **12.1** for **Main Release** or **9.3** for **LTS Release**.
+* Set the platform version in `ios/Podfile`, **11.0** for **Main Release** or **9.3** for **LTS Release**.
   
   > Refer to the [FFmpeg Release](#ffmpeg-release) section.
 
@@ -84,8 +84,45 @@ Also, supports conversion to **GIF**.
    platform :ios, '<version>'
    ```
 
-* Replace with the following in the `# Plugin Pods` section of the `ios/Podfile`: 
+* **[Flutter >= 1.20.x]** Edit `ios/Podfile` and add the following block before `target 'Runner' do` section:
+  
+   ```
+   def flutter_install_ios_plugin_pods(ios_application_path = nil)
+     # defined_in_file is set by CocoaPods and is a Pathname to the Podfile.
+     ios_application_path ||= File.dirname(defined_in_file.realpath) if self.respond_to?(:defined_in_file)
+     raise 'Could not find iOS application path' unless ios_application_path
+   
+     # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
+     # referring to absolute paths on developers' machines.
+   
+     symlink_dir = File.expand_path('.symlinks', ios_application_path)
+     system('rm', '-rf', symlink_dir) # Avoid the complication of dependencies like FileUtils.
+   
+     symlink_plugins_dir = File.expand_path('plugins', symlink_dir)
+     system('mkdir', '-p', symlink_plugins_dir)
+   
+     plugins_file = File.join(ios_application_path, '..', '.flutter-plugins-dependencies')
+     plugin_pods = flutter_parse_plugins_file(plugins_file)
+     plugin_pods.each do |plugin_hash|
+       plugin_name = plugin_hash['name']
+       plugin_path = plugin_hash['path']
+       if (plugin_name && plugin_path)
+         symlink = File.join(symlink_plugins_dir, plugin_name)
+         File.symlink(plugin_path, symlink)
+   
+         if plugin_name == 'flutter_ffmpeg'
+             pod 'flutter_ffmpeg/<package name>', :path => File.join('.symlinks', 'plugins', plugin_name, 'ios')
+         else
+             pod plugin_name, :path => File.join('.symlinks', 'plugins', plugin_name, 'ios')
+         end
+       end
+     end
+   end
+   ```
+   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
 
+* **[Flutter < 1.20.x]** Edit `ios/Podfile` file and modify the default `# Plugin Pods` block as follows. 
+  
    ```
    # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
    # referring to absolute paths on developers' machines.
