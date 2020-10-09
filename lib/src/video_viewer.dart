@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/scr/trim_editor.dart';
+import 'package:video_trimmer/src/trim_editor.dart';
 
 class VideoViewer extends StatefulWidget {
   /// For specifying the color of the video
