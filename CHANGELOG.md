@@ -1,3 +1,7 @@
+## 0.3.2 - beta
+
+* Minor changes
+
 ## 0.3.1 - beta
 
 * Improve the file structure of the package
