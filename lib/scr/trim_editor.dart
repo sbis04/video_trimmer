@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/thumbnail_viewer.dart';
-import 'package:video_trimmer/trim_editor_painter.dart';
-import 'package:video_trimmer/video_trimmer.dart';
+import 'package:video_trimmer/scr/thumbnail_viewer.dart';
+import 'package:video_trimmer/scr/trim_editor_painter.dart';
+import 'package:video_trimmer/scr/trimmer.dart';
 
 VideoPlayerController videoPlayerController;
 
@@ -234,8 +234,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         if (isPlaying) {
           widget.onChangePlaybackState(true);
           setState(() {
-            _currentPosition =
-                videoPlayerController.value.position.inMilliseconds;
+            _currentPosition = videoPlayerController.value.position.inMilliseconds;
 
             if (_currentPosition > _videoEndPos.toInt()) {
               widget.onChangePlaybackState(false);
@@ -265,9 +264,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
       print(_videoFile.path);
 
-      _videoEndPos = fraction != null
-          ? _videoDuration.toDouble() * fraction
-          : _videoDuration.toDouble();
+      _videoEndPos =
+          fraction != null ? _videoDuration.toDouble() * fraction : _videoDuration.toDouble();
 
       widget.onChangeEnd(_videoEndPos);
 
@@ -290,8 +288,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       if (maxLengthPixels != null) {
         if (!(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels)) {
           setState(() {
-            if (!(_startPos.dx + details.delta.dx < 0))
-              _startPos += details.delta;
+            if (!(_startPos.dx + details.delta.dx < 0)) _startPos += details.delta;
 
             _startFraction = (_startPos.dx / _thumbnailViewerW);
 
@@ -299,8 +296,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
             widget.onChangeStart(_videoStartPos);
           });
           await videoPlayerController.pause();
-          await videoPlayerController
-              .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+          await videoPlayerController.seekTo(Duration(milliseconds: _videoStartPos.toInt()));
           _linearTween.begin = _startPos.dx;
           _animationController.duration =
               Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -308,8 +304,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         }
       } else {
         setState(() {
-          if (!(_startPos.dx + details.delta.dx < 0))
-            _startPos += details.delta;
+          if (!(_startPos.dx + details.delta.dx < 0)) _startPos += details.delta;
 
           _startFraction = (_startPos.dx / _thumbnailViewerW);
 
@@ -317,8 +312,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           widget.onChangeStart(_videoStartPos);
         });
         await videoPlayerController.pause();
-        await videoPlayerController
-            .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+        await videoPlayerController.seekTo(Duration(milliseconds: _videoStartPos.toInt()));
         _linearTween.begin = _startPos.dx;
         _animationController.duration =
             Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -341,8 +335,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
             widget.onChangeEnd(_videoEndPos);
           });
           await videoPlayerController.pause();
-          await videoPlayerController
-              .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+          await videoPlayerController.seekTo(Duration(milliseconds: _videoEndPos.toInt()));
           _linearTween.end = _endPos.dx;
           _animationController.duration =
               Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -357,8 +350,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           widget.onChangeEnd(_videoEndPos);
         });
         await videoPlayerController.pause();
-        await videoPlayerController
-            .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+        await videoPlayerController.seekTo(Duration(milliseconds: _videoEndPos.toInt()));
         _linearTween.end = _endPos.dx;
         _animationController.duration =
             Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -384,8 +376,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     if (widget.maxVideoLength > Duration(milliseconds: 0) &&
         widget.maxVideoLength < totalDuration) {
       if (widget.maxVideoLength < totalDuration) {
-        fraction =
-            widget.maxVideoLength.inMilliseconds / totalDuration.inMilliseconds;
+        fraction = widget.maxVideoLength.inMilliseconds / totalDuration.inMilliseconds;
 
         maxLengthPixels = _thumbnailViewerW * fraction;
       }
@@ -470,16 +461,14 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           if (_canUpdateStart && _startPos.dx + details.delta.dx > 0) {
             _isLeftDrag = false; // To prevent from scrolling over
             _setVideoStartPosition(details);
-          } else if (!_canUpdateStart &&
-              _endPos.dx + details.delta.dx < _thumbnailViewerW) {
+          } else if (!_canUpdateStart && _endPos.dx + details.delta.dx < _thumbnailViewerW) {
             _isLeftDrag = true; // To prevent from scrolling over
             _setVideoEndPosition(details);
           }
         } else {
           if (_isLeftDrag && _startPos.dx + details.delta.dx > 0) {
             _setVideoStartPosition(details);
-          } else if (!_isLeftDrag &&
-              _endPos.dx + details.delta.dx < _thumbnailViewerW) {
+          } else if (!_isLeftDrag && _endPos.dx + details.delta.dx < _thumbnailViewerW) {
             _setVideoEndPosition(details);
           }
         }
@@ -497,15 +486,11 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Text(
-                          Duration(milliseconds: _videoStartPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                          Duration(milliseconds: _videoStartPos.toInt()).toString().split('.')[0],
                           style: widget.durationTextStyle,
                         ),
                         Text(
-                          Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                          Duration(milliseconds: _videoEndPos.toInt()).toString().split('.')[0],
                           style: widget.durationTextStyle,
                         ),
                       ],
