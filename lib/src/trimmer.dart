@@ -277,7 +277,7 @@ class Trimmer {
       await videoPlayerController.pause();
       return false;
     } else {
-      if (videoPlayerController.value.position.inMilliseconds >=
+      if (videoPlayerController.value.position.inMilliseconds <=
           endValue.toInt()) {
         await videoPlayerController
             .seekTo(Duration(milliseconds: startValue.toInt()));
