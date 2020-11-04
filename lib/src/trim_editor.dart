@@ -484,53 +484,57 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           }
         }
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          widget.showDuration
-              ? Container(
-                  width: _thumbnailViewerW,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Text(
-                          Duration(milliseconds: _videoStartPos.toInt())
-                              .toString()
-                              .split('.')[0],
-                          style: widget.durationTextStyle,
-                        ),
-                        Text(
-                          Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
-                          style: widget.durationTextStyle,
-                        ),
-                      ],
+      child: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            widget.showDuration
+                ? Container(
+                    width: _thumbnailViewerW,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Text(
+                            Duration(milliseconds: _videoStartPos.toInt())
+                                .toString()
+                                .split('.')[0],
+                            style: widget.durationTextStyle,
+                          ),
+                          Text(
+                            Duration(milliseconds: _videoEndPos.toInt())
+                                .toString()
+                                .split('.')[0],
+                            style: widget.durationTextStyle,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                )
-              : Container(),
-          CustomPaint(
-            foregroundPainter: TrimEditorPainter(
-              startPos: _startPos,
-              endPos: _endPos,
-              scrubberAnimationDx: _scrubberAnimation.value,
-              circleSize: _circleSize,
-              circlePaintColor: widget.circlePaintColor,
-              borderPaintColor: widget.borderPaintColor,
-              scrubberPaintColor: widget.scrubberPaintColor,
+                  )
+                : Container(),
+            CustomPaint(
+              foregroundPainter: TrimEditorPainter(
+                startPos: _startPos,
+                endPos: _endPos,
+                scrubberAnimationDx: _scrubberAnimation.value,
+                circleSize: _circleSize,
+                circlePaintColor: widget.circlePaintColor,
+                borderPaintColor: widget.borderPaintColor,
+                scrubberPaintColor: widget.scrubberPaintColor,
+              ),
+              child: Container(
+                color: Colors.grey[900],
+                height: _thumbnailViewerH,
+                width: _thumbnailViewerW,
+                child: thumbnailWidget == null ? Column() : thumbnailWidget,
+              ),
             ),
-            child: Container(
-              color: Colors.grey[900],
-              height: _thumbnailViewerH,
-              width: _thumbnailViewerW,
-              child: thumbnailWidget == null ? Column() : thumbnailWidget,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
