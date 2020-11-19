@@ -1,6 +1,6 @@
 name: video_trimmer
 description: A Flutter package for trimming videos. This supports retrieving, trimming, and storage of trimmed video files to the file system.
-version: 0.3.2
+version: 0.3.3
 homepage: https://github.com/sbis04/video_trimmer
 
 environment:
@@ -10,11 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  file_picker: ^2.0.7
-  video_player: ^0.11.0
+  file_picker: ^2.0.13
+  video_player: ^1.0.1
   flutter_ffmpeg: ^0.3.0
-  video_thumbnail: ^0.2.2
-  path_provider: ^1.6.18
+  video_thumbnail: ^0.2.4
+  path_provider: ^1.6.24
   intl: ^0.16.1
   path: ^1.7.0
 
