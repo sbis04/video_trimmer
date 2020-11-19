@@ -51,9 +51,9 @@ PODS:
   - mobile-ffmpeg-full (4.4.LTS)
   - path_provider (0.0.1):
     - Flutter
-  - SDWebImage (5.9.2):
-    - SDWebImage/Core (= 5.9.2)
-  - SDWebImage/Core (5.9.2)
+  - SDWebImage (5.9.5):
+    - SDWebImage/Core (= 5.9.5)
+  - SDWebImage/Core (5.9.5)
   - SwiftyGif (5.3.0)
   - video_player (0.0.1):
     - Flutter
@@ -105,11 +105,11 @@ SPEC CHECKSUMS:
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   mobile-ffmpeg-full: f17c82219b4ff9e4018b5e21f88b78c28a3475db
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
-  SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
+  SDWebImage: 0b2ba0d56479bf6a45ecddbfd5558bea93150d25
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
   video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
 
 PODFILE CHECKSUM: ceb48e27dac703df04b9bdc91aeac2f2ddcdb0ef
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0

@@ -1,3 +1,7 @@
+## 0.3.3 - beta
+
+* Updated plugin versions
+
 ## 0.3.2 - beta
 
 * Minor changes
