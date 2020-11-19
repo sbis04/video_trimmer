@@ -1,3 +1,7 @@
+## 0.3.4 - beta
+
+* Fixed the issue with video getting struck for a few initial frames during playback
+
 ## 0.3.3 - beta
 
 * Updated plugin versions
