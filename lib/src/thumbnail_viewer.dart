@@ -62,10 +62,7 @@ class ThumbnailViewer extends StatelessWidget {
                 return Container(
                   height: thumbnailHeight,
                   width: thumbnailHeight,
-                  child: Image(
-                    image: MemoryImage(_imageBytes[index]),
-                    fit: fit,
-                  ),
+                  child: _image(_imageBytes, index),
                 );
               });
         } else {
@@ -77,5 +74,16 @@ class ThumbnailViewer extends StatelessWidget {
         }
       },
     );
+  }
+
+  Widget _image(List<Uint8List> imageBytes, int index) {
+    try {
+      return Image(
+        image: MemoryImage(imageBytes[index]),
+        fit: fit,
+      );
+    } catch (e) {
+      return Container();
+    }
   }
 }
