@@ -68,7 +68,8 @@ class Trimmer {
     }
 
     // Directory + folder name
-    final Directory _directoryFolder = Directory('${_directory.path}/$folderName/');
+    final Directory _directoryFolder =
+        Directory('${_directory.path}/$folderName/');
 
     if (await _directoryFolder.exists()) {
       // If folder already exists return path
@@ -77,7 +78,8 @@ class Trimmer {
     } else {
       print('Creating');
       // If folder does not exists create folder and then return its path
-      final Directory _directoryNewFolder = await _directoryFolder.create(recursive: true);
+      final Directory _directoryNewFolder =
+          await _directoryFolder.create(recursive: true);
       return _directoryNewFolder.path;
     }
   }
@@ -168,8 +170,11 @@ class Trimmer {
     String _command;
 
     // Formatting Date and Time
-    String dateTime =
-        DateFormat.yMMMd().addPattern('-').add_Hms().format(DateTime.now()).toString();
+    String dateTime = DateFormat.yMMMd()
+        .addPattern('-')
+        .add_Hms()
+        .format(DateTime.now())
+        .toString();
 
     // String _resultString;
     String _outputPath;
@@ -272,8 +277,10 @@ class Trimmer {
       await videoPlayerController.pause();
       return false;
     } else {
-      if (videoPlayerController.value.position.inMilliseconds >= endValue.toInt()) {
-        await videoPlayerController.seekTo(Duration(milliseconds: startValue.toInt()));
+      if (videoPlayerController.value.position.inMilliseconds >=
+          endValue.toInt()) {
+        await videoPlayerController
+            .seekTo(Duration(milliseconds: startValue.toInt()));
         await videoPlayerController.play();
         return true;
       } else {
