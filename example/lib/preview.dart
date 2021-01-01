@@ -39,27 +39,21 @@ class _PreviewState extends State<Preview> {
       appBar: AppBar(
         title: Text("Preview"),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: _controller.value.initialized
-                  ? Container(
-                      child: VideoPlayer(_controller),
-                    )
-                  : Container(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: _controller.value.initialized
+              ? Container(
+                  child: VideoPlayer(_controller),
+                )
+              : Container(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.white,
                     ),
-            ),
-          ),
-        ],
+                  ),
+                ),
+        ),
       ),
     );
   }

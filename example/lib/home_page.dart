@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:example/trimmer_view.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 class HomePage extends StatelessWidget {
   final Trimmer _trimmer = Trimmer();
-  final ImagePicker imagePicker = ImagePicker();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,14 +20,18 @@ class HomePage extends StatelessWidget {
           child: RaisedButton(
             child: Text("LOAD VIDEO"),
             onPressed: () async {
-              PickedFile file = await imagePicker.getVideo(
-                source: ImageSource.gallery,
+              FilePickerResult result = await FilePicker.platform.pickFiles(
+                type: FileType.video,
+                allowCompression: false,
               );
-              if (file != null) {
-                await _trimmer.loadVideo(videoFile: File(file.path));
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                  return TrimmerView(_trimmer);
-                }));
+              if (result != null) {
+                File file = File(result.files.single.path);
+                await _trimmer.loadVideo(videoFile: file);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) {
+                    return TrimmerView(_trimmer);
+                  }),
+                );
               }
             },
           ),
