@@ -1,3 +1,8 @@
+## 0.3.5 - beta
+
+* Update example app (small bug fixes)
+* Update to latest plugin versions
+
 ## 0.3.4 - beta
 
 * Fixed the issue with video getting struck for a few initial frames during playback
