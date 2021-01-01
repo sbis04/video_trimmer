@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  file_picker: ^2.0.13
   video_player: ^1.0.1
   flutter_ffmpeg: ^0.3.0
   video_thumbnail: ^0.2.4
