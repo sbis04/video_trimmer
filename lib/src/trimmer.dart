@@ -217,7 +217,8 @@ class Trimmer {
       _outputFormatString = outputFormat.toString();
     }
 
-    String _trimLengthCommand = ' -ss $startPoint -i "$_videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
+    String _trimLengthCommand =
+        ' -ss $startPoint -i "$_videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
 
     if (ffmpegCommand == null) {
       _command = '$_trimLengthCommand -c:a copy ';
