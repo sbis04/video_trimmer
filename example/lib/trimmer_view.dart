@@ -62,10 +62,6 @@ class _TrimmerViewState extends State<TrimmerView> {
                       : () async {
                           _saveVideo().then((outputPath) {
                             print('OUTPUT PATH: $outputPath');
-                            final snackBar = SnackBar(
-                              content: Text('Video Saved successfully'),
-                            );
-                            Scaffold.of(context).showSnackBar(snackBar);
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => Preview(outputPath),
