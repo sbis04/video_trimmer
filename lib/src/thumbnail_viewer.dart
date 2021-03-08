@@ -17,7 +17,7 @@ class ThumbnailViewer extends StatelessWidget {
     @required this.videoFile,
     @required this.videoDuration,
     @required this.thumbnailHeight,
-    @required this.numberOfThumbnails,
+    required this.numberOfThumbnails,
     @required this.fit,
     this.quality = 75,
   })  : assert(videoFile != null),
@@ -52,7 +52,7 @@ class ThumbnailViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: generateThumbnail(),
-      builder: (context, snapshot) {
+      builder: (context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           List<Uint8List> _imageBytes = snapshot.data;
           return ListView.builder(

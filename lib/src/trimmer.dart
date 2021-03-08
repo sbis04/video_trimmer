@@ -17,21 +17,24 @@ import 'package:video_trimmer/src/trim_editor.dart';
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  static File currentVideoFile;
+  static File? currentVideoFile;
 
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
   /// Loads a video using the path provided.
   ///
   /// Returns the loaded video file.
-  Future<void> loadVideo({@required File videoFile}) async {
+  Future<void> loadVideo({required File videoFile}) async {
     currentVideoFile = videoFile;
     if (currentVideoFile != null) {
-      videoPlayerController = VideoPlayerController.file(currentVideoFile);
-      await videoPlayerController.initialize().then((_) {
+      videoPlayerController = VideoPlayerController.file(currentVideoFile!);
+      await videoPlayerController!.initialize().then((_) {
         TrimEditor(
           viewerHeight: 50,
           viewerWidth: 50.0 * 8,
+          onChangeStart: (value) {},
+          onChangeEnd: (value) {},
+          onChangePlaybackState: (value) {},
           // currentVideoFile: currentVideoFile,
         );
       });
@@ -47,7 +50,7 @@ class Trimmer {
     String folderName,
     StorageDir storageDir,
   ) async {
-    Directory _directory;
+    Directory? _directory;
 
     if (storageDir == null) {
       _directory = await getApplicationDocumentsDirectory();
@@ -69,7 +72,7 @@ class Trimmer {
 
     // Directory + folder name
     final Directory _directoryFolder =
-        Directory('${_directory.path}/$folderName/');
+        Directory('${_directory!.path}/$folderName/');
 
     if (await _directoryFolder.exists()) {
       // If folder already exists return path
@@ -152,19 +155,19 @@ class Trimmer {
   /// crash.
   ///
   Future<String> saveTrimmedVideo({
-    @required double startValue,
-    @required double endValue,
+    required double startValue,
+    required double endValue,
     bool applyVideoEncoding = false,
-    FileFormat outputFormat,
-    String ffmpegCommand,
-    String customVideoFormat,
-    int fpsGIF,
-    int scaleGIF,
-    String videoFolderName,
-    String videoFileName,
-    StorageDir storageDir,
+    required FileFormat outputFormat,
+    required String ffmpegCommand,
+    required String customVideoFormat,
+    required int fpsGIF,
+    required int scaleGIF,
+    required String videoFolderName,
+    required String videoFileName,
+    required StorageDir storageDir,
   }) async {
-    final String _videoPath = currentVideoFile.path;
+    final String _videoPath = currentVideoFile!.path;
     final String _videoName = basename(_videoPath).split('.')[0];
 
     String _command;
@@ -270,27 +273,27 @@ class Trimmer {
   /// Returns a `Future<bool>`, if `true` then video is playing
   /// otherwise paused.
   Future<bool> videPlaybackControl({
-    @required double startValue,
-    @required double endValue,
+    required double startValue,
+    required double endValue,
   }) async {
-    if (videoPlayerController.value.isPlaying) {
-      await videoPlayerController.pause();
+    if (videoPlayerController!.value.isPlaying) {
+      await videoPlayerController!.pause();
       return false;
     } else {
-      if (videoPlayerController.value.position.inMilliseconds >=
+      if (videoPlayerController!.value.position.inMilliseconds >=
           endValue.toInt()) {
-        await videoPlayerController
+        await videoPlayerController!
             .seekTo(Duration(milliseconds: startValue.toInt()));
-        await videoPlayerController.play();
+        await videoPlayerController!.play();
         return true;
       } else {
-        await videoPlayerController.play();
+        await videoPlayerController!.play();
         return true;
       }
     }
   }
 
   File getVideoFile() {
-    return currentVideoFile;
+    return currentVideoFile!;
   }
 }

@@ -33,13 +33,14 @@ class FileFormat {
   @override
   String toString() {
     return const <int, String>{
-      0: '.mp4',
-      1: '.mkv',
-      2: '.mov',
-      3: '.flv',
-      4: '.avi',
-      5: '.wmv',
-      6: '.gif',
-    }[index];
+          0: '.mp4',
+          1: '.mkv',
+          2: '.mov',
+          3: '.flv',
+          4: '.avi',
+          5: '.wmv',
+          6: '.gif',
+        }[index] ??
+        ".mp4";
   }
 }

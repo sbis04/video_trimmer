@@ -83,9 +83,9 @@ class TrimEditorPainter extends CustomPainter {
   /// `Colors.white`.
   ///
   TrimEditorPainter({
-    @required this.startPos,
-    @required this.endPos,
-    @required this.scrubberAnimationDx,
+    required this.startPos,
+    required this.endPos,
+    required this.scrubberAnimationDx,
     this.circleSize = 0.5,
     this.borderWidth = 3,
     this.scrubberWidth = 1,

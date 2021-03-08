@@ -42,7 +42,7 @@ class _PreviewState extends State<Preview> {
       body: Center(
         child: AspectRatio(
           aspectRatio: _controller.value.aspectRatio,
-          child: _controller.value.initialized
+          child: _controller.value.isInitialized
               ? Container(
                   child: VideoPlayer(_controller),
                 )

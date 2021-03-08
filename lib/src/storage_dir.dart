@@ -24,9 +24,10 @@ class StorageDir {
   @override
   String toString() {
     return const <int, String>{
-      0: 'temporaryDirectory',
-      1: 'applicationDocumentsDirectory',
-      2: 'externalStorageDirectory',
-    }[index];
+          0: 'temporaryDirectory',
+          1: 'applicationDocumentsDirectory',
+          2: 'externalStorageDirectory',
+        }[index] ??
+        "temporaryDirectory";
   }
 }
