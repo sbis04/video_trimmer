@@ -249,7 +249,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
             }
           });
         } else {
-          if (videoPlayerController.value.initialized) {
+          if (videoPlayerController.value.isInitialized) {
             if (_animationController != null) {
               if ((_scrubberAnimation.value).toInt() == (_endPos.dx).toInt()) {
                 _animationController.reset();
