@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/src/file_formats.dart';
@@ -47,9 +47,9 @@ class Trimmer {
   }
 
   Future<String> _createFolderInAppDocDir(
-    String folderName,
-    StorageDir storageDir,
-  ) async {
+      String folderName,
+      StorageDir? storageDir,
+      ) async {
     Directory? _directory;
 
     if (storageDir == null) {
@@ -72,7 +72,7 @@ class Trimmer {
 
     // Directory + folder name
     final Directory _directoryFolder =
-        Directory('${_directory!.path}/$folderName/');
+    Directory('${_directory!.path}/$folderName/');
 
     if (await _directoryFolder.exists()) {
       // If folder already exists return path
@@ -82,7 +82,7 @@ class Trimmer {
       print('Creating');
       // If folder does not exists create folder and then return its path
       final Directory _directoryNewFolder =
-          await _directoryFolder.create(recursive: true);
+      await _directoryFolder.create(recursive: true);
       return _directoryNewFolder.path;
     }
   }
@@ -158,14 +158,14 @@ class Trimmer {
     required double startValue,
     required double endValue,
     bool applyVideoEncoding = false,
-    required FileFormat outputFormat,
-    required String ffmpegCommand,
-    required String customVideoFormat,
-    required int fpsGIF,
-    required int scaleGIF,
-    required String videoFolderName,
-    required String videoFileName,
-    required StorageDir storageDir,
+    FileFormat? outputFormat,
+    String? ffmpegCommand,
+    String? customVideoFormat,
+    int? fpsGIF,
+    int? scaleGIF,
+    String? videoFolderName,
+    String? videoFileName,
+    StorageDir? storageDir,
   }) async {
     final String _videoPath = currentVideoFile!.path;
     final String _videoName = basename(_videoPath).split('.')[0];
@@ -201,7 +201,7 @@ class Trimmer {
       videoFolderName,
       storageDir,
     ).whenComplete(
-      () => print("Retrieved Trimmer folder"),
+          () => print("Retrieved Trimmer folder"),
     );
 
     Duration startPoint = Duration(milliseconds: startValue.toInt());
@@ -238,11 +238,13 @@ class Trimmer {
           scaleGIF = 480;
         }
         _command =
-            '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+        '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
       }
     } else {
       _command = '$_trimLengthCommand $ffmpegCommand ';
-      _outputFormatString = customVideoFormat;
+      if (customVideoFormat != null) {
+        _outputFormatString = customVideoFormat;
+      }
     }
 
     _outputPath = '$path$videoFileName$_outputFormatString';

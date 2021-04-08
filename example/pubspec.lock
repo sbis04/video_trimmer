@@ -89,7 +89,7 @@ packages:
       name: flutter_ffmpeg
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.1"
+    version: "0.4.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -321,7 +321,7 @@ packages:
       name: video_thumbnail
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.5+1"
+    version: "0.3.3"
   video_trimmer:
     dependency: "direct main"
     description:

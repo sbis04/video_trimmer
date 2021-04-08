@@ -55,21 +55,21 @@ class _VideoViewerState extends State<VideoViewer> {
           aspectRatio: videoPlayerController!.value.aspectRatio,
           child: videoPlayerController!.value.isInitialized
               ? Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: widget.borderWidth,
-                      color: widget.borderColor,
-                    ),
-                  ),
-                  child: VideoPlayer(videoPlayerController!),
-                )
+            decoration: BoxDecoration(
+              border: Border.all(
+                width: widget.borderWidth,
+                color: widget.borderColor,
+              ),
+            ),
+            child: VideoPlayer(videoPlayerController!),
+          )
               : Container(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.white,
-                    ),
-                  ),
-                ),
+            child: Center(
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.white,
+              ),
+            ),
+          ),
         ),
       ),
     );
