@@ -34,9 +34,12 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - flutter_ffmpeg/full-lts (0.3.0):
+  - flutter_ffmpeg (0.4.0):
     - Flutter
-    - mobile-ffmpeg-full (= 4.4.LTS)
+    - flutter_ffmpeg/https (= 0.4.0)
+  - flutter_ffmpeg/https (0.4.0):
+    - Flutter
+    - mobile-ffmpeg-https (= 4.4)
   - image_picker (0.0.1):
     - Flutter
   - libwebp (1.1.0):
@@ -48,7 +51,7 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - mobile-ffmpeg-full (4.4.LTS)
+  - mobile-ffmpeg-https (4.4)
   - path_provider (0.0.1):
     - Flutter
   - SDWebImage (5.10.2):
@@ -64,7 +67,7 @@ PODS:
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
-  - flutter_ffmpeg/full-lts (from `.symlinks/plugins/flutter_ffmpeg/ios`)
+  - flutter_ffmpeg (from `.symlinks/plugins/flutter_ffmpeg/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - video_player (from `.symlinks/plugins/video_player/ios`)
@@ -75,7 +78,7 @@ SPEC REPOS:
     - DKImagePickerController
     - DKPhotoGallery
     - libwebp
-    - mobile-ffmpeg-full
+    - mobile-ffmpeg-https
     - SDWebImage
     - SwiftyGif
 
@@ -99,17 +102,17 @@ SPEC CHECKSUMS:
   DKImagePickerController: b5eb7f7a388e4643264105d648d01f727110fc3d
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_ffmpeg: 657ce8a1502c3d25bf34efc58b380b248836f772
-  image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  flutter_ffmpeg: bc8496ea20331e486cd29a03a3c6ff10d32db565
+  image_picker: 50e7c7ff960e5f58faa4d1f4af84a771c671bc4a
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  mobile-ffmpeg-full: f17c82219b4ff9e4018b5e21f88b78c28a3475db
+  mobile-ffmpeg-https: 311fc4a8f671cf36d1d6b8f421e8246b790978d9
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   SDWebImage: b969dcfc02c40a5da71eac0b03b8f1a0c794a86f
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
   video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
 
-PODFILE CHECKSUM: ceb48e27dac703df04b9bdc91aeac2f2ddcdb0ef
+PODFILE CHECKSUM: 8ec523f684bc62483e91bd861251c6b2d77e4a44
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1

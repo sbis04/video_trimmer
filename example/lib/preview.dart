@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class Preview extends StatefulWidget {
-  final String outputVideoPath;
+  final String? outputVideoPath;
 
   Preview(this.outputVideoPath);
 
@@ -13,13 +13,13 @@ class Preview extends StatefulWidget {
 }
 
 class _PreviewState extends State<Preview> {
-  VideoPlayerController _controller;
+  late VideoPlayerController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = VideoPlayerController.file(File(widget.outputVideoPath))
+    _controller = VideoPlayerController.file(File(widget.outputVideoPath!))
       ..initialize().then((_) {
         setState(() {});
         _controller.play();
@@ -42,7 +42,7 @@ class _PreviewState extends State<Preview> {
       body: Center(
         child: AspectRatio(
           aspectRatio: _controller.value.aspectRatio,
-          child: _controller.value.initialized
+          child: _controller.value.isInitialized
               ? Container(
                   child: VideoPlayer(_controller),
                 )

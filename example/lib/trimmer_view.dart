@@ -16,12 +16,12 @@ class _TrimmerViewState extends State<TrimmerView> {
   bool _isPlaying = false;
   bool _progressVisibility = false;
 
-  Future<String> _saveVideo() async {
+  Future<String?> _saveVideo() async {
     setState(() {
       _progressVisibility = true;
     });
 
-    String _value;
+    String? _value;
 
     await widget._trimmer
         .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
@@ -63,7 +63,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                       backgroundColor: Colors.red,
                     ),
                   ),
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: _progressVisibility
                         ? null
                         : () async {
@@ -99,7 +99,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                       },
                     ),
                   ),
-                  FlatButton(
+                  TextButton(
                     child: _isPlaying
                         ? Icon(
                             Icons.pause,
