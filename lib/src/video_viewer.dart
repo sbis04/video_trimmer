@@ -53,7 +53,7 @@ class _VideoViewerState extends State<VideoViewer> {
         padding: widget.padding,
         child: AspectRatio(
           aspectRatio: videoPlayerController.value.aspectRatio,
-          child: videoPlayerController.value.initialized
+          child: videoPlayerController.value.isInitialized
               ? Container(
                   decoration: BoxDecoration(
                     border: Border.all(
