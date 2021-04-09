@@ -17,15 +17,15 @@ class HomePage extends StatelessWidget {
       ),
       body: Center(
         child: Container(
-          child: RaisedButton(
+          child: ElevatedButton(
             child: Text("LOAD VIDEO"),
             onPressed: () async {
-              FilePickerResult result = await FilePicker.platform.pickFiles(
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
                 type: FileType.video,
                 allowCompression: false,
               );
               if (result != null) {
-                File file = File(result.files.single.path);
+                File file = File(result.files.single.path!);
                 await _trimmer.loadVideo(videoFile: file);
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
