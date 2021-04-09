@@ -40,6 +40,6 @@ class FileFormat {
       4: '.avi',
       5: '.wmv',
       6: '.gif',
-    }[index];
+    }[index]!;
   }
 }
