@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -213,6 +214,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   AnimationController? _animationController;
   late Tween<double> _linearTween;
 
+  final _refreshVideoDuration = Duration(milliseconds: 50);
+
   Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
       videoPlayerController.addListener(() {
@@ -330,8 +333,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
             widget.onChangeEnd!(_videoEndPos);
           });
           await videoPlayerController.pause();
-          await videoPlayerController
-              .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+          await videoPlayerController.seekTo(Duration(milliseconds: _videoEndPos.toInt()) - _refreshVideoDuration);
           _linearTween.end = _endPos.dx;
           _animationController!.duration =
               Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -346,8 +348,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           widget.onChangeEnd!(_videoEndPos);
         });
         await videoPlayerController.pause();
-        await videoPlayerController
-            .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+        await videoPlayerController.seekTo(Duration(milliseconds: _videoEndPos.toInt()) - _refreshVideoDuration);
         _linearTween.end = _endPos.dx;
         _animationController!.duration =
             Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -446,10 +447,11 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           }
         }
       },
-      onHorizontalDragEnd: (DragEndDetails details) {
+      onHorizontalDragEnd: (DragEndDetails details) async {
         setState(() {
           _circleSize = widget.circleSize;
         });
+        await _refreshVideoIfNeeded();
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
         _circleSize = widget.circleSizeOnDrag;
@@ -522,5 +524,14 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  _refreshVideoIfNeeded() async {
+    if (Platform.isIOS) {
+      await videoPlayerController.play();
+      Timer(_refreshVideoDuration, () {
+        videoPlayerController.pause();
+      });
+    }
   }
 }
