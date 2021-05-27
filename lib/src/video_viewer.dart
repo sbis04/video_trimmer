@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/src/trim_editor.dart';
+
+import 'trimmer.dart';
 
 class VideoViewer extends StatefulWidget {
+  /// The Trimmer instance controlling the data.
+  final Trimmer trimmer;
+
   /// For specifying the color of the video
   /// viewer area border. By default it is set to `Colors.transparent`.
   final Color borderColor;
@@ -31,6 +35,7 @@ class VideoViewer extends StatefulWidget {
   /// area. By default it is set to `EdgeInsets.all(0.0)`.
   ///
   VideoViewer({
+    required this.trimmer,
     this.borderColor = Colors.transparent,
     this.borderWidth = 0.0,
     this.padding = const EdgeInsets.all(0.0),
@@ -41,37 +46,57 @@ class VideoViewer extends StatefulWidget {
 }
 
 class _VideoViewerState extends State<VideoViewer> {
+  /// Quick access to VideoPlayerController, only not null after [TrimmerEvent.initialized]
+  /// has been emitted.
+  VideoPlayerController? get videoPlayerController =>
+      widget.trimmer.videoPlayerController;
+
   @override
   void initState() {
+    widget.trimmer.eventStream.listen((event) {
+      if (event == TrimmerEvent.initialized) {
+        //The video has been initialized, now we can load stuff
+        setState(() {});
+      }
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: widget.padding,
-        child: AspectRatio(
-          aspectRatio: videoPlayerController.value.aspectRatio,
-          child: videoPlayerController.value.isInitialized
-              ? Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: widget.borderWidth,
-                      color: widget.borderColor,
-                    ),
-                  ),
-                  child: VideoPlayer(videoPlayerController),
-                )
-              : Container(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.white,
-                    ),
-                  ),
-                ),
-        ),
-      ),
-    );
+    final _controller = videoPlayerController;
+    return _controller == null
+        ? Container()
+        : Center(
+            child: Padding(
+              padding: widget.padding,
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: _controller.value.isInitialized
+                    ? Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: widget.borderWidth,
+                            color: widget.borderColor,
+                          ),
+                        ),
+                        child: VideoPlayer(_controller),
+                      )
+                    : Container(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          );
+  }
+
+  @override
+  void dispose() {
+    widget.trimmer.dispose();
+    super.dispose();
   }
 }
