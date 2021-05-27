@@ -1,3 +1,8 @@
+## 0.5.1
+
+* Update the example in Readme
+* Update the plugin versions
+
 ## 0.5.0
 
 * Global refactoring, example is now a standalone screen
