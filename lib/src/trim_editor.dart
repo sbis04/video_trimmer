@@ -247,17 +247,14 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           if (widget.maxVideoLength > Duration(milliseconds: 0) &&
               widget.maxVideoLength < totalDuration) {
             if (widget.maxVideoLength < totalDuration) {
-
               fraction = widget.maxVideoLength.inMilliseconds /
                   totalDuration.inMilliseconds;
 
               maxLengthPixels = _thumbnailViewerW * fraction!;
-
             }
           } else {
             maxLengthPixels = _thumbnailViewerW;
           }
-
 
           _videoEndPos = fraction != null
               ? _videoDuration.toDouble() * fraction!
@@ -274,7 +271,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
           _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
           _animationController = AnimationController(
             vsync: this,
-            duration: Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
+            duration:
+                Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
           );
 
           _scrubberAnimation = _linearTween.animate(_animationController!)
@@ -297,7 +295,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
     _numberOfThumbnails = widget.viewerWidth ~/ _thumbnailViewerH;
 
     _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
-
   }
 
   Future<void> _initializeVideoController() async {
@@ -325,7 +322,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         } else {
           if (videoPlayerController.value.isInitialized) {
             if (_animationController != null) {
-              if ((_scrubberAnimation?.value ?? 0).toInt() == (_endPos.dx).toInt()) {
+              if ((_scrubberAnimation?.value ?? 0).toInt() ==
+                  (_endPos.dx).toInt()) {
                 _animationController!.reset();
               }
               _animationController!.stop();
@@ -392,8 +390,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
     if (_dragType == EditorDragType.left) {
       if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_startPos.dx + details.delta.dx <=
-              _endPos.dx) &&
+          (_startPos.dx + details.delta.dx <= _endPos.dx) &&
           !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
         _startPos += details.delta;
         _onStartDragged();
@@ -408,8 +405,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       }
     } else {
       if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >=
-              _startPos.dx) &&
+          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
           !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
         _endPos += details.delta;
         _onEndDragged();
@@ -442,8 +438,13 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   void _onDragEnd(DragEndDetails details) {
     setState(() {
       _circleSize = widget.circleSize;
-      videoPlayerController
-          .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+      if (_dragType == EditorDragType.right) {
+        videoPlayerController
+            .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
+      } else {
+        videoPlayerController
+            .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+      }
     });
   }
 
@@ -470,29 +471,29 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         children: <Widget>[
           widget.showDuration
               ? Container(
-            width: _thumbnailViewerW,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text(
-                    Duration(milliseconds: _videoStartPos.toInt())
-                        .toString()
-                        .split('.')[0],
-                    style: widget.durationTextStyle,
+                  width: _thumbnailViewerW,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Text(
+                          Duration(milliseconds: _videoStartPos.toInt())
+                              .toString()
+                              .split('.')[0],
+                          style: widget.durationTextStyle,
+                        ),
+                        Text(
+                          Duration(milliseconds: _videoEndPos.toInt())
+                              .toString()
+                              .split('.')[0],
+                          style: widget.durationTextStyle,
+                        ),
+                      ],
+                    ),
                   ),
-                  Text(
-                    Duration(milliseconds: _videoEndPos.toInt())
-                        .toString()
-                        .split('.')[0],
-                    style: widget.durationTextStyle,
-                  ),
-                ],
-              ),
-            ),
-          )
+                )
               : Container(),
 
           //TODO should be refactored to use AnimatedBuilder to avoid rebuilding the whole widget
