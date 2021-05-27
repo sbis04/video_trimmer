@@ -1,8 +1,10 @@
-## [0.4.1] - 25/05/2021
+## 0.5.0
 
 * Global refactoring, example is now a standalone screen
 * Fixed the staggering issue when dragging the frame
 * The whole frame can now be dragged in addition to the sides
+* Updated packages
+* Updated the example
 
 ## 0.4.0
 

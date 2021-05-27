@@ -14,10 +14,9 @@ dependencies:
   video_trimmer:
     path: ../
 
-  cupertino_icons: ^1.0.2
-  image_picker: ^0.7.4
-  video_player: ^2.1.1
-  file_picker: ^3.0.1
+  image_picker: ^0.7.5+3
+  video_player: ^2.1.4
+  file_picker: ^3.0.2+2
 
 dev_dependencies:
   flutter_test:
