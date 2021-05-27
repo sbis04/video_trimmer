@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 class TrimmerView extends StatefulWidget {
-
   final File file;
 
   TrimmerView(this.file);
@@ -14,7 +13,6 @@ class TrimmerView extends StatefulWidget {
 }
 
 class _TrimmerViewState extends State<TrimmerView> {
-
   final Trimmer _trimmer = Trimmer();
 
   double _startValue = 0.0;
@@ -131,8 +129,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                             color: Colors.white,
                           ),
                     onPressed: () async {
-                      bool playbackState =
-                          await _trimmer.videPlaybackControl(
+                      bool playbackState = await _trimmer.videPlaybackControl(
                         startValue: _startValue,
                         endValue: _endValue,
                       );

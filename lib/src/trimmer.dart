@@ -19,11 +19,10 @@ enum TrimmerEvent { initialized }
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
   final StreamController<TrimmerEvent> _controller =
-  StreamController<TrimmerEvent>.broadcast();
+      StreamController<TrimmerEvent>.broadcast();
 
   VideoPlayerController? _videoPlayerController;
 
@@ -293,7 +292,6 @@ class Trimmer {
       }
     }
   }
-
 
   /// Clean up
   void dispose() {
