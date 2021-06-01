@@ -255,10 +255,12 @@ packages:
   video_player:
     dependency: "direct main"
     description:
-      name: video_player
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.4"
+      path: "packages/video_player/video_player"
+      ref: HEAD
+      resolved-ref: b545660f4e63d0439b325c090596bbf6cdfdef7e
+      url: "https://github.com/themadmrj/plugins"
+    source: git
+    version: "2.1.5"
   video_player_platform_interface:
     dependency: transitive
     description:
