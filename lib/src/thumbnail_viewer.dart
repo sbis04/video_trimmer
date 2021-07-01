@@ -30,6 +30,9 @@ class ThumbnailViewer extends StatelessWidget {
 
     List<Uint8List?> _byteList = [];
 
+    // the cache of last thumbnail
+    Uint8List? _lastBytes;
+
     for (int i = 1; i <= numberOfThumbnails; i++) {
       Uint8List? _bytes;
       _bytes = await VideoThumbnail.thumbnailData(
@@ -38,6 +41,13 @@ class ThumbnailViewer extends StatelessWidget {
         timeMs: (_eachPart * i).toInt(),
         quality: quality,
       );
+
+      // if current thumbnail is null use the last thumbnail
+      if (_bytes != null) {
+        _lastBytes = _bytes;
+      } else {
+        _bytes = _lastBytes;
+      }
 
       _byteList.add(_bytes);
 
