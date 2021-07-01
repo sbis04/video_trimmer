@@ -79,3 +79,4 @@ example/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 example/android/.project
 example/android/.settings/org.eclipse.buildship.core.prefs
 example/ios/Flutter/.last_build_id
+.fvm/
