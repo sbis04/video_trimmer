@@ -40,8 +40,6 @@ PODS:
   - flutter_ffmpeg/https (0.4.0):
     - Flutter
     - mobile-ffmpeg-https (= 4.4)
-  - image_picker (0.0.1):
-    - Flutter
   - libwebp (1.1.0):
     - libwebp/demux (= 1.1.0)
     - libwebp/mux (= 1.1.0)
@@ -68,7 +66,6 @@ DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_ffmpeg (from `.symlinks/plugins/flutter_ffmpeg/ios`)
-  - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - video_player (from `.symlinks/plugins/video_player/ios`)
   - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
@@ -89,8 +86,6 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_ffmpeg:
     :path: ".symlinks/plugins/flutter_ffmpeg/ios"
-  image_picker:
-    :path: ".symlinks/plugins/image_picker/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   video_player:
@@ -104,7 +99,6 @@ SPEC CHECKSUMS:
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   flutter_ffmpeg: bc8496ea20331e486cd29a03a3c6ff10d32db565
-  image_picker: 50e7c7ff960e5f58faa4d1f4af84a771c671bc4a
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   mobile-ffmpeg-https: 311fc4a8f671cf36d1d6b8f421e8246b790978d9
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
