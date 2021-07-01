@@ -70,7 +70,7 @@ packages:
       name: file_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.2+2"
+    version: "3.0.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -258,7 +258,7 @@ packages:
       name: video_player
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.4"
+    version: "2.1.6"
   video_player_platform_interface:
     dependency: transitive
     description:
@@ -286,7 +286,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.5.1"
+    version: "0.5.2"
   win32:
     dependency: transitive
     description:
