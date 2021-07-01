@@ -272,15 +272,17 @@ await _trimmer
 ### Display a video playback area
 
 ```dart
-VideoViewer()
+VideoViewer(trimmer: _trimmer)
 ```
 
 ### Display the video trimmer area
 
 ```dart
 TrimEditor(
+  trimmer: _trimmer,
   viewerHeight: 50.0,
   viewerWidth: MediaQuery.of(context).size.width,
+  maxVideoLength: Duration(seconds: 10),
   onChangeStart: (value) {
     _startValue = value;
   },
@@ -300,11 +302,9 @@ TrimEditor(
 ```dart
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
-import 'package:video_trimmer/video_viewer.dart';
 
 void main() => runApp(MyApp());
 
@@ -322,7 +322,6 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatelessWidget {
-  final Trimmer _trimmer = Trimmer();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -331,18 +330,20 @@ class HomePage extends StatelessWidget {
       ),
       body: Center(
         child: Container(
-          child: RaisedButton(
+          child: ElevatedButton(
             child: Text("LOAD VIDEO"),
             onPressed: () async {
-              File file = await ImagePicker.pickVideo(
-                source: ImageSource.gallery,
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.video,
+                allowCompression: false,
               );
-              if (file != null) {
-                await _trimmer.loadVideo(videoFile: file);
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return TrimmerView(_trimmer);
-                }));
+              if (result != null) {
+                File file = File(result.files.single.path!);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) {
+                    return TrimmerView(file);
+                  }),
+                );
               }
             },
           ),
@@ -353,27 +354,31 @@ class HomePage extends StatelessWidget {
 }
 
 class TrimmerView extends StatefulWidget {
-  final Trimmer _trimmer;
-  TrimmerView(this._trimmer);
+  final File file;
+
+  TrimmerView(this.file);
+
   @override
   _TrimmerViewState createState() => _TrimmerViewState();
 }
 
 class _TrimmerViewState extends State<TrimmerView> {
+  final Trimmer _trimmer = Trimmer();
+
   double _startValue = 0.0;
   double _endValue = 0.0;
 
   bool _isPlaying = false;
   bool _progressVisibility = false;
 
-  Future<String> _saveVideo() async {
+  Future<String?> _saveVideo() async {
     setState(() {
       _progressVisibility = true;
     });
 
-    String _value;
+    String? _value;
 
-    await widget._trimmer
+    await _trimmer
         .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
         .then((value) {
       setState(() {
@@ -383,6 +388,17 @@ class _TrimmerViewState extends State<TrimmerView> {
     });
 
     return _value;
+  }
+
+  void _loadVideo() {
+    _trimmer.loadVideo(videoFile: widget.file);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadVideo();
   }
 
   @override
@@ -406,25 +422,30 @@ class _TrimmerViewState extends State<TrimmerView> {
                     backgroundColor: Colors.red,
                   ),
                 ),
-                RaisedButton(
+                ElevatedButton(
                   onPressed: _progressVisibility
                       ? null
                       : () async {
                           _saveVideo().then((outputPath) {
                             print('OUTPUT PATH: $outputPath');
-                            final snackBar = SnackBar(content: Text('Video Saved successfully'));
-                            Scaffold.of(context).showSnackBar(snackBar);
+                            final snackBar = SnackBar(
+                                content: Text('Video Saved successfully'));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              snackBar,
+                            );
                           });
                         },
                   child: Text("SAVE"),
                 ),
                 Expanded(
-                  child: VideoViewer(),
+                  child: VideoViewer(trimmer: _trimmer),
                 ),
                 Center(
                   child: TrimEditor(
+                    trimmer: _trimmer,
                     viewerHeight: 50.0,
                     viewerWidth: MediaQuery.of(context).size.width,
+                    maxVideoLength: Duration(seconds: 10),
                     onChangeStart: (value) {
                       _startValue = value;
                     },
@@ -438,7 +459,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                     },
                   ),
                 ),
-                FlatButton(
+                TextButton(
                   child: _isPlaying
                       ? Icon(
                           Icons.pause,
@@ -451,8 +472,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                           color: Colors.white,
                         ),
                   onPressed: () async {
-                    bool playbackState =
-                        await widget._trimmer.videPlaybackControl(
+                    bool playbackState = await _trimmer.videPlaybackControl(
                       startValue: _startValue,
                       endValue: _endValue,
                     );
@@ -473,7 +493,7 @@ class _TrimmerViewState extends State<TrimmerView> {
 
 ## License
 
-Copyright (c) 2020 Souvik Biswas
+Copyright (c) 2021 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

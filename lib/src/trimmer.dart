@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart';
 
@@ -8,7 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/src/file_formats.dart';
 import 'package:video_trimmer/src/storage_dir.dart';
-import 'package:video_trimmer/src/trim_editor.dart';
+
+enum TrimmerEvent { initialized }
 
 /// Helps in loading video from file, saving trimmed video to a file
 /// and gives video playback controls. Some of the helpful methods
@@ -17,37 +19,38 @@ import 'package:video_trimmer/src/trim_editor.dart';
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  static File currentVideoFile;
-
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+
+  final StreamController<TrimmerEvent> _controller =
+      StreamController<TrimmerEvent>.broadcast();
+
+  VideoPlayerController? _videoPlayerController;
+
+  VideoPlayerController? get videoPlayerController => _videoPlayerController;
+
+  File? currentVideoFile;
+
+  /// Listen to this stream to catch the events
+  Stream<TrimmerEvent> get eventStream => _controller.stream;
 
   /// Loads a video using the path provided.
   ///
   /// Returns the loaded video file.
-  Future<void> loadVideo({@required File videoFile}) async {
+  Future<void> loadVideo({required File videoFile}) async {
     currentVideoFile = videoFile;
-    if (currentVideoFile != null) {
-      videoPlayerController = VideoPlayerController.file(currentVideoFile);
-      await videoPlayerController.initialize().then((_) {
-        TrimEditor(
-          viewerHeight: 50,
-          viewerWidth: 50.0 * 8,
-          // currentVideoFile: currentVideoFile,
-        );
+    if (videoFile.existsSync()) {
+      _videoPlayerController = VideoPlayerController.file(currentVideoFile!);
+      await _videoPlayerController!.initialize().then((_) {
+        _controller.add(TrimmerEvent.initialized);
       });
-      // TrimEditor(
-      //   viewerHeight: 50,
-      //   viewerWidth: 50.0 * 8,
-      //   // currentVideoFile: currentVideoFile,
-      // );
     }
   }
 
   Future<String> _createFolderInAppDocDir(
     String folderName,
-    StorageDir storageDir,
+    StorageDir? storageDir,
   ) async {
-    Directory _directory;
+    Directory? _directory;
 
     if (storageDir == null) {
       _directory = await getApplicationDocumentsDirectory();
@@ -69,7 +72,7 @@ class Trimmer {
 
     // Directory + folder name
     final Directory _directoryFolder =
-        Directory('${_directory.path}/$folderName/');
+        Directory('${_directory!.path}/$folderName/');
 
     if (await _directoryFolder.exists()) {
       // If folder already exists return path
@@ -152,19 +155,19 @@ class Trimmer {
   /// crash.
   ///
   Future<String> saveTrimmedVideo({
-    @required double startValue,
-    @required double endValue,
+    required double startValue,
+    required double endValue,
     bool applyVideoEncoding = false,
-    FileFormat outputFormat,
-    String ffmpegCommand,
-    String customVideoFormat,
-    int fpsGIF,
-    int scaleGIF,
-    String videoFolderName,
-    String videoFileName,
-    StorageDir storageDir,
+    FileFormat? outputFormat,
+    String? ffmpegCommand,
+    String? customVideoFormat,
+    int? fpsGIF,
+    int? scaleGIF,
+    String? videoFolderName,
+    String? videoFileName,
+    StorageDir? storageDir,
   }) async {
-    final String _videoPath = currentVideoFile.path;
+    final String _videoPath = currentVideoFile!.path;
     final String _videoName = basename(_videoPath).split('.')[0];
 
     String _command;
@@ -178,7 +181,7 @@ class Trimmer {
 
     // String _resultString;
     String _outputPath;
-    String _outputFormatString;
+    String? _outputFormatString;
     String formattedDateTime = dateTime.replaceAll(' ', '');
 
     print("DateTime: $dateTime");
@@ -270,27 +273,28 @@ class Trimmer {
   /// Returns a `Future<bool>`, if `true` then video is playing
   /// otherwise paused.
   Future<bool> videPlaybackControl({
-    @required double startValue,
-    @required double endValue,
+    required double startValue,
+    required double endValue,
   }) async {
-    if (videoPlayerController.value.isPlaying) {
-      await videoPlayerController.pause();
+    if (videoPlayerController!.value.isPlaying) {
+      await videoPlayerController!.pause();
       return false;
     } else {
-      if (videoPlayerController.value.position.inMilliseconds >=
+      if (videoPlayerController!.value.position.inMilliseconds >=
           endValue.toInt()) {
-        await videoPlayerController
+        await videoPlayerController!
             .seekTo(Duration(milliseconds: startValue.toInt()));
-        await videoPlayerController.play();
+        await videoPlayerController!.play();
         return true;
       } else {
-        await videoPlayerController.play();
+        await videoPlayerController!.play();
         return true;
       }
     }
   }
 
-  File getVideoFile() {
-    return currentVideoFile;
+  /// Clean up
+  void dispose() {
+    _controller.close();
   }
 }

@@ -27,6 +27,6 @@ class StorageDir {
       0: 'temporaryDirectory',
       1: 'applicationDocumentsDirectory',
       2: 'externalStorageDirectory',
-    }[index];
+    }[index]!;
   }
 }
