@@ -1,3 +1,9 @@
+## 0.5.2
+
+* Fix iOS error while loading thumbnails in `TrimEditor`
+* Remove an unused dependency
+* Update packages
+
 ## 0.5.1
 
 * Update the example in Readme
