@@ -30,6 +30,13 @@ class TrimEditor extends StatefulWidget {
   /// By default it is set to `5.0`.
   final double circleSize;
 
+  /// For specifying the width of the border around
+  /// the trim area. By default it is set to `3`.
+  final double borderWidth;
+
+  /// For specifying the width of the video scrubber
+  final double scrubberWidth;
+
   /// For specifying a size to the holder at
   /// the two ends of the video trimmer area, while it is being
   /// `dragged`.
@@ -170,6 +177,8 @@ class TrimEditor extends StatefulWidget {
     this.fit = BoxFit.fitHeight,
     this.maxVideoLength = const Duration(milliseconds: 0),
     this.circleSize = 5.0,
+    this.borderWidth = 3,
+    this.scrubberWidth = 1,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
     this.borderPaintColor = Colors.white,
@@ -503,6 +512,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
               endPos: _endPos,
               scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
               circleSize: _circleSize,
+              borderWidth: widget.borderWidth,
+              scrubberWidth: widget.scrubberWidth,
               circlePaintColor: widget.circlePaintColor,
               borderPaintColor: widget.borderPaintColor,
               scrubberPaintColor: widget.scrubberPaintColor,
