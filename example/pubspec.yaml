@@ -14,7 +14,7 @@ dependencies:
   video_trimmer:
     path: ../
 
-  video_player: ^2.1.6
+  video_player: ^2.1.10
   file_picker: ^3.0.3
 
 dev_dependencies:
