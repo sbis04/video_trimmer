@@ -67,14 +67,14 @@ class _VideoViewerState extends State<VideoViewer> {
     final _controller = videoPlayerController;
     return _controller == null
         ? Container()
-        : Center(
-            child: Padding(
-              padding: widget.padding,
+        : Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Center(
               child: AspectRatio(
                 aspectRatio: _controller.value.aspectRatio,
                 child: _controller.value.isInitialized
                     ? Container(
-                        decoration: BoxDecoration(
+                        foregroundDecoration: BoxDecoration(
                           border: Border.all(
                             width: widget.borderWidth,
                             color: widget.borderColor,
