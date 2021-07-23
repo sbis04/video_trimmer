@@ -1,3 +1,9 @@
+## 0.5.3
+
+* Add `borderWidth` and `scrubberWidth` properties under `TrimEditor` widget
+* Fix padding and border decoration of `VideoViewer`
+* Update the plugin versions
+
 ## 0.5.2
 
 * Fix iOS error while loading thumbnails in `TrimEditor`
