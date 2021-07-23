@@ -1,3 +1,7 @@
+## 0.5.4
+
+* Update Docs
+
 ## 0.5.3
 
 * Add `borderWidth` and `scrubberWidth` properties under `TrimEditor` widget

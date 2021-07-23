@@ -12,7 +12,7 @@
 </a>
 
 <p align="center">
-  <img src="screenshots/cover.png" alt="Video Trimmer" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/cover.png" alt="Video Trimmer" />
 </p>
 
 <h4 align="center">A Flutter package for trimming videos</h4>
@@ -28,19 +28,19 @@ Also, supports conversion to **GIF**.
 <h4 align="center">TRIM EDITOR</h4>
 
 <p align="center">
-  <img src="screenshots/editor_demo.gif" alt="Trim Editor" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/editor_demo.gif" alt="Trim Editor" />
 </p>
 
 <h4 align="center">EXAMPLE APP</h4>
 
 <p align="center">
-  <img src="screenshots/trimmer.png" alt="Trimmer"/>
+  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
 </p>
 
 <h4 align="center">CUSTOMIZABLE VIDEO EDITOR</h4>
 
 <p align="center">
-  <img src="screenshots/trim_editor.gif" alt="Trim Editor" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
 </p>
 
 ## Usage
