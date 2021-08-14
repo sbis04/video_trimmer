@@ -504,29 +504,38 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                   ),
                 )
               : Container(),
-
-          //TODO should be refactored to use AnimatedBuilder to avoid rebuilding the whole widget
-          CustomPaint(
-            foregroundPainter: TrimEditorPainter(
-              startPos: _startPos,
-              endPos: _endPos,
-              scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
-              circleSize: _circleSize,
-              borderWidth: widget.borderWidth,
-              scrubberWidth: widget.scrubberWidth,
-              circlePaintColor: widget.circlePaintColor,
-              borderPaintColor: widget.borderPaintColor,
-              scrubberPaintColor: widget.scrubberPaintColor,
-            ),
-            child: Container(
-              color: Colors.grey[900],
-              height: _thumbnailViewerH,
-              width: _thumbnailViewerW,
-              child: thumbnailWidget == null ? Container() : thumbnailWidget,
-            ),
-          ),
+          _scrubberAnimation != null
+              ? ScrubberAnimationBuilder(
+                  child: thumbnailContainer(),
+                  animation: _scrubberAnimation!,
+                  startPos: _startPos,
+                  endPos: _endPos,
+                  circleSize: _circleSize,
+                  circlePaintColor: widget.circlePaintColor,
+                  borderPaintColor: widget.borderPaintColor,
+                  scrubberPaintColor: widget.scrubberPaintColor)
+              : CustomPaint(
+                  foregroundPainter: TrimEditorPainter(
+                    startPos: _startPos,
+                    endPos: _endPos,
+                    scrubberAnimationDx: 0,
+                    circleSize: _circleSize,
+                    circlePaintColor: widget.circlePaintColor,
+                    borderPaintColor: widget.borderPaintColor,
+                    scrubberPaintColor: widget.scrubberPaintColor,
+                  ),
+                  child: thumbnailContainer()),
         ],
       ),
+    );
+  }
+
+  Widget thumbnailContainer() {
+    return Container(
+      color: Colors.grey[900],
+      height: _thumbnailViewerH,
+      width: _thumbnailViewerW,
+      child: thumbnailWidget == null ? Container() : thumbnailWidget,
     );
   }
 }
@@ -540,4 +549,48 @@ enum EditorDragType {
 
   /// The user is dragging the right part of the frame.
   right
+}
+
+class ScrubberAnimationBuilder extends StatelessWidget {
+  const ScrubberAnimationBuilder(
+      {required this.child,
+      required this.animation,
+      required this.startPos,
+      required this.endPos,
+      required this.circleSize,
+      required this.circlePaintColor,
+      required this.borderPaintColor,
+      required this.scrubberPaintColor,
+      Key? key})
+      : super(key: key);
+
+  final Widget child;
+  final Animation<double> animation;
+  final Offset startPos;
+  final Offset endPos;
+  final double circleSize;
+  final Color circlePaintColor;
+  final Color borderPaintColor;
+  final Color scrubberPaintColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return CustomPaint(
+            foregroundPainter: TrimEditorPainter(
+              startPos: startPos,
+              endPos: endPos,
+              scrubberAnimationDx: animation.value,
+              circleSize: circleSize,
+              circlePaintColor: circlePaintColor,
+              borderPaintColor: borderPaintColor,
+              scrubberPaintColor: scrubberPaintColor,
+            ),
+            child: child);
+      },
+      child: child,
+    );
+  }
 }
