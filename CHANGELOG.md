@@ -1,3 +1,7 @@
+## 0.5.5
+
+* Update the plugin versions (embedding v1 -> v2)
+
 ## 0.5.4
 
 * Update Docs
