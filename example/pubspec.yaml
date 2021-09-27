@@ -14,10 +14,11 @@ dependencies:
   video_trimmer:
     path: ../
 
-  video_player: ^2.1.10
-  file_picker: ^3.0.3
+  video_player: ^2.2.5
+  file_picker: ^4.1.1
 
 dev_dependencies:
+  flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter
 
