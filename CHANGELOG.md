@@ -1,3 +1,8 @@
+## 0.6.0
+
+* Update the plugin versions
+* Using flutter_lints
+
 ## 0.5.4
 
 * Update Docs
