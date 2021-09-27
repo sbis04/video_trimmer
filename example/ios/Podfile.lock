@@ -34,10 +34,10 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - flutter_ffmpeg (0.4.0):
+  - flutter_ffmpeg (0.4.2):
     - Flutter
-    - flutter_ffmpeg/https (= 0.4.0)
-  - flutter_ffmpeg/https (0.4.0):
+    - flutter_ffmpeg/https (= 0.4.2)
+  - flutter_ffmpeg/https (0.4.2):
     - Flutter
     - mobile-ffmpeg-https (= 4.4)
   - libwebp (1.1.0):
@@ -97,14 +97,14 @@ SPEC CHECKSUMS:
   DKImagePickerController: b5eb7f7a388e4643264105d648d01f727110fc3d
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
-  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  flutter_ffmpeg: bc8496ea20331e486cd29a03a3c6ff10d32db565
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  flutter_ffmpeg: 3ec3912c74649851e6c3b1885511eef78142ac4f
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   mobile-ffmpeg-https: 311fc4a8f671cf36d1d6b8f421e8246b790978d9
-  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
+  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
   SDWebImage: b969dcfc02c40a5da71eac0b03b8f1a0c794a86f
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
-  video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
+  video_player: ecd305f42e9044793efd34846e1ce64c31ea6fcb
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
 
 PODFILE CHECKSUM: 8ec523f684bc62483e91bd861251c6b2d77e4a44
