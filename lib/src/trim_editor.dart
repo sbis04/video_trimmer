@@ -170,7 +170,8 @@ class TrimEditor extends StatefulWidget {
   /// * [onChangePlaybackState] is a callback to the video playback
   /// state to know whether it is currently playing or paused.
   ///
-  TrimEditor({
+  const TrimEditor({
+    Key? key,
     required this.trimmer,
     this.viewerWidth = 50.0 * 8,
     this.viewerHeight = 50,
@@ -190,7 +191,7 @@ class TrimEditor extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
-  });
+  }) : super(key: key);
 
   @override
   _TrimEditorState createState() => _TrimEditorState();
@@ -202,8 +203,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   double _videoStartPos = 0.0;
   double _videoEndPos = 0.0;
 
-  Offset _startPos = Offset(0, 0);
-  Offset _endPos = Offset(0, 0);
+  Offset _startPos = const Offset(0, 0);
+  Offset _endPos = const Offset(0, 0);
 
   double _startFraction = 0.0;
   double _endFraction = 1.0;
@@ -249,11 +250,11 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         //The video has been initialized, now we can load stuff
 
         _initializeVideoController();
-        videoPlayerController.seekTo(Duration(milliseconds: 0));
+        videoPlayerController.seekTo(const Duration(milliseconds: 0));
         setState(() {
           Duration totalDuration = videoPlayerController.value.duration;
 
-          if (widget.maxVideoLength > Duration(milliseconds: 0) &&
+          if (widget.maxVideoLength > const Duration(milliseconds: 0) &&
               widget.maxVideoLength < totalDuration) {
             if (widget.maxVideoLength < totalDuration) {
               fraction = widget.maxVideoLength.inMilliseconds /
@@ -360,10 +361,10 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   /// Called when the user starts dragging the frame, on either side on the whole frame.
   /// Determine which [EditorDragType] is used.
   void _onDragStart(DragStartDetails details) {
-    print("_onDragStart");
-    print(details.localPosition);
-    print((_startPos.dx - details.localPosition.dx).abs());
-    print((_endPos.dx - details.localPosition.dx).abs());
+    debugPrint("_onDragStart");
+    debugPrint(details.localPosition.toString());
+    debugPrint((_startPos.dx - details.localPosition.dx).abs().toString());
+    debugPrint((_endPos.dx - details.localPosition.dx).abs().toString());
 
     final startDifference = _startPos.dx - details.localPosition.dx;
     final endDifference = _endPos.dx - details.localPosition.dx;
@@ -374,7 +375,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         endDifference >= -widget.sideTapSize) {
       _allowDrag = true;
     } else {
-      print("Dragging is outside of frame, ignoring gesture...");
+      debugPrint("Dragging is outside of frame, ignoring gesture...");
       _allowDrag = false;
       return;
     }
@@ -479,7 +480,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           widget.showDuration
-              ? Container(
+              ? SizedBox(
                   width: _thumbnailViewerW,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
@@ -522,7 +523,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
               color: Colors.grey[900],
               height: _thumbnailViewerH,
               width: _thumbnailViewerW,
-              child: thumbnailWidget == null ? Container() : thumbnailWidget,
+              child: thumbnailWidget ?? Container(),
             ),
           ),
         ],
