@@ -7,7 +7,7 @@ import 'package:video_trimmer/video_trimmer.dart';
 class TrimmerView extends StatefulWidget {
   final File file;
 
-  TrimmerView(this.file);
+  const TrimmerView(this.file, {Key? key}) : super(key: key);
   @override
   _TrimmerViewState createState() => _TrimmerViewState();
 }
@@ -55,27 +55,28 @@ class _TrimmerViewState extends State<TrimmerView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (Navigator.of(context).userGestureInProgress)
+        if (Navigator.of(context).userGestureInProgress) {
           return false;
-        else
+        } else {
           return true;
+        }
       },
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
-          title: Text("Video Trimmer"),
+          title: const Text("Video Trimmer"),
         ),
         body: Builder(
           builder: (context) => Center(
             child: Container(
-              padding: EdgeInsets.only(bottom: 30.0),
+              padding: const EdgeInsets.only(bottom: 30.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Visibility(
                     visible: _progressVisibility,
-                    child: LinearProgressIndicator(
+                    child: const LinearProgressIndicator(
                       backgroundColor: Colors.red,
                     ),
                   ),
@@ -84,7 +85,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                         ? null
                         : () async {
                             _saveVideo().then((outputPath) {
-                              print('OUTPUT PATH: $outputPath');
+                              debugPrint('OUTPUT PATH: $outputPath');
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                   builder: (context) => Preview(outputPath),
@@ -92,7 +93,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                               );
                             });
                           },
-                    child: Text("SAVE"),
+                    child: const Text("SAVE"),
                   ),
                   Expanded(
                     child: VideoViewer(trimmer: _trimmer),
@@ -102,7 +103,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                       trimmer: _trimmer,
                       viewerHeight: 50.0,
                       viewerWidth: MediaQuery.of(context).size.width,
-                      maxVideoLength: Duration(seconds: 10),
+                      maxVideoLength: const Duration(seconds: 10),
                       onChangeStart: (value) {
                         _startValue = value;
                       },
@@ -118,12 +119,12 @@ class _TrimmerViewState extends State<TrimmerView> {
                   ),
                   TextButton(
                     child: _isPlaying
-                        ? Icon(
+                        ? const Icon(
                             Icons.pause,
                             size: 80.0,
                             color: Colors.white,
                           )
-                        : Icon(
+                        : const Icon(
                             Icons.play_arrow,
                             size: 80.0,
                             color: Colors.white,
