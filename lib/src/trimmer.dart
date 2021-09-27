@@ -19,7 +19,7 @@ enum TrimmerEvent { initialized }
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
 
   final StreamController<TrimmerEvent> _controller =
       StreamController<TrimmerEvent>.broadcast();
@@ -76,10 +76,10 @@ class Trimmer {
 
     if (await _directoryFolder.exists()) {
       // If folder already exists return path
-      print('Exists');
+      debugPrint('Exists');
       return _directoryFolder.path;
     } else {
-      print('Creating');
+      debugPrint('Creating');
       // If folder does not exists create folder and then return its path
       final Directory _directoryNewFolder =
           await _directoryFolder.create(recursive: true);
@@ -184,16 +184,12 @@ class Trimmer {
     String? _outputFormatString;
     String formattedDateTime = dateTime.replaceAll(' ', '');
 
-    print("DateTime: $dateTime");
-    print("Formatted: $formattedDateTime");
+    debugPrint("DateTime: $dateTime");
+    debugPrint("Formatted: $formattedDateTime");
 
-    if (videoFolderName == null) {
-      videoFolderName = "Trimmer";
-    }
+    videoFolderName ??= "Trimmer";
 
-    if (videoFileName == null) {
-      videoFileName = "${_videoName}_trimmed:$formattedDateTime";
-    }
+    videoFileName ??= "${_videoName}_trimmed:$formattedDateTime";
 
     videoFileName = videoFileName.replaceAll(' ', '_');
 
@@ -201,21 +197,21 @@ class Trimmer {
       videoFolderName,
       storageDir,
     ).whenComplete(
-      () => print("Retrieved Trimmer folder"),
+      () => debugPrint("Retrieved Trimmer folder"),
     );
 
     Duration startPoint = Duration(milliseconds: startValue.toInt());
     Duration endPoint = Duration(milliseconds: endValue.toInt());
 
     // Checking the start and end point strings
-    print("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
+    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
 
-    print(path);
+    debugPrint(path);
 
     if (outputFormat == null) {
       outputFormat = FileFormat.mp4;
       _outputFormatString = outputFormat.toString();
-      print('OUTPUT: $_outputFormatString');
+      debugPrint('OUTPUT: $_outputFormatString');
     } else {
       _outputFormatString = outputFormat.toString();
     }
@@ -231,12 +227,8 @@ class Trimmer {
       }
 
       if (outputFormat == FileFormat.gif) {
-        if (fpsGIF == null) {
-          fpsGIF = 10;
-        }
-        if (scaleGIF == null) {
-          scaleGIF = 480;
-        }
+        fpsGIF ??= 10;
+        scaleGIF ??= 480;
         _command =
             '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
       }
@@ -250,11 +242,11 @@ class Trimmer {
     _command += '"$_outputPath"';
 
     await _flutterFFmpeg.execute(_command).whenComplete(() {
-      print('Got value');
+      debugPrint('Got value');
       debugPrint('Video successfuly saved');
       // _resultString = 'Video successfuly saved';
     }).catchError((error) {
-      print('Error');
+      debugPrint('Error');
       // _resultString = 'Couldn\'t save the video';
       debugPrint('Couldn\'t save the video');
     });
