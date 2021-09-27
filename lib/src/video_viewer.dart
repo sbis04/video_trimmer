@@ -19,6 +19,7 @@ class VideoViewer extends StatefulWidget {
   /// area. By default it is set to `EdgeInsets.all(0.0)`.
   final EdgeInsets padding;
 
+  // ignore: use_key_in_widget_constructors
   /// For showing the video playback area.
   ///
   /// This only contains optional parameters. They are:
@@ -34,12 +35,13 @@ class VideoViewer extends StatefulWidget {
   /// * [padding] for specifying a padding around the video viewer
   /// area. By default it is set to `EdgeInsets.all(0.0)`.
   ///
-  VideoViewer({
+  const VideoViewer({
+    Key? key,
     required this.trimmer,
     this.borderColor = Colors.transparent,
     this.borderWidth = 0.0,
     this.padding = const EdgeInsets.all(0.0),
-  });
+  }) : super(key: key);
 
   @override
   _VideoViewerState createState() => _VideoViewerState();
@@ -82,11 +84,9 @@ class _VideoViewerState extends State<VideoViewer> {
                         ),
                         child: VideoPlayer(_controller),
                       )
-                    : Container(
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
-                          ),
+                    : const Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
                         ),
                       ),
               ),
