@@ -6,7 +6,7 @@ import 'package:video_player/video_player.dart';
 class Preview extends StatefulWidget {
   final String? outputVideoPath;
 
-  Preview(this.outputVideoPath);
+  const Preview(this.outputVideoPath, {Key? key}) : super(key: key);
 
   @override
   _PreviewState createState() => _PreviewState();
@@ -37,20 +37,16 @@ class _PreviewState extends State<Preview> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text("Preview"),
+        title: const Text("Preview"),
       ),
       body: Center(
         child: AspectRatio(
           aspectRatio: _controller.value.aspectRatio,
           child: _controller.value.isInitialized
-              ? Container(
-                  child: VideoPlayer(_controller),
-                )
-              : Container(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.white,
-                    ),
+              ? VideoPlayer(_controller)
+              : const Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.white,
                   ),
                 ),
         ),
