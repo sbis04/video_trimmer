@@ -1,6 +1,6 @@
-# example
+# Video Trimmer Example
 
-A new Flutter project.
+An example Flutter project created to demonstrate the use of Video Trimmer package.
 
 ## Getting Started
 
