@@ -1,6 +1,6 @@
 ## 1.0.0
 
-* **BREAKING CHNAGE:** Migrate to [FFmpegKit for Flutter](https://pub.dev/packages/ffmpeg_kit_flutter).
+* **BREAKING CHANGE:** Migrate to [FFmpegKit for Flutter](https://pub.dev/packages/ffmpeg_kit_flutter).
   `saveTrimmedVideo()` method is not async now, you'll need to use the callback `onSave: (outputPath) {}` to get the trimmed video output path.
 * Add playback timestamp in the `showDuration`
 * Simply configuration
