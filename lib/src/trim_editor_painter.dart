@@ -38,6 +38,11 @@ class TrimEditorPainter extends CustomPainter {
   /// `Colors.white`.
   final Color scrubberPaintColor;
 
+  /// For specifying a color of the remaining
+  /// area outside the selected region. By default it is set to
+  /// `Colors.black54`.
+  final Color remainingAreaPaintColor;
+
   /// For drawing the trim editor slider
   ///
   /// The required parameters are [startPos], [endPos]
@@ -81,6 +86,11 @@ class TrimEditorPainter extends CustomPainter {
   /// * [scrubberPaintColor] for specifying a color to the video
   /// scrubber inside the trim area. By default it is set to
   /// `Colors.white`.
+  /// 
+  /// 
+  /// * [remainingAreaPaintColor] for specifying a color of the
+  /// area outside the selected region. By default it is set to
+  /// `Colors.black54`.
   ///
   TrimEditorPainter({
     required this.startPos,
@@ -93,6 +103,7 @@ class TrimEditorPainter extends CustomPainter {
     this.borderPaintColor = Colors.white,
     this.circlePaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
+    this.remainingAreaPaintColor = Colors.transparent,
   });
 
   @override
@@ -101,6 +112,11 @@ class TrimEditorPainter extends CustomPainter {
       ..color = borderPaintColor
       ..strokeWidth = borderWidth
       ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    var reaminingAreaPaint = Paint()
+      ..color = remainingAreaPaintColor
+      ..style = PaintingStyle.fill
       ..strokeCap = StrokeCap.round;
 
     var circlePaint = Paint()
@@ -127,7 +143,23 @@ class TrimEditorPainter extends CustomPainter {
       }
     }
 
+    const startRectLeftPoint = Offset(0, 0);
+    final startRectRightPoint = Offset(startPos.dx, size.height);
+    final endRectLeftPoint = Offset(endPos.dx, 0);
+    final endRectRightPoint = Offset(size.width, size.height);
+
+    canvas.drawRect(
+      Rect.fromPoints(startRectLeftPoint, startRectRightPoint),
+      reaminingAreaPaint,
+    );
+
+    canvas.drawRect(
+      Rect.fromPoints(endRectLeftPoint, endRectRightPoint),
+      reaminingAreaPaint,
+    );
+
     canvas.drawRect(rect, borderPaint);
+
     canvas.drawCircle(
         startPos + Offset(0, endPos.dy / 2), circleSize, circlePaint);
     canvas.drawCircle(

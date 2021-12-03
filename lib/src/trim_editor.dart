@@ -61,6 +61,12 @@ class TrimEditor extends StatefulWidget {
   /// By default it is set to `Colors.white`.
   final Color scrubberPaintColor;
 
+  /// For specifying a color of the remaining
+  /// area outside the selected region.
+  ///
+  /// By default it is set to `Colors.black54`.
+  final Color remainingAreaPaintColor;
+
   /// For specifying the quality of each
   /// generated image thumbnail, to be displayed in the trimmer
   /// area.
@@ -184,6 +190,7 @@ class TrimEditor extends StatefulWidget {
     this.circlePaintColor = Colors.white,
     this.borderPaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
+    this.remainingAreaPaintColor = Colors.transparent,
     this.thumbnailQuality = 75,
     this.showDuration = true,
     this.sideTapSize = 24,
@@ -223,6 +230,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   double? maxLengthPixels;
 
   ThumbnailViewer? thumbnailWidget;
+  final scrollController = ScrollController();
 
   Animation<double>? _scrubberAnimation;
   AnimationController? _animationController;
@@ -240,6 +248,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   /// Whether the dragging is allowed. Dragging is ignore if the user's gesture is outside
   /// of the frame, to make the UI more realistic.
   bool _allowDrag = true;
+  bool _allowTrimmerControl = true;
 
   @override
   void initState() {
@@ -352,10 +361,34 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         fit: widget.fit,
         thumbnailHeight: _thumbnailViewerH,
         numberOfThumbnails: _numberOfThumbnails,
+        controller: scrollController,
         quality: widget.thumbnailQuality,
       );
       thumbnailWidget = _thumbnailWidget;
     }
+  }
+
+  void _onDragDown(TapDownDetails details) {
+    debugPrint("_onDragDown");
+    debugPrint(details.localPosition.toString());
+    debugPrint((_startPos.dx - details.localPosition.dx).abs().toString());
+    debugPrint((_endPos.dx - details.localPosition.dx).abs().toString());
+
+    final startDifference = _startPos.dx - details.localPosition.dx;
+    final endDifference = _endPos.dx - details.localPosition.dx;
+
+    // First we determine whether the dragging motion should be allowed. The allowed
+    // zone is widget.sideTapSize (left) + frame (center) + widget.sideTapSize (right)
+    if (startDifference <= widget.sideTapSize &&
+        endDifference >= -widget.sideTapSize) {
+      debugPrint('inside');
+      _allowTrimmerControl = true;
+    } else {
+      debugPrint('outside');
+      _allowTrimmerControl = false;
+    }
+
+    setState(() {});
   }
 
   /// Called when the user starts dragging the frame, on either side on the whole frame.
@@ -394,6 +427,8 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   /// [_onDragStart].
   /// Makes sure the limits are respected.
   void _onDragUpdate(DragUpdateDetails details) {
+    debugPrint('HELLO ${details.localPosition.dx}');
+
     if (!_allowDrag) return;
 
     _circleSize = widget.circleSizeOnDrag;
@@ -446,6 +481,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
   /// Drag gesture ended, update UI accordingly.
   void _onDragEnd(DragEndDetails details) {
+    debugPrint('on drag end');
     setState(() {
       _circleSize = widget.circleSize;
       if (_dragType == EditorDragType.right) {
@@ -472,61 +508,86 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragStart: _onDragStart,
-      onHorizontalDragUpdate: _onDragUpdate,
-      onHorizontalDragEnd: _onDragEnd,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          widget.showDuration
-              ? SizedBox(
-                  width: _thumbnailViewerW,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Text(
-                          Duration(milliseconds: _videoStartPos.toInt())
-                              .toString()
-                              .split('.')[0],
-                          style: widget.durationTextStyle,
-                        ),
-                        Text(
-                          Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
-                          style: widget.durationTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Container(),
+    return Listener(
+      onPointerMove: (p) => debugPrint('${p.delta.dx}'),
+      child: GestureDetector(
+        onTapDown: _onDragDown,
 
-          //TODO should be refactored to use AnimatedBuilder to avoid rebuilding the whole widget
-          CustomPaint(
-            foregroundPainter: TrimEditorPainter(
-              startPos: _startPos,
-              endPos: _endPos,
-              scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
-              circleSize: _circleSize,
-              borderWidth: widget.borderWidth,
-              scrubberWidth: widget.scrubberWidth,
-              circlePaintColor: widget.circlePaintColor,
-              borderPaintColor: widget.borderPaintColor,
-              scrubberPaintColor: widget.scrubberPaintColor,
+        behavior: HitTestBehavior.opaque,
+        onPanDown: (_) => debugPrint('on pan down'), // works
+        onPanUpdate: (_) => debugPrint('on pan update'),
+        onPanCancel: () => debugPrint('on pan cancel'),
+        onPanEnd: (_) => debugPrint('on pan end'),
+        onPanStart: (_) => debugPrint('on pan start'),
+        onHorizontalDragDown: (_) => debugPrint('drag down'),
+        onHorizontalDragCancel: () => debugPrint('drag cancel'),
+        onHorizontalDragStart: _onDragStart,
+        onHorizontalDragUpdate: _onDragUpdate,
+        onHorizontalDragEnd: _onDragEnd,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            widget.showDuration
+                ? SizedBox(
+                    width: _thumbnailViewerW,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Text(
+                            Duration(milliseconds: _videoStartPos.toInt())
+                                .toString()
+                                .split('.')[0],
+                            style: widget.durationTextStyle,
+                          ),
+                          Text(
+                            Duration(milliseconds: _videoEndPos.toInt())
+                                .toString()
+                                .split('.')[0],
+                            style: widget.durationTextStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Container(),
+
+            //TODO should be refactored to use AnimatedBuilder to avoid rebuilding the whole widget
+            CustomPaint(
+              foregroundPainter: TrimEditorPainter(
+                startPos: _startPos,
+                endPos: _endPos,
+                scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
+                circleSize: _circleSize,
+                borderWidth: widget.borderWidth,
+                scrubberWidth: widget.scrubberWidth,
+                circlePaintColor: _allowTrimmerControl
+                    ? widget.circlePaintColor
+                    : Colors.transparent,
+                borderPaintColor: widget.borderPaintColor.withOpacity(
+                  _allowTrimmerControl ? 1.0 : 0.2,
+                ),
+                scrubberPaintColor: _allowTrimmerControl
+                    ? widget.scrubberPaintColor
+                    : Colors.transparent,
+                remainingAreaPaintColor: _allowTrimmerControl
+                    ? widget.remainingAreaPaintColor
+                    : Colors.transparent,
+              ),
+              child: IgnorePointer(
+                ignoring: _allowTrimmerControl,
+                child: Container(
+                  color: Colors.grey[900],
+                  height: _thumbnailViewerH,
+                  width: _thumbnailViewerW,
+                  child: thumbnailWidget ?? Container(),
+                ),
+              ),
             ),
-            child: Container(
-              color: Colors.grey[900],
-              height: _thumbnailViewerH,
-              width: _thumbnailViewerW,
-              child: thumbnailWidget ?? Container(),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

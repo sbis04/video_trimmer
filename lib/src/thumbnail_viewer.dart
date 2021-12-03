@@ -10,6 +10,7 @@ class ThumbnailViewer extends StatelessWidget {
   final double thumbnailHeight;
   final BoxFit fit;
   final int numberOfThumbnails;
+  final ScrollController controller;
   final int quality;
 
   /// For showing the thumbnails generated from the video,
@@ -21,6 +22,7 @@ class ThumbnailViewer extends StatelessWidget {
     required this.thumbnailHeight,
     required this.numberOfThumbnails,
     required this.fit,
+    required this.controller,
     this.quality = 75,
   }) : super(key: key);
 
@@ -64,8 +66,11 @@ class ThumbnailViewer extends StatelessWidget {
         if (snapshot.hasData) {
           List<Uint8List?> _imageBytes = snapshot.data!;
           return ListView.builder(
+              controller: controller,
               scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.zero,
               itemCount: _imageBytes.length,
+              // physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return SizedBox(
                   height: thumbnailHeight,
