@@ -32,23 +32,26 @@ class _TrimmerViewState extends State<TrimmerView> {
     _trimmer.loadVideo(videoFile: widget.file);
   }
 
-  Future<String?> _saveVideo() async {
+  _saveVideo() {
     setState(() {
       _progressVisibility = true;
     });
 
-    String? _value;
-
-    await _trimmer
-        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
-        .then((value) {
-      setState(() {
-        _progressVisibility = false;
-        _value = value;
-      });
-    });
-
-    return _value;
+    _trimmer.saveTrimmedVideo(
+      startValue: _startValue,
+      endValue: _endValue,
+      onSave: (outputPath) {
+        setState(() {
+          _progressVisibility = false;
+        });
+        debugPrint('OUTPUT PATH: $outputPath');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => Preview(outputPath),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -81,18 +84,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: _progressVisibility
-                        ? null
-                        : () async {
-                            _saveVideo().then((outputPath) {
-                              debugPrint('OUTPUT PATH: $outputPath');
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => Preview(outputPath),
-                                ),
-                              );
-                            });
-                          },
+                    onPressed: _progressVisibility ? null : () => _saveVideo(),
                     child: const Text("SAVE"),
                   ),
                   Expanded(

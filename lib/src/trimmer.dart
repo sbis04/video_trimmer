@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -19,7 +21,7 @@ enum TrimmerEvent { initialized }
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+  // final FlutterFFmpeg _flutterFFmpeg = FFmpegKit();
 
   final StreamController<TrimmerEvent> _controller =
       StreamController<TrimmerEvent>.broadcast();
@@ -89,9 +91,8 @@ class Trimmer {
 
   /// Saves the trimmed video to file system.
   ///
-  /// Returns the output video path
   ///
-  /// The required parameters are [startValue] & [endValue].
+  /// The required parameters are [startValue], [endValue] & [onSave].
   ///
   /// The optional parameters are [videoFolderName], [videoFileName],
   /// [outputFormat], [fpsGIF], [scaleGIF], [applyVideoEncoding].
@@ -101,6 +102,10 @@ class Trimmer {
   ///
   /// The `@required` parameter [endValue] is for providing an ending point
   /// to the trimmed video. To be specified in `milliseconds`.
+  /// 
+  /// The `@required` parameter [onSave] is a callback Function that helps to
+  /// retrieve the output path as the FFmpeg processing is complete. Returns a
+  /// `String`.
   ///
   /// The parameter [videoFolderName] is used to
   /// pass a folder name which will be used for creating a new
@@ -154,9 +159,10 @@ class Trimmer {
   /// video format is passed in [customVideoFormat], then the app may
   /// crash.
   ///
-  Future<String> saveTrimmedVideo({
+  Future<void> saveTrimmedVideo({
     required double startValue,
     required double endValue,
+    required Function(String? outputPath) onSave,
     bool applyVideoEncoding = false,
     FileFormat? outputFormat,
     String? ffmpegCommand,
@@ -241,17 +247,25 @@ class Trimmer {
 
     _command += '"$_outputPath"';
 
-    await _flutterFFmpeg.execute(_command).whenComplete(() {
-      debugPrint('Got value');
-      debugPrint('Video successfuly saved');
-      // _resultString = 'Video successfuly saved';
-    }).catchError((error) {
-      debugPrint('Error');
-      // _resultString = 'Couldn\'t save the video';
-      debugPrint('Couldn\'t save the video');
+    FFmpegKit.executeAsync(_command, (session) async {
+      final state =
+          FFmpegKitConfig.sessionStateToString(await session.getState());
+      final returnCode = await session.getReturnCode();
+
+      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        debugPrint("FFmpeg processing completed successfully.");
+        debugPrint('Video successfuly saved');
+        onSave(_outputPath);
+      } else {
+        debugPrint("FFmpeg processing failed.");
+        debugPrint('Couldn\'t save the video');
+        onSave(null);
+      }
     });
 
-    return _outputPath;
+    // return _outputPath;
   }
 
   /// For getting the video controller state, to know whether the
