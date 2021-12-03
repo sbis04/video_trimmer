@@ -407,7 +407,9 @@ class _TrimmerViewState extends State<TrimmerView> {
 
 ## Troubleshooting
 
-While running on the Android platform if it gives an error that the `minSdkVersion` needs to be `24`, try adding the following to the `<project_directory>/android/app/src/main/AndroidManifest.xml`:
+While running on the Android platform if it gives an error that the `minSdkVersion` needs to be `24`, or on iOS platform that the Podfile platform version should be `11`, first go to `pubspec.lock` file and see if the version of `ffmpeg_kit_flutter` has `-LTS` suffix. This should fix all issues for iOS platform.
+
+On Android, if you still face the same issue, try adding the following to the `<project_directory>/android/app/src/main/AndroidManifest.xml`:
 
 ```
 <manifest xmlns:tools="http://schemas.android.com/tools" ....... >
