@@ -91,9 +91,8 @@ class Trimmer {
 
   /// Saves the trimmed video to file system.
   ///
-  /// Returns the output video path
   ///
-  /// The required parameters are [startValue] & [endValue].
+  /// The required parameters are [startValue], [endValue] & [onSave].
   ///
   /// The optional parameters are [videoFolderName], [videoFileName],
   /// [outputFormat], [fpsGIF], [scaleGIF], [applyVideoEncoding].
@@ -103,6 +102,10 @@ class Trimmer {
   ///
   /// The `@required` parameter [endValue] is for providing an ending point
   /// to the trimmed video. To be specified in `milliseconds`.
+  /// 
+  /// The `@required` parameter [onSave] is a callback Function that helps to
+  /// retrieve the output path as the FFmpeg processing is complete. Returns a
+  /// `String`.
   ///
   /// The parameter [videoFolderName] is used to
   /// pass a folder name which will be used for creating a new
@@ -159,6 +162,7 @@ class Trimmer {
   Future<void> saveTrimmedVideo({
     required double startValue,
     required double endValue,
+    required Function(String? outputPath) onSave,
     bool applyVideoEncoding = false,
     FileFormat? outputFormat,
     String? ffmpegCommand,
@@ -168,7 +172,6 @@ class Trimmer {
     String? videoFolderName,
     String? videoFileName,
     StorageDir? storageDir,
-    Function(String? outputPath)? onReceivePath,
   }) async {
     final String _videoPath = currentVideoFile!.path;
     final String _videoName = basename(_videoPath).split('.')[0];
@@ -254,11 +257,11 @@ class Trimmer {
       if (ReturnCode.isSuccess(returnCode)) {
         debugPrint("FFmpeg processing completed successfully.");
         debugPrint('Video successfuly saved');
-        onReceivePath!(_outputPath);
+        onSave(_outputPath);
       } else {
         debugPrint("FFmpeg processing failed.");
         debugPrint('Couldn\'t save the video');
-        onReceivePath!(null);
+        onSave(null);
       }
     });
 

@@ -40,7 +40,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     _trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
-      onReceivePath: (outputPath) {
+      onSave: (outputPath) {
         setState(() {
           _progressVisibility = false;
         });
