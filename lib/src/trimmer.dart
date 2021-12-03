@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
@@ -154,7 +156,7 @@ class Trimmer {
   /// video format is passed in [customVideoFormat], then the app may
   /// crash.
   ///
-  Future<String> saveTrimmedVideo({
+  Future<void> saveTrimmedVideo({
     required double startValue,
     required double endValue,
     bool applyVideoEncoding = false,
@@ -166,6 +168,7 @@ class Trimmer {
     String? videoFolderName,
     String? videoFileName,
     StorageDir? storageDir,
+    Function(String? outputPath)? onReceivePath,
   }) async {
     final String _videoPath = currentVideoFile!.path;
     final String _videoName = basename(_videoPath).split('.')[0];
@@ -241,17 +244,25 @@ class Trimmer {
 
     _command += '"$_outputPath"';
 
-    await FFmpegKit.executeAsync(_command).whenComplete(() {
-      debugPrint('Got value');
-      debugPrint('Video successfuly saved');
-      // _resultString = 'Video successfuly saved';
-    }).catchError((error) {
-      debugPrint('Error');
-      // _resultString = 'Couldn\'t save the video';
-      debugPrint('Couldn\'t save the video');
+    FFmpegKit.executeAsync(_command, (session) async {
+      final state =
+          FFmpegKitConfig.sessionStateToString(await session.getState());
+      final returnCode = await session.getReturnCode();
+
+      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        debugPrint("FFmpeg processing completed successfully.");
+        debugPrint('Video successfuly saved');
+        onReceivePath!(_outputPath);
+      } else {
+        debugPrint("FFmpeg processing failed.");
+        debugPrint('Couldn\'t save the video');
+        onReceivePath!(null);
+      }
     });
 
-    return _outputPath;
+    // return _outputPath;
   }
 
   /// For getting the video controller state, to know whether the
