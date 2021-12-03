@@ -30,16 +30,17 @@ PODS:
   - DKPhotoGallery/Resource (0.0.17):
     - SDWebImage
     - SwiftyGif
+  - ffmpeg-kit-ios-https (4.5.LTS)
+  - ffmpeg_kit_flutter (4.5.0):
+    - ffmpeg_kit_flutter/https-lts (= 4.5.0)
+    - Flutter
+  - ffmpeg_kit_flutter/https-lts (4.5.0):
+    - ffmpeg-kit-ios-https (= 4.5.LTS)
+    - Flutter
   - file_picker (0.0.1):
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - flutter_ffmpeg (0.4.2):
-    - Flutter
-    - flutter_ffmpeg/https (= 0.4.2)
-  - flutter_ffmpeg/https (0.4.2):
-    - Flutter
-    - mobile-ffmpeg-https (= 4.4)
   - libwebp (1.1.0):
     - libwebp/demux (= 1.1.0)
     - libwebp/mux (= 1.1.0)
@@ -49,8 +50,7 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - mobile-ffmpeg-https (4.4)
-  - path_provider (0.0.1):
+  - path_provider_ios (0.0.1):
     - Flutter
   - SDWebImage (5.10.2):
     - SDWebImage/Core (= 5.10.2)
@@ -63,10 +63,10 @@ PODS:
     - libwebp
 
 DEPENDENCIES:
+  - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
-  - flutter_ffmpeg (from `.symlinks/plugins/flutter_ffmpeg/ios`)
-  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - video_player (from `.symlinks/plugins/video_player/ios`)
   - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
 
@@ -74,20 +74,20 @@ SPEC REPOS:
   trunk:
     - DKImagePickerController
     - DKPhotoGallery
+    - ffmpeg-kit-ios-https
     - libwebp
-    - mobile-ffmpeg-https
     - SDWebImage
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  ffmpeg_kit_flutter:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   file_picker:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
-  flutter_ffmpeg:
-    :path: ".symlinks/plugins/flutter_ffmpeg/ios"
-  path_provider:
-    :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
   video_player:
     :path: ".symlinks/plugins/video_player/ios"
   video_thumbnail:
@@ -96,17 +96,17 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   DKImagePickerController: b5eb7f7a388e4643264105d648d01f727110fc3d
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
+  ffmpeg-kit-ios-https: 420b7d6e105f4b872d048a84f4f713479bea8b2b
+  ffmpeg_kit_flutter: 4475e259bfc0e495d1db6559d0ecf0ebfa1215c7
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_ffmpeg: 3ec3912c74649851e6c3b1885511eef78142ac4f
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  mobile-ffmpeg-https: 311fc4a8f671cf36d1d6b8f421e8246b790978d9
-  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
   SDWebImage: b969dcfc02c40a5da71eac0b03b8f1a0c794a86f
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
   video_player: ecd305f42e9044793efd34846e1ce64c31ea6fcb
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
 
-PODFILE CHECKSUM: 8ec523f684bc62483e91bd861251c6b2d77e4a44
+PODFILE CHECKSUM: 1506cf7ef05944574c7b7b8fa334afa589040c32
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2
