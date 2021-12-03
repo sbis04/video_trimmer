@@ -45,26 +45,18 @@ Also, supports conversion to **GIF**.
 
 ## Usage
 
-* Add the dependency `video_trimmer` to your **pubspec.yaml** file.
+Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
-### Android
+```yaml
+dependencies:
+  video_trimmer: ^0.6.0
+```
 
-* Go to `<project root>/android/app/build.gradle` and set the proper `minSdkVersion`, **24** for **Main Release** or **16** for **LTS Release**. 
-  
-  > Refer to the [FFmpeg Release](#ffmpeg-release) section.
+### Android configuration
 
-   ```gradle
-   minSdkVersion <version>
-   ```
-* Go to `<project root>/android/build.gradle` and add the following line:
+No additional configuration is needed for using on Android platform. You are good to go!
 
-   ```gradle
-   ext.flutterFFmpegPackage = '<package name>'
-   ```
-
-   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
-
-### iOS
+### iOS configuration
 
 * Add the following keys to your **Info.plist** file, located in `<project root>/ios/Runner/Info.plist`:
   ```
@@ -76,134 +68,52 @@ Also, supports conversion to **GIF**.
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile`, **11.0** for **Main Release** or **9.3** for **LTS Release**.
+* Set the platform version in `ios/Podfile` to **9.3**.
   
   > Refer to the [FFmpeg Release](#ffmpeg-release) section.
 
    ```
-   platform :ios, '<version>'
+   platform :ios, '9.3
    ```
 
-* **[Flutter >= 1.20.x]** Edit `ios/Podfile` and add the following block before `target 'Runner' do` section:
-  
-   ```
-   def flutter_install_ios_plugin_pods(ios_application_path = nil)
-     # defined_in_file is set by CocoaPods and is a Pathname to the Podfile.
-     ios_application_path ||= File.dirname(defined_in_file.realpath) if self.respond_to?(:defined_in_file)
-     raise 'Could not find iOS application path' unless ios_application_path
-   
-     # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
-     # referring to absolute paths on developers' machines.
-   
-     symlink_dir = File.expand_path('.symlinks', ios_application_path)
-     system('rm', '-rf', symlink_dir) # Avoid the complication of dependencies like FileUtils.
-   
-     symlink_plugins_dir = File.expand_path('plugins', symlink_dir)
-     system('mkdir', '-p', symlink_plugins_dir)
-   
-     plugins_file = File.join(ios_application_path, '..', '.flutter-plugins-dependencies')
-     plugin_pods = flutter_parse_plugins_file(plugins_file)
-     plugin_pods.each do |plugin_hash|
-       plugin_name = plugin_hash['name']
-       plugin_path = plugin_hash['path']
-       if (plugin_name && plugin_path)
-         symlink = File.join(symlink_plugins_dir, plugin_name)
-         File.symlink(plugin_path, symlink)
-   
-         if plugin_name == 'flutter_ffmpeg'
-             pod 'flutter_ffmpeg/<package name>', :path => File.join('.symlinks', 'plugins', plugin_name, 'ios')
-         else
-             pod plugin_name, :path => File.join('.symlinks', 'plugins', plugin_name, 'ios')
-         end
-       end
-     end
-   end
-   ```
-   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
+## FFmpeg Release
 
-* **[Flutter < 1.20.x]** Edit `ios/Podfile` file and modify the default `# Plugin Pods` block as follows. 
-  
-   ```
-   # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
-   # referring to absolute paths on developers' machines.
-
-   system('rm -rf .symlinks')
-   system('mkdir -p .symlinks/plugins')
-   plugin_pods = parse_KV_file('../.flutter-plugins')
-   plugin_pods.each do |name, path|
-     symlink = File.join('.symlinks', 'plugins', name)
-     File.symlink(path, symlink)
-     if name == 'flutter_ffmpeg'
-         pod name+'/<package name>', :path => File.join(symlink, 'ios')
-     else
-         pod name, :path => File.join(symlink, 'ios')
-     end
-   end
-   ```
-
-   > Replace the `<package name>` with a proper package name from the [Packages List](#packages-list) section.
-
-
-### FFmpeg Release
-
-In reference to the releases specified in the [flutter_ffmpeg](https://pub.dev/packages/flutter_ffmpeg) package.
+This package uses [LTS version](https://github.com/tanersener/ffmpeg-kit#10-lts-releases) of the FFmpeg implementation.
 
 <table>
 <thead>
     <tr>
         <th align="center"></th>
-        <th align="center">Main Release</th>
         <th align="center">LTS Release</th>
     </tr>
 </thead>
 <tbody>
     <tr>
         <td align="center">Android API Level</td>
-        <td align="center">24</td>
         <td align="center">16</td>
     </tr>
     <tr>
         <td align="center">Android Camera Access</td>
-        <td align="center">Yes</td>
         <td align="center">-</td>
     </tr>
     <tr>
         <td align="center">Android Architectures</td>
-        <td align="center">arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
         <td align="center">arm-v7a<br>arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
     </tr>
     <tr>
         <td align="center">Xcode Support</td>
-        <td align="center">10.1</td>
         <td align="center">7.3.1</td>
     </tr>
     <tr>
         <td align="center">iOS SDK</td>
-        <td align="center">12.1</td>
         <td align="center">9.3</td>
     </tr>
     <tr>
         <td align="center">iOS Architectures</td>
-        <td align="center">arm64<br>arm64e<br>x86-64</td>
         <td align="center">armv7<br>arm64<br>i386<br>x86-64</td>
     </tr>
 </tbody>
 </table>
-
-### Packages List
-
-The following **FFmpeg Packages** List is in reference to the [flutter_ffmpeg](https://pub.dev/packages/flutter_ffmpeg) package.
-
-| Package | Main Release | LTS Release |
-| :----: | :----: | :----: |
-| min | min  | min-lts |
-| min-gpl | min-gpl | min-gpl-lts |
-| https | https | https-lts |
-| https-gpl | https-gpl | https-gpl-lts |
-| audio | audio | audio-lts |
-| video | video | video-lts |
-| full | full | full-lts |
-| full-gpl | full-gpl | full-gpl-lts |
 
 ## Functionalities
 
@@ -493,6 +403,16 @@ class _TrimmerViewState extends State<TrimmerView> {
     );
   }
 }
+```
+
+## Troubleshooting
+
+While running on the Android platform if it gives an error that the `minSdkVersion` needs to be `24`, try adding the following to the `<project_directory>/android/app/src/main/AndroidManifest.xml`:
+
+```
+<manifest xmlns:tools="http://schemas.android.com/tools" ....... >
+    <uses-sdk tools:overrideLibrary="com.arthenica.ffmpegkit.flutter, com.arthenica.ffmpegkit" />
+</manifest>
 ```
 
 ## License
