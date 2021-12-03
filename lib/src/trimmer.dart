@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -19,7 +19,7 @@ enum TrimmerEvent { initialized }
 /// * [saveTrimmedVideo()]
 /// * [videPlaybackControl()]
 class Trimmer {
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+  // final FlutterFFmpeg _flutterFFmpeg = FFmpegKit();
 
   final StreamController<TrimmerEvent> _controller =
       StreamController<TrimmerEvent>.broadcast();
@@ -241,7 +241,7 @@ class Trimmer {
 
     _command += '"$_outputPath"';
 
-    await _flutterFFmpeg.execute(_command).whenComplete(() {
+    await FFmpegKit.executeAsync(_command).whenComplete(() {
       debugPrint('Got value');
       debugPrint('Video successfuly saved');
       // _resultString = 'Video successfuly saved';
