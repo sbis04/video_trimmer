@@ -49,7 +49,7 @@ Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
 ```yaml
 dependencies:
-  video_trimmer: ^0.6.0
+  video_trimmer: ^1.1.0
 ```
 
 ### Android configuration
@@ -68,12 +68,12 @@ No additional configuration is needed for using on Android platform. You are goo
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile` to **9.3**.
+* Set the platform version in `ios/Podfile` to **10**.
   
   > Refer to the [FFmpeg Release](#ffmpeg-release) section.
 
    ```
-   platform :ios, '9.3
+   platform :ios, '10'
    ```
 
 ## FFmpeg Release
@@ -101,12 +101,8 @@ This package uses [LTS version](https://github.com/tanersener/ffmpeg-kit#10-lts-
         <td align="center">arm-v7a<br>arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
     </tr>
     <tr>
-        <td align="center">Xcode Support</td>
-        <td align="center">7.3.1</td>
-    </tr>
-    <tr>
-        <td align="center">iOS SDK</td>
-        <td align="center">9.3</td>
+        <td align="center">iOS Min SDK</td>
+        <td align="center">10</td>
     </tr>
     <tr>
         <td align="center">iOS Architectures</td>
@@ -419,7 +415,7 @@ On Android, if you still face the same issue, try adding the following to the `<
 
 ## License
 
-Copyright (c) 2021 Souvik Biswas
+Copyright (c) 2022 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -513,8 +513,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                   ),
                 )
               : Container(),
-
-          //TODO should be refactored to use AnimatedBuilder to avoid rebuilding the whole widget
           CustomPaint(
             foregroundPainter: TrimEditorPainter(
               startPos: _startPos,
