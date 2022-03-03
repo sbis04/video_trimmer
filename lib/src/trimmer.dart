@@ -102,7 +102,7 @@ class Trimmer {
   ///
   /// The `@required` parameter [endValue] is for providing an ending point
   /// to the trimmed video. To be specified in `milliseconds`.
-  /// 
+  ///
   /// The `@required` parameter [onSave] is a callback Function that helps to
   /// retrieve the output path as the FFmpeg processing is complete. Returns a
   /// `String`.

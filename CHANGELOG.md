@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Format file (to pass static analysis)
+
 ## 1.1.0
 
 * Update ffmpeg_kit_flutter to 4.5.1-LTS
