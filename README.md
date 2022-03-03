@@ -419,7 +419,7 @@ On Android, if you still face the same issue, try adding the following to the `<
 
 ## License
 
-Copyright (c) 2021 Souvik Biswas
+Copyright (c) 2022 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
