@@ -1,3 +1,9 @@
+## 1.1.0
+
+* Update ffmpeg_kit_flutter to 4.5.1-LTS
+* Update other plugin versions
+* Update Readme
+
 ## 1.0.0
 
 * **BREAKING CHANGE:** Migrate to [FFmpegKit for Flutter](https://pub.dev/packages/ffmpeg_kit_flutter).
