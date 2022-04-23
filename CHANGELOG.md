@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Update plugin versions
+
 ## 1.1.1
 
 * Format file (to pass static analysis)
