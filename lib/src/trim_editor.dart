@@ -312,35 +312,23 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       videoPlayerController.addListener(() {
         final bool isPlaying = videoPlayerController.value.isPlaying;
 
-        if (isPlaying) {
-          widget.onChangePlaybackState!(true);
-          setState(() {
-            _currentPosition =
-                videoPlayerController.value.position.inMilliseconds;
+        widget.onChangePlaybackState!(true);
+        setState(() {
+          _currentPosition =
+              videoPlayerController.value.position.inMilliseconds;
 
-            if (_currentPosition > _videoEndPos.toInt()) {
-              videoPlayerController.pause();
-              widget.onChangePlaybackState!(false);
-              _animationController!.stop();
-            } else {
-              if (!_animationController!.isAnimating) {
-                widget.onChangePlaybackState!(true);
-                _animationController!.forward();
-              }
-            }
-          });
-        } else {
-          if (videoPlayerController.value.isInitialized) {
-            if (_animationController != null) {
-              if ((_scrubberAnimation?.value ?? 0).toInt() ==
-                  (_endPos.dx).toInt()) {
-                _animationController!.reset();
-              }
-              _animationController!.stop();
-              widget.onChangePlaybackState!(false);
+          if (_currentPosition > _videoEndPos.toInt()) {
+            videoPlayerController
+                .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+            widget.onChangePlaybackState!(false);
+            _animationController!.reset();
+          } else {
+            if (!_animationController!.isAnimating) {
+              widget.onChangePlaybackState!(true);
+              _animationController!.forward();
             }
           }
-        }
+        });
       });
 
       videoPlayerController.setVolume(1.0);
