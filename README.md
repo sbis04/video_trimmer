@@ -20,10 +20,11 @@
 ### Features
 
 * Customizable video trimmer
-* Video playback control
-* Retrieving and storing video file
+* Loop video by trimmer.
+* Very light trimmer ui(by deleting real trimming and support package).
+* But no real trimming. You can get `startPos`, `endPos` by double.
+* It doesn't even have a storage function. 
 
-Also, supports conversion to **GIF**.
 
 <h4 align="center">TRIM EDITOR</h4>
 
@@ -32,10 +33,8 @@ Also, supports conversion to **GIF**.
 </p>
 
 <h4 align="center">EXAMPLE APP</h4>
-
-<p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
-</p>
+이거랑 비슷하게 돌아감~ 무한 반복되고 save가 없다는것 빼면!!
+![img.png](screenshots/img.png)
 
 <h4 align="center">CUSTOMIZABLE VIDEO EDITOR</h4>
 
@@ -49,7 +48,8 @@ Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
 ```yaml
 dependencies:
-  video_trimmer: ^1.1.0
+  git:
+    url: https://github.com/bluejoyq/video_trimmer.git
 ```
 
 ### Android configuration
@@ -68,48 +68,6 @@ No additional configuration is needed for using on Android platform. You are goo
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile` to **10**.
-  
-  > Refer to the [FFmpeg Release](#ffmpeg-release) section.
-
-   ```
-   platform :ios, '10'
-   ```
-
-## FFmpeg Release
-
-This package uses [LTS version](https://github.com/tanersener/ffmpeg-kit#10-lts-releases) of the FFmpeg implementation.
-
-<table>
-<thead>
-    <tr>
-        <th align="center"></th>
-        <th align="center">LTS Release</th>
-    </tr>
-</thead>
-<tbody>
-    <tr>
-        <td align="center">Android API Level</td>
-        <td align="center">16</td>
-    </tr>
-    <tr>
-        <td align="center">Android Camera Access</td>
-        <td align="center">-</td>
-    </tr>
-    <tr>
-        <td align="center">Android Architectures</td>
-        <td align="center">arm-v7a<br>arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
-    </tr>
-    <tr>
-        <td align="center">iOS Min SDK</td>
-        <td align="center">10</td>
-    </tr>
-    <tr>
-        <td align="center">iOS Architectures</td>
-        <td align="center">armv7<br>arm64<br>i386<br>x86-64</td>
-    </tr>
-</tbody>
-</table>
 
 ## Functionalities
 
@@ -120,19 +78,6 @@ final Trimmer _trimmer = Trimmer();
 await _trimmer.loadVideo(videoFile: file);
 ```
 
-### Saving trimmed video
-
-Returns a string to indicate whether the saving operation was successful.
-
-```dart
-await _trimmer
-    .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
-    .then((value) {
-  setState(() {
-    _value = value;
-  });
-});
-```
 
 ### Video playback state 
 
@@ -205,201 +150,7 @@ TrimEditor(
 
 ## Example
 
-Before using this example directly in a Flutter app, don't forget to add the `video_trimmer` & `file_picker` packages to your `pubspec.yaml` file.
-
-You can try out this example by replacing the entire content of `main.dart` file of a newly created Flutter project.
-
-```dart
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:video_trimmer/video_trimmer.dart';
-
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Video Trimmer',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Video Trimmer"),
-      ),
-      body: Center(
-        child: Container(
-          child: ElevatedButton(
-            child: Text("LOAD VIDEO"),
-            onPressed: () async {
-              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                type: FileType.video,
-                allowCompression: false,
-              );
-              if (result != null) {
-                File file = File(result.files.single.path!);
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) {
-                    return TrimmerView(file);
-                  }),
-                );
-              }
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class TrimmerView extends StatefulWidget {
-  final File file;
-
-  TrimmerView(this.file);
-
-  @override
-  _TrimmerViewState createState() => _TrimmerViewState();
-}
-
-class _TrimmerViewState extends State<TrimmerView> {
-  final Trimmer _trimmer = Trimmer();
-
-  double _startValue = 0.0;
-  double _endValue = 0.0;
-
-  bool _isPlaying = false;
-  bool _progressVisibility = false;
-
-  Future<String?> _saveVideo() async {
-    setState(() {
-      _progressVisibility = true;
-    });
-
-    String? _value;
-
-    await _trimmer
-        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
-        .then((value) {
-      setState(() {
-        _progressVisibility = false;
-        _value = value;
-      });
-    });
-
-    return _value;
-  }
-
-  void _loadVideo() {
-    _trimmer.loadVideo(videoFile: widget.file);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _loadVideo();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Video Trimmer"),
-      ),
-      body: Builder(
-        builder: (context) => Center(
-          child: Container(
-            padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.black,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                Visibility(
-                  visible: _progressVisibility,
-                  child: LinearProgressIndicator(
-                    backgroundColor: Colors.red,
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: _progressVisibility
-                      ? null
-                      : () async {
-                          _saveVideo().then((outputPath) {
-                            print('OUTPUT PATH: $outputPath');
-                            final snackBar = SnackBar(
-                                content: Text('Video Saved successfully'));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              snackBar,
-                            );
-                          });
-                        },
-                  child: Text("SAVE"),
-                ),
-                Expanded(
-                  child: VideoViewer(trimmer: _trimmer),
-                ),
-                Center(
-                  child: TrimEditor(
-                    trimmer: _trimmer,
-                    viewerHeight: 50.0,
-                    viewerWidth: MediaQuery.of(context).size.width,
-                    maxVideoLength: Duration(seconds: 10),
-                    onChangeStart: (value) {
-                      _startValue = value;
-                    },
-                    onChangeEnd: (value) {
-                      _endValue = value;
-                    },
-                    onChangePlaybackState: (value) {
-                      setState(() {
-                        _isPlaying = value;
-                      });
-                    },
-                  ),
-                ),
-                TextButton(
-                  child: _isPlaying
-                      ? Icon(
-                          Icons.pause,
-                          size: 80.0,
-                          color: Colors.white,
-                        )
-                      : Icon(
-                          Icons.play_arrow,
-                          size: 80.0,
-                          color: Colors.white,
-                        ),
-                  onPressed: () async {
-                    bool playbackState = await _trimmer.videPlaybackControl(
-                      startValue: _startValue,
-                      endValue: _endValue,
-                    );
-                    setState(() {
-                      _isPlaying = playbackState;
-                    });
-                  },
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-```
+See example directory.
 
 ## Troubleshooting
 
@@ -414,7 +165,7 @@ On Android, if you still face the same issue, try adding the following to the `<
 ```
 
 ## License
-
+original version : https://github.com/sbis04/video_trimmer   
 Copyright (c) 2022 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
