@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:example/preview.dart';
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
@@ -32,28 +30,6 @@ class _TrimmerViewState extends State<TrimmerView> {
     _trimmer.loadVideo(videoFile: widget.file);
   }
 
-  _saveVideo() {
-    setState(() {
-      _progressVisibility = true;
-    });
-
-    _trimmer.saveTrimmedVideo(
-      startValue: _startValue,
-      endValue: _endValue,
-      onSave: (outputPath) {
-        setState(() {
-          _progressVisibility = false;
-        });
-        debugPrint('OUTPUT PATH: $outputPath');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => Preview(outputPath),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -82,10 +58,6 @@ class _TrimmerViewState extends State<TrimmerView> {
                     child: const LinearProgressIndicator(
                       backgroundColor: Colors.red,
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _progressVisibility ? null : () => _saveVideo(),
-                    child: const Text("SAVE"),
                   ),
                   Expanded(
                     child: VideoViewer(trimmer: _trimmer),
