@@ -19,6 +19,8 @@ class Trimmer {
   VideoPlayerController? get videoPlayerController => _videoPlayerController;
 
   File? currentVideoFile;
+  double videoStartPos = 0.0;
+  double videoEndPos = 0.0;
 
   /// Listen to this stream to catch the events
   Stream<TrimmerEvent> get eventStream => _controller.stream;
