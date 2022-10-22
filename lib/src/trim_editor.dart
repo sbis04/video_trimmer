@@ -194,7 +194,7 @@ class TrimEditor extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _TrimEditorState createState() => _TrimEditorState();
+  State<TrimEditor> createState() => _TrimEditorState();
 }
 
 class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
@@ -346,7 +346,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
       videoPlayerController.setVolume(1.0);
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
 
-      final ThumbnailViewer _thumbnailWidget = ThumbnailViewer(
+      final ThumbnailViewer thumbnailWidget = ThumbnailViewer(
         videoFile: _videoFile!,
         videoDuration: _videoDuration,
         fit: widget.fit,
@@ -354,7 +354,7 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
         numberOfThumbnails: _numberOfThumbnails,
         quality: widget.thumbnailQuality,
       );
-      thumbnailWidget = _thumbnailWidget;
+      this.thumbnailWidget = thumbnailWidget;
     }
   }
 

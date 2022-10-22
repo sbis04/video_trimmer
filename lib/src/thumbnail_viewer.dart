@@ -25,34 +25,34 @@ class ThumbnailViewer extends StatelessWidget {
   }) : super(key: key);
 
   Stream<List<Uint8List?>> generateThumbnail() async* {
-    final String _videoPath = videoFile.path;
+    final String videoPath = videoFile.path;
 
-    double _eachPart = videoDuration / numberOfThumbnails;
+    double eachPart = videoDuration / numberOfThumbnails;
 
-    List<Uint8List?> _byteList = [];
+    List<Uint8List?> byteList = [];
 
     // the cache of last thumbnail
-    Uint8List? _lastBytes;
+    Uint8List? lastBytes;
 
     for (int i = 1; i <= numberOfThumbnails; i++) {
-      Uint8List? _bytes;
-      _bytes = await VideoThumbnail.thumbnailData(
-        video: _videoPath,
+      Uint8List? bytes;
+      bytes = await VideoThumbnail.thumbnailData(
+        video: videoPath,
         imageFormat: ImageFormat.JPEG,
-        timeMs: (_eachPart * i).toInt(),
+        timeMs: (eachPart * i).toInt(),
         quality: quality,
       );
 
       // if current thumbnail is null use the last thumbnail
-      if (_bytes != null) {
-        _lastBytes = _bytes;
+      if (bytes != null) {
+        lastBytes = bytes;
       } else {
-        _bytes = _lastBytes;
+        bytes = lastBytes;
       }
 
-      _byteList.add(_bytes);
+      byteList.add(bytes);
 
-      yield _byteList;
+      yield byteList;
     }
   }
 
@@ -62,16 +62,16 @@ class ThumbnailViewer extends StatelessWidget {
       stream: generateThumbnail(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          List<Uint8List?> _imageBytes = snapshot.data!;
+          List<Uint8List?> imageBytes = snapshot.data!;
           return ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: _imageBytes.length,
+              itemCount: imageBytes.length,
               itemBuilder: (context, index) {
                 return SizedBox(
                   height: thumbnailHeight,
                   width: thumbnailHeight,
                   child: Image(
-                    image: MemoryImage(_imageBytes[index]!),
+                    image: MemoryImage(imageBytes[index]!),
                     fit: fit,
                   ),
                 );
