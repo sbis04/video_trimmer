@@ -9,7 +9,7 @@ class Preview extends StatefulWidget {
   const Preview(this.outputVideoPath, {Key? key}) : super(key: key);
 
   @override
-  _PreviewState createState() => _PreviewState();
+  State<Preview> createState() => _PreviewState();
 }
 
 class _PreviewState extends State<Preview> {

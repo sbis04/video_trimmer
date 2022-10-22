@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Update plugin versions
+
 ## 1.1.3
 
 * Changing `path` version to `1.8.0` (latest is `1.8.1`) because it creates a conflict with `flutter_test` as it uses the older version
