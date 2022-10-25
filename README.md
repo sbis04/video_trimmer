@@ -19,9 +19,10 @@
 
 ### Features
 
-* Customizable video trimmer
-* Video playback control
-* Retrieving and storing video file
+* Customizable video trimmer.
+* Supports two types of trim viewer, fixed length and scrollable.
+* Video playback control.
+* Retrieving and storing video file.
 
 Also, supports conversion to **GIF**.
 
@@ -49,7 +50,7 @@ Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
 ```yaml
 dependencies:
-  video_trimmer: ^1.1.0
+  video_trimmer: ^2.0.0
 ```
 
 ### Android configuration
@@ -184,22 +185,15 @@ VideoViewer(trimmer: _trimmer)
 ### Display the video trimmer area
 
 ```dart
-TrimEditor(
+TrimViewer(
   trimmer: _trimmer,
   viewerHeight: 50.0,
   viewerWidth: MediaQuery.of(context).size.width,
-  maxVideoLength: Duration(seconds: 10),
-  onChangeStart: (value) {
-    _startValue = value;
-  },
-  onChangeEnd: (value) {
-    _endValue = value;
-  },
-  onChangePlaybackState: (value) {
-    setState(() {
-      _isPlaying = value;
-    });
-  },
+  maxVideoLength: const Duration(seconds: 10),
+  onChangeStart: (value) => _startValue = value,
+  onChangeEnd: (value) => _endValue = value,
+  onChangePlaybackState: (value) =>
+      setState(() => _isPlaying = value),
 )
 ```
 
@@ -351,22 +345,15 @@ class _TrimmerViewState extends State<TrimmerView> {
                   child: VideoViewer(trimmer: _trimmer),
                 ),
                 Center(
-                  child: TrimEditor(
+                  child: TrimViewer(
                     trimmer: _trimmer,
                     viewerHeight: 50.0,
                     viewerWidth: MediaQuery.of(context).size.width,
-                    maxVideoLength: Duration(seconds: 10),
-                    onChangeStart: (value) {
-                      _startValue = value;
-                    },
-                    onChangeEnd: (value) {
-                      _endValue = value;
-                    },
-                    onChangePlaybackState: (value) {
-                      setState(() {
-                        _isPlaying = value;
-                      });
-                    },
+                    maxVideoLength: const Duration(seconds: 10),
+                    onChangeStart: (value) => _startValue = value,
+                    onChangeEnd: (value) => _endValue = value,
+                    onChangePlaybackState: (value) =>
+                        setState(() => _isPlaying = value),
                   ),
                 ),
                 TextButton(
