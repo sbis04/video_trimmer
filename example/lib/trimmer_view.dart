@@ -106,12 +106,8 @@ class _TrimmerViewState extends State<TrimmerView> {
                       areaProperties: const TrimAreaProperties(
                         thumbnailQuality: 10,
                       ),
-                      onChangeStart: (value) {
-                        _startValue = value;
-                      },
-                      onChangeEnd: (value) {
-                        _endValue = value;
-                      },
+                      onChangeStart: (value) => _startValue = value,
+                      onChangeEnd: (value) => _endValue = value,
                       onChangePlaybackState: (value) =>
                           setState(() => _isPlaying = value),
                     ),
