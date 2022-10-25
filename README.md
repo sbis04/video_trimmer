@@ -30,7 +30,9 @@ Also, supports conversion to **GIF**.
 
 Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
 
-![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview.png" alt="Trim Editor" />
+</p>
 
 <h4 align="center">TRIM VIEWER</h4>
 
