@@ -26,7 +26,13 @@
 
 Also, supports conversion to **GIF**.
 
-<h4 align="center">TRIM EDITOR</h4>
+> **Migrating to v2.0.0:** If you were using 1.x.x version of this package, checkout the BREAKING CHANGES by going to the **Changelog** tab on the `pub.dev` package page.
+
+Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
+
+![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview.png)
+
+<h4 align="center">TRIM VIEWER</h4>
 
 <p align="center">
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/editor_demo.gif" alt="Trim Editor" />
@@ -38,7 +44,7 @@ Also, supports conversion to **GIF**.
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
 </p>
 
-<h4 align="center">CUSTOMIZABLE VIDEO EDITOR</h4>
+<h4 align="center">CUSTOMIZABLE VIDEO TRIMMER</h4>
 
 <p align="center">
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
