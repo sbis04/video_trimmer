@@ -2,11 +2,12 @@
 
 * **BREAKING CHANGE:** Overhaul of the entire video trimmer implementation.
   * Two types of `TrimViewer` are available: `FixedTrimViewer` & `ScrollableTrimViewer`. By default it's set to `auto` so that it switches between these two based on the total video length and the maximum trim duration allowed.
-  * Renamed `TrimEditor` to `TrimViewer`. Check out [this diagram](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png) for better understanding of the keywords/terms.
-  * Separated the properties of into two types, `TrimEditorProperties` & `TrimAreaProperties`. Helps in identifying where the properties belong to easily.
-  * Fixed some bugs related to wrong trimmer length while initialization.
-* Improved the documentation.
-* Updated the example project.
+  * Rename `TrimEditor` to `TrimViewer`. Check out [this diagram](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png) for better understanding of the keywords/terms.
+  * Separate the properties of into two types, `TrimEditorProperties` & `TrimAreaProperties`. Helps in identifying where the properties belong to easily.
+  * Fix some bugs related to wrong trimmer length while initialization.
+* Add more customization options.
+* Improve the documentation.
+* Update the example project.
 
 ## 1.2.0
 
