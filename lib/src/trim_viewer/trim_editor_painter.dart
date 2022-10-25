@@ -10,6 +10,11 @@ class TrimEditorPainter extends CustomPainter {
   /// To define the horizontal length of the selected video area
   final double scrubberAnimationDx;
 
+  /// For specifying a circular border radius
+  /// to the corners of the trim area.
+  /// By default it is set to `4.0`.
+  final double borderRadius;
+
   /// For specifying a size to the holder at the
   /// two ends of the video trimmer area, while it is `idle`.
   /// By default it is set to `0.5`.
@@ -55,7 +60,12 @@ class TrimEditorPainter extends CustomPainter {
   ///
   /// The optional parameters are:
   ///
-  /// * [circleSize] for specifying a size to the holder at the
+  /// * [circleSize] for specifying a circular border radius
+  /// to the corners of the trim area.
+  /// By default it is set to `4.0`.
+  ///
+  ///
+  /// * [borderRadius] for specifying a size to the holder at the
   /// two ends of the video trimmer area, while it is `idle`.
   /// By default it is set to `0.5`.
   ///
@@ -87,6 +97,7 @@ class TrimEditorPainter extends CustomPainter {
     required this.endPos,
     required this.scrubberAnimationDx,
     this.circleSize = 0.5,
+    this.borderRadius = 4,
     this.borderWidth = 3,
     this.scrubberWidth = 1,
     this.showScrubber = true,
@@ -116,6 +127,10 @@ class TrimEditorPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final rect = Rect.fromPoints(startPos, endPos);
+    final roundedRect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(borderRadius),
+    );
 
     if (showScrubber) {
       if (scrubberAnimationDx.toInt() > startPos.dx.toInt()) {
@@ -127,7 +142,7 @@ class TrimEditorPainter extends CustomPainter {
       }
     }
 
-    canvas.drawRect(rect, borderPaint);
+    canvas.drawRRect(roundedRect, borderPaint);
     canvas.drawCircle(
         startPos + Offset(0, endPos.dy / 2), circleSize, circlePaint);
     canvas.drawCircle(

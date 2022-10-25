@@ -92,15 +92,20 @@ class _TrimmerViewState extends State<TrimmerView> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TrimEditorAlt(
+                    child: TrimViewer(
                       trimmer: _trimmer,
                       viewerHeight: 50.0,
                       viewerWidth: MediaQuery.of(context).size.width,
                       maxVideoLength: const Duration(seconds: 10),
-                      thumbnailQuality: 10,
-                      borderPaintColor: Colors.yellow,
-                      borderWidth: 4,
-                      circlePaintColor: Colors.yellow.shade800,
+                      editorProperties: TrimEditorProperties(
+                        borderPaintColor: Colors.yellow,
+                        borderWidth: 4,
+                        borderRadius: 5,
+                        circlePaintColor: Colors.yellow.shade800,
+                      ),
+                      areaProperties: const TrimAreaProperties(
+                        thumbnailQuality: 10,
+                      ),
                       onChangeStart: (value) {
                         _startValue = value;
                       },

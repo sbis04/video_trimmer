@@ -1,12 +1,18 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/src/thumbnail_viewer_alt.dart';
-import 'package:video_trimmer/src/trim_editor_painter.dart';
+import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
 import 'package:video_trimmer/src/trimmer.dart';
 
-class TrimEditorAlt extends StatefulWidget {
+import '../../utils/editor_drag_type.dart';
+import '../trim_area_properties.dart';
+import '../trim_editor_properties.dart';
+import 'fixed_thumbnail_viewer.dart';
+
+class FixedTrimViewer extends StatefulWidget {
   /// The Trimmer instance controlling the data.
   final Trimmer trimmer;
 
@@ -19,52 +25,10 @@ class TrimEditorAlt extends StatefulWidget {
   /// For defining the image fit type of each thumbnail image.
   ///
   /// By default it is set to `BoxFit.fitHeight`.
-  final BoxFit fit;
+  // final BoxFit fit;
 
   /// For defining the maximum length of the output video.
   final Duration maxVideoLength;
-
-  /// For specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
-  ///
-  /// By default it is set to `5.0`.
-  final double circleSize;
-
-  /// For specifying the width of the border around
-  /// the trim area. By default it is set to `3`.
-  final double borderWidth;
-
-  /// For specifying the width of the video scrubber
-  final double scrubberWidth;
-
-  /// For specifying a size to the holder at
-  /// the two ends of the video trimmer area, while it is being
-  /// `dragged`.
-  ///
-  /// By default it is set to `8.0`.
-  final double circleSizeOnDrag;
-
-  /// For specifying a color to the circle.
-  ///
-  /// By default it is set to `Colors.white`.
-  final Color circlePaintColor;
-
-  /// For specifying a color to the border of
-  /// the trim area.
-  ///
-  /// By default it is set to `Colors.white`.
-  final Color borderPaintColor;
-
-  /// For specifying a color to the video
-  /// scrubber inside the trim area.
-  ///
-  /// By default it is set to `Colors.white`.
-  final Color scrubberPaintColor;
-
-  /// For specifying the quality of each
-  /// generated image thumbnail, to be displayed in the trimmer
-  /// area.
-  final int thumbnailQuality;
 
   /// For showing the start and the end point of the
   /// video on top of the trimmer area.
@@ -95,10 +59,11 @@ class TrimEditorAlt extends StatefulWidget {
   /// playing, otherwise paused.
   final Function(bool isPlaying)? onChangePlaybackState;
 
-  /// Determines the touch size of the side handles, left and right. The rest, in
-  /// the center, will move the whole frame if [maxVideoLength] is inferior to the
-  /// total duration of the video.
-  final int sideTapSize;
+  /// Properties for customizing the trim editor.
+  final TrimEditorProperties editorProperties;
+
+  /// Properties for customizing the fixed trim area.
+  final FixedTrimAreaProperties areaProperties;
 
   /// Widget for displaying the video trimmer.
   ///
@@ -116,40 +81,8 @@ class TrimEditorAlt extends StatefulWidget {
   ///
   /// The optional parameters are:
   ///
-  /// * [fit] for specifying the image fit type of each thumbnail image.
-  /// By default it is set to `BoxFit.fitHeight`.
-  ///
-  ///
   /// * [maxVideoLength] for specifying the maximum length of the
   /// output video.
-  ///
-  ///
-  /// * [circleSize] for specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
-  /// By default it is set to `5.0`.
-  ///
-  ///
-  /// * [circleSizeOnDrag] for specifying a size to the holder at
-  /// the two ends of the video trimmer area, while it is being
-  /// `dragged`. By default it is set to `8.0`.
-  ///
-  ///
-  /// * [circlePaintColor] for specifying a color to the circle.
-  /// By default it is set to `Colors.white`.
-  ///
-  ///
-  /// * [borderPaintColor] for specifying a color to the border of
-  /// the trim area. By default it is set to `Colors.white`.
-  ///
-  ///
-  /// * [scrubberPaintColor] for specifying a color to the video
-  /// scrubber inside the trim area. By default it is set to
-  /// `Colors.white`.
-  ///
-  ///
-  /// * [thumbnailQuality] for specifying the quality of each
-  /// generated image thumbnail, to be displayed in the trimmer
-  /// area.
   ///
   ///
   /// * [showDuration] for showing the start and the end point of the
@@ -170,35 +103,34 @@ class TrimEditorAlt extends StatefulWidget {
   /// * [onChangePlaybackState] is a callback to the video playback
   /// state to know whether it is currently playing or paused.
   ///
-  const TrimEditorAlt({
-    Key? key,
+  ///
+  /// * [editorProperties] defines properties for customizing the trim editor.
+  ///
+  ///
+  /// * [areaProperties] defines properties for customizing the fixed trim area.
+  ///
+  const FixedTrimViewer({
+    super.key,
     required this.trimmer,
     this.viewerWidth = 50.0 * 8,
     this.viewerHeight = 50,
-    this.fit = BoxFit.fitHeight,
     this.maxVideoLength = const Duration(milliseconds: 0),
-    this.circleSize = 5.0,
-    this.borderWidth = 3,
-    this.scrubberWidth = 1,
-    this.circleSizeOnDrag = 8.0,
-    this.circlePaintColor = Colors.white,
-    this.borderPaintColor = Colors.white,
-    this.scrubberPaintColor = Colors.white,
-    this.thumbnailQuality = 75,
     this.showDuration = true,
-    this.sideTapSize = 24,
     this.durationTextStyle = const TextStyle(color: Colors.white),
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
-  }) : super(key: key);
+    this.editorProperties = const TrimEditorProperties(),
+    this.areaProperties = const FixedTrimAreaProperties(),
+  });
 
   @override
-  State<TrimEditorAlt> createState() => _TrimEditorAltState();
+  State<FixedTrimViewer> createState() => _FixedTrimViewerState();
 }
 
-class _TrimEditorAltState extends State<TrimEditorAlt>
+class _FixedTrimViewerState extends State<FixedTrimViewer>
     with TickerProviderStateMixin {
+  final _trimmerAreaKey = GlobalKey();
   File? get _videoFile => widget.trimmer.currentVideoFile;
 
   double _videoStartPos = 0.0;
@@ -219,11 +151,12 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
   int _numberOfThumbnails = 0;
 
   late double _circleSize;
+  late double _borderRadius;
 
   double? fraction;
   double? maxLengthPixels;
 
-  ThumbnailViewerAlt? thumbnailWidget;
+  FixedThumbnailViewer? thumbnailWidget;
 
   Animation<double>? _scrubberAnimation;
   AnimationController? _animationController;
@@ -242,76 +175,81 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
   /// of the frame, to make the UI more realistic.
   bool _allowDrag = true;
 
-  late final ScrollController scrollController;
-  double scrollByValue = 10.0;
-  late double currentScrollValue;
-
   @override
   void initState() {
     super.initState();
-    currentScrollValue = scrollByValue;
-    scrollController = ScrollController();
-    widget.trimmer.eventStream.listen((event) {
-      if (event == TrimmerEvent.initialized) {
-        //The video has been initialized, now we can load stuff
-
-        _initializeVideoController();
-        videoPlayerController.seekTo(const Duration(milliseconds: 0));
-        setState(() {
-          Duration totalDuration = videoPlayerController.value.duration;
-
-          if (widget.maxVideoLength > const Duration(milliseconds: 0) &&
-              widget.maxVideoLength < totalDuration) {
-            if (widget.maxVideoLength < totalDuration) {
-              fraction = widget.maxVideoLength.inMilliseconds /
-                  totalDuration.inMilliseconds;
-
-              maxLengthPixels = _thumbnailViewerW * fraction!;
-            }
-          } else {
-            maxLengthPixels = _thumbnailViewerW;
-          }
-
-          _videoEndPos = fraction != null
-              ? _videoDuration.toDouble() * fraction!
-              : _videoDuration.toDouble();
-
-          widget.onChangeEnd!(_videoEndPos);
-
-          _endPos = Offset(
-            maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
-            _thumbnailViewerH,
-          );
-
-          // Defining the tween points
-          _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
-          _animationController = AnimationController(
-            vsync: this,
-            duration:
-                Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
-          );
-
-          _scrubberAnimation = _linearTween.animate(_animationController!)
-            ..addListener(() {
-              setState(() {});
-            })
-            ..addStatusListener((status) {
-              if (status == AnimationStatus.completed) {
-                _animationController!.stop();
-              }
-            });
-        });
-      }
-    });
-
-    _circleSize = widget.circleSize;
-
+    _circleSize = widget.editorProperties.circleSize;
+    _borderRadius = widget.editorProperties.borderRadius;
     _thumbnailViewerH = widget.viewerHeight;
+    log('thumbnailViewerW: $_thumbnailViewerW');
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      final renderBox =
+          _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
+      final trimmerActualWidth = renderBox?.size.width;
+      log('RENDER BOX: $trimmerActualWidth');
+      if (trimmerActualWidth == null) return;
+      _thumbnailViewerW = trimmerActualWidth;
+      _initializeVideoController();
+      videoPlayerController.seekTo(const Duration(milliseconds: 0));
+      _numberOfThumbnails = trimmerActualWidth ~/ _thumbnailViewerH;
+      log('numberOfThumbnails: $_numberOfThumbnails');
+      log('thumbnailViewerW: $_thumbnailViewerW');
+      setState(() {
+        _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
 
-    // _numberOfThumbnails = widget.viewerWidth ~/ _thumbnailViewerH;
-    _numberOfThumbnails = 25;
+        final FixedThumbnailViewer thumbnailWidget = FixedThumbnailViewer(
+          videoFile: _videoFile!,
+          videoDuration: _videoDuration,
+          fit: widget.areaProperties.thumbnailFit,
+          thumbnailHeight: _thumbnailViewerH,
+          numberOfThumbnails: _numberOfThumbnails,
+          quality: widget.areaProperties.thumbnailQuality,
+        );
+        this.thumbnailWidget = thumbnailWidget;
+        Duration totalDuration = videoPlayerController.value.duration;
 
-    _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
+        if (widget.maxVideoLength > const Duration(milliseconds: 0) &&
+            widget.maxVideoLength < totalDuration) {
+          if (widget.maxVideoLength < totalDuration) {
+            fraction = widget.maxVideoLength.inMilliseconds /
+                totalDuration.inMilliseconds;
+
+            maxLengthPixels = _thumbnailViewerW * fraction!;
+          }
+        } else {
+          maxLengthPixels = _thumbnailViewerW;
+        }
+
+        _videoEndPos = fraction != null
+            ? _videoDuration.toDouble() * fraction!
+            : _videoDuration.toDouble();
+
+        widget.onChangeEnd!(_videoEndPos);
+
+        _endPos = Offset(
+          maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
+          _thumbnailViewerH,
+        );
+
+        // Defining the tween points
+        _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
+        _animationController = AnimationController(
+          vsync: this,
+          duration:
+              Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
+        );
+
+        _scrubberAnimation = _linearTween.animate(_animationController!)
+          ..addListener(() {
+            setState(() {});
+          })
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              _animationController!.stop();
+            }
+          });
+      });
+    });
   }
 
   Future<void> _initializeVideoController() async {
@@ -352,17 +290,6 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
 
       videoPlayerController.setVolume(1.0);
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
-
-      final ThumbnailViewerAlt thumbnailWidget = ThumbnailViewerAlt(
-        scrollController: scrollController,
-        videoFile: _videoFile!,
-        videoDuration: _videoDuration,
-        fit: widget.fit,
-        thumbnailHeight: _thumbnailViewerH,
-        numberOfThumbnails: _numberOfThumbnails,
-        quality: widget.thumbnailQuality,
-      );
-      this.thumbnailWidget = thumbnailWidget;
     }
   }
 
@@ -377,10 +304,10 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
     final startDifference = _startPos.dx - details.localPosition.dx;
     final endDifference = _endPos.dx - details.localPosition.dx;
 
-    //First we determine whether the dragging motion should be allowed. The allowed
-    //zone is widget.sideTapSize (left) + frame (center) + widget.sideTapSize (right)
-    if (startDifference <= widget.sideTapSize &&
-        endDifference >= -widget.sideTapSize) {
+    // First we determine whether the dragging motion should be allowed. The allowed
+    // zone is widget.sideTapSize (left) + frame (center) + widget.sideTapSize (right)
+    if (startDifference <= widget.editorProperties.sideTapSize &&
+        endDifference >= -widget.editorProperties.sideTapSize) {
       _allowDrag = true;
     } else {
       debugPrint("Dragging is outside of frame, ignoring gesture...");
@@ -388,10 +315,12 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
       return;
     }
 
-    //Now we determine which part is dragged
-    if (details.localPosition.dx <= _startPos.dx + widget.sideTapSize) {
+    // Now we determine which part is dragged
+    if (details.localPosition.dx <=
+        _startPos.dx + widget.editorProperties.sideTapSize) {
       _dragType = EditorDragType.left;
-    } else if (details.localPosition.dx <= _endPos.dx - widget.sideTapSize) {
+    } else if (details.localPosition.dx <=
+        _endPos.dx - widget.editorProperties.sideTapSize) {
       _dragType = EditorDragType.center;
     } else {
       _dragType = EditorDragType.right;
@@ -404,7 +333,7 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
   void _onDragUpdate(DragUpdateDetails details) {
     if (!_allowDrag) return;
 
-    _circleSize = widget.circleSizeOnDrag;
+    _circleSize = widget.editorProperties.circleSizeOnDrag;
 
     if (_dragType == EditorDragType.left) {
       if ((_startPos.dx + details.delta.dx >= 0) &&
@@ -455,7 +384,7 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
   /// Drag gesture ended, update UI accordingly.
   void _onDragEnd(DragEndDetails details) {
     setState(() {
-      _circleSize = widget.circleSize;
+      _circleSize = widget.editorProperties.circleSize;
       if (_dragType == EditorDragType.right) {
         videoPlayerController
             .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
@@ -527,32 +456,29 @@ class _TrimEditorAltState extends State<TrimEditorAlt>
               endPos: _endPos,
               scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
               circleSize: _circleSize,
-              borderWidth: widget.borderWidth,
-              scrubberWidth: widget.scrubberWidth,
-              circlePaintColor: widget.circlePaintColor,
-              borderPaintColor: widget.borderPaintColor,
-              scrubberPaintColor: widget.scrubberPaintColor,
+              borderRadius: _borderRadius,
+              borderWidth: widget.editorProperties.borderWidth,
+              scrubberWidth: widget.editorProperties.scrubberWidth,
+              circlePaintColor: widget.editorProperties.circlePaintColor,
+              borderPaintColor: widget.editorProperties.borderPaintColor,
+              scrubberPaintColor: widget.editorProperties.scrubberPaintColor,
             ),
-            child: Container(
-              color: Colors.grey[900],
-              height: _thumbnailViewerH,
-              width: widget.viewerWidth,
-              child: thumbnailWidget ?? Container(),
+            child: ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(widget.areaProperties.borderRadius),
+              child: Container(
+                key: _trimmerAreaKey,
+                color: Colors.grey[900],
+                height: _thumbnailViewerH,
+                width: _thumbnailViewerW == 0.0
+                    ? widget.viewerWidth
+                    : _thumbnailViewerW,
+                child: thumbnailWidget ?? Container(),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-enum EditorDragType {
-  /// The user is dragging the left part of the frame.
-  left,
-
-  /// The user is dragging the whole frame.
-  center,
-
-  /// The user is dragging the right part of the frame.
-  right
 }
