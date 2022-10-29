@@ -109,16 +109,6 @@ class TrimViewer extends StatefulWidget {
   /// output video.
   ///
   ///
-  /// * [circleSize] for specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
-  /// By default it is set to `5.0`.
-  ///
-  ///
-  /// * [circleSizeOnDrag] for specifying a size to the holder at
-  /// the two ends of the video trimmer area, while it is being
-  /// `dragged`. By default it is set to `8.0`.
-  ///
-  ///
   /// * [circlePaintColor] for specifying a color to the circle.
   /// By default it is set to `Colors.white`.
   ///

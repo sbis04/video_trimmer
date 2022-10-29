@@ -8,6 +8,7 @@
 * Add more customization options.
 * Improve the documentation.
 * Update the example project.
+* Bug Fix: Use `circleSizeOnDrag` only on the selected holder.
 
 ## 1.2.0
 

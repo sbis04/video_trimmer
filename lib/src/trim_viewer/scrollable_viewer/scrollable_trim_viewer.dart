@@ -82,40 +82,8 @@ class ScrollableTrimViewer extends StatefulWidget {
   ///
   /// The optional parameters are:
   ///
-  /// * [fit] for specifying the image fit type of each thumbnail image.
-  /// By default it is set to `BoxFit.fitHeight`.
-  ///
-  ///
   /// * [maxVideoLength] for specifying the maximum length of the
   /// output video.
-  ///
-  ///
-  /// * [circleSize] for specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
-  /// By default it is set to `5.0`.
-  ///
-  ///
-  /// * [circleSizeOnDrag] for specifying a size to the holder at
-  /// the two ends of the video trimmer area, while it is being
-  /// `dragged`. By default it is set to `8.0`.
-  ///
-  ///
-  /// * [circlePaintColor] for specifying a color to the circle.
-  /// By default it is set to `Colors.white`.
-  ///
-  ///
-  /// * [borderPaintColor] for specifying a color to the border of
-  /// the trim area. By default it is set to `Colors.white`.
-  ///
-  ///
-  /// * [scrubberPaintColor] for specifying a color to the video
-  /// scrubber inside the trim area. By default it is set to
-  /// `Colors.white`.
-  ///
-  ///
-  /// * [thumbnailQuality] for specifying the quality of each
-  /// generated image thumbnail, to be displayed in the trimmer
-  /// area.
   ///
   ///
   /// * [showDuration] for showing the start and the end point of the
@@ -191,7 +159,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   double _autoStartScrollPos = 0.0;
   double _autoEndScrollPos = 0.0;
 
-  late double _circleSize;
+  late double _startCircleSize;
+  late double _endCircleSize;
   late double _borderRadius;
 
   double? fraction;
@@ -279,7 +248,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
           _remainingDuration;
       _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationChange;
       _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
-      // setState(() => currentScrollValue += scrollByValue);
     });
     setState(() {});
   }
@@ -305,7 +273,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _circleSize = widget.editorProperties.circleSize;
+    _startCircleSize = widget.editorProperties.circleSize;
+    _endCircleSize = widget.editorProperties.circleSize;
     _borderRadius = widget.editorProperties.borderRadius;
     _thumbnailViewerH = widget.viewerHeight;
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -315,8 +284,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       log('RENDER BOX: ${renderBox?.size.width}');
       if (trimmerActualWidth == null) return;
       _thumbnailViewerW = trimmerActualWidth;
-      // widget.trimmer.eventStream.listen((event) {
-      //   if (event == TrimmerEvent.initialized) {
       _initializeVideoController();
       // The video has been initialized, now we can load stuff
       videoPlayerController.seekTo(const Duration(milliseconds: 0));
@@ -408,8 +375,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
             }
           });
       });
-      //   }
-      // });
     });
   }
 
@@ -493,11 +458,11 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   void _onDragUpdate(DragUpdateDetails details) {
     if (!_allowDrag) return;
 
-    _circleSize = widget.editorProperties.circleSizeOnDrag;
     // log('Local pos: ${details.localPosition}');
     _localPosition = details.localPosition.dx;
 
     if (_dragType == EditorDragType.left) {
+      _startCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_startPos.dx + details.delta.dx >= 0) &&
           (_startPos.dx + details.delta.dx <= _endPos.dx) &&
           !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
@@ -505,6 +470,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _onStartDragged();
       }
     } else if (_dragType == EditorDragType.center) {
+      _startCircleSize = widget.editorProperties.circleSizeOnDrag;
+      _endCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_startPos.dx + details.delta.dx >= 0) &&
           (_endPos.dx + details.delta.dx <= _thumbnailViewerW)) {
         _startPos += details.delta;
@@ -513,6 +480,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _onEndDragged();
       }
     } else {
+      _endCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
           (_endPos.dx + details.delta.dx >= _startPos.dx) &&
           !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
@@ -568,7 +536,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     _scrollStartTimer?.cancel();
     _scrollingTimer?.cancel();
     setState(() {
-      _circleSize = widget.editorProperties.circleSize;
+      _startCircleSize = widget.editorProperties.circleSize;
+      _endCircleSize = widget.editorProperties.circleSize;
       if (_dragType == EditorDragType.right) {
         videoPlayerController
             .seekTo(Duration(milliseconds: _videoEndPos.toInt()));
@@ -645,7 +614,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                   startPos: _startPos,
                   endPos: _endPos,
                   scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
-                  circleSize: _circleSize,
+                  startCircleSize: _startCircleSize,
+                  endCircleSize: _endCircleSize,
                   borderRadius: _borderRadius,
                   borderWidth: widget.editorProperties.borderWidth,
                   scrubberWidth: widget.editorProperties.scrubberWidth,

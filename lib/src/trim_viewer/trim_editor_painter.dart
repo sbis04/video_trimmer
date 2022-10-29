@@ -15,10 +15,15 @@ class TrimEditorPainter extends CustomPainter {
   /// By default it is set to `4.0`.
   final double borderRadius;
 
-  /// For specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
+  /// For specifying a size to the start holder
+  /// of the video trimmer area.
   /// By default it is set to `0.5`.
-  final double circleSize;
+  final double startCircleSize;
+
+  /// For specifying a size to the end holder
+  /// of the video trimmer area.
+  /// By default it is set to `0.5`.
+  final double endCircleSize;
 
   /// For specifying the width of the border around
   /// the trim area. By default it is set to `3`.
@@ -60,14 +65,19 @@ class TrimEditorPainter extends CustomPainter {
   ///
   /// The optional parameters are:
   ///
-  /// * [circleSize] for specifying a circular border radius
+  /// * [startCircleSize] for specifying a size to the start holder
+  /// of the video trimmer area.
+  /// By default it is set to `0.5`.
+  ///
+  ///
+  /// * [endCircleSize] for specifying a size to the end holder
+  /// of the video trimmer area.
+  /// By default it is set to `0.5`.
+  ///
+  ///
+  /// * [borderRadius] for specifying a circular border radius
   /// to the corners of the trim area.
   /// By default it is set to `4.0`.
-  ///
-  ///
-  /// * [borderRadius] for specifying a size to the holder at the
-  /// two ends of the video trimmer area, while it is `idle`.
-  /// By default it is set to `0.5`.
   ///
   ///
   /// * [borderWidth] for specifying the width of the border around
@@ -96,7 +106,8 @@ class TrimEditorPainter extends CustomPainter {
     required this.startPos,
     required this.endPos,
     required this.scrubberAnimationDx,
-    this.circleSize = 0.5,
+    this.startCircleSize = 0.5,
+    this.endCircleSize = 0.5,
     this.borderRadius = 4,
     this.borderWidth = 3,
     this.scrubberWidth = 1,
@@ -143,10 +154,12 @@ class TrimEditorPainter extends CustomPainter {
     }
 
     canvas.drawRRect(roundedRect, borderPaint);
+    // Paint start holder
     canvas.drawCircle(
-        startPos + Offset(0, endPos.dy / 2), circleSize, circlePaint);
+        startPos + Offset(0, endPos.dy / 2), startCircleSize, circlePaint);
+    // Paint end holder
     canvas.drawCircle(
-        endPos + Offset(0, -endPos.dy / 2), circleSize, circlePaint);
+        endPos + Offset(0, -endPos.dy / 2), endCircleSize, circlePaint);
   }
 
   @override
