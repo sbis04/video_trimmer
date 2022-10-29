@@ -278,7 +278,7 @@ class Trimmer {
   ///
   /// Returns a `Future<bool>`, if `true` then video is playing
   /// otherwise paused.
-  Future<bool> videPlaybackControl({
+  Future<bool> videoPlaybackControl({
     required double startValue,
     required double endValue,
   }) async {
