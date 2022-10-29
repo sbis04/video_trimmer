@@ -22,11 +22,6 @@ class FixedTrimViewer extends StatefulWidget {
   /// For defining the total trimmer area height
   final double viewerHeight;
 
-  /// For defining the image fit type of each thumbnail image.
-  ///
-  /// By default it is set to `BoxFit.fitHeight`.
-  // final BoxFit fit;
-
   /// For defining the maximum length of the output video.
   final Duration maxVideoLength;
 
