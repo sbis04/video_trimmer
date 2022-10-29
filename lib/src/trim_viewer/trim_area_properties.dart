@@ -147,7 +147,7 @@ class TrimAreaProperties {
   ///
   /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png)
   ///
-  factory TrimAreaProperties.blur({
+  factory TrimAreaProperties.edgeBlur({
     BoxFit thumbnailFit,
     int thumbnailQuality,
     bool blurEdges,

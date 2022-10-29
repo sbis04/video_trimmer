@@ -103,7 +103,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                         borderRadius: 5,
                         circlePaintColor: Colors.yellow.shade800,
                       ),
-                      areaProperties: const TrimAreaProperties(
+                      areaProperties: TrimAreaProperties.edgeBlur(
                         thumbnailQuality: 10,
                       ),
                       onChangeStart: (value) => _startValue = value,
