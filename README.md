@@ -19,13 +19,22 @@
 
 ### Features
 
-* Customizable video trimmer
-* Video playback control
-* Retrieving and storing video file
+* Customizable video trimmer.
+* Supports two types of trim viewer, fixed length and scrollable.
+* Video playback control.
+* Retrieving and storing video file.
 
 Also, supports conversion to **GIF**.
 
-<h4 align="center">TRIM EDITOR</h4>
+> **Migrating to v2.0.0:** If you were using 1.x.x version of this package, checkout the BREAKING CHANGES by going to the **Changelog** tab on the `pub.dev` package page.
+
+Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview.png" alt="Trim Editor" />
+</p>
+
+<h4 align="center">TRIM VIEWER</h4>
 
 <p align="center">
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/editor_demo.gif" alt="Trim Editor" />
@@ -37,7 +46,7 @@ Also, supports conversion to **GIF**.
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
 </p>
 
-<h4 align="center">CUSTOMIZABLE VIDEO EDITOR</h4>
+<h4 align="center">CUSTOMIZABLE VIDEO TRIMMER</h4>
 
 <p align="center">
   <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
@@ -49,7 +58,7 @@ Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
 ```yaml
 dependencies:
-  video_trimmer: ^1.1.0
+  video_trimmer: ^2.0.0
 ```
 
 ### Android configuration
@@ -184,22 +193,15 @@ VideoViewer(trimmer: _trimmer)
 ### Display the video trimmer area
 
 ```dart
-TrimEditor(
+TrimViewer(
   trimmer: _trimmer,
   viewerHeight: 50.0,
   viewerWidth: MediaQuery.of(context).size.width,
-  maxVideoLength: Duration(seconds: 10),
-  onChangeStart: (value) {
-    _startValue = value;
-  },
-  onChangeEnd: (value) {
-    _endValue = value;
-  },
-  onChangePlaybackState: (value) {
-    setState(() {
-      _isPlaying = value;
-    });
-  },
+  maxVideoLength: const Duration(seconds: 10),
+  onChangeStart: (value) => _startValue = value,
+  onChangeEnd: (value) => _endValue = value,
+  onChangePlaybackState: (value) =>
+      setState(() => _isPlaying = value),
 )
 ```
 
@@ -351,22 +353,15 @@ class _TrimmerViewState extends State<TrimmerView> {
                   child: VideoViewer(trimmer: _trimmer),
                 ),
                 Center(
-                  child: TrimEditor(
+                  child: TrimViewer(
                     trimmer: _trimmer,
                     viewerHeight: 50.0,
                     viewerWidth: MediaQuery.of(context).size.width,
-                    maxVideoLength: Duration(seconds: 10),
-                    onChangeStart: (value) {
-                      _startValue = value;
-                    },
-                    onChangeEnd: (value) {
-                      _endValue = value;
-                    },
-                    onChangePlaybackState: (value) {
-                      setState(() {
-                        _isPlaying = value;
-                      });
-                    },
+                    maxVideoLength: const Duration(seconds: 10),
+                    onChangeStart: (value) => _startValue = value,
+                    onChangeEnd: (value) => _endValue = value,
+                    onChangePlaybackState: (value) =>
+                        setState(() => _isPlaying = value),
                   ),
                 ),
                 TextButton(
