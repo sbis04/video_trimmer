@@ -32,7 +32,7 @@ Following image shows the structure of the `TrimViewer`. It consists of the `Dur
 
 <p align="center">
   <img src="
-  https://github.com/sbis04/video_trimmer/raw/main/screenshots/trim_viewer_preview_small.png"/>
+  https://github.com/sbis04/video_trimmer/raw/main/screenshots/trim_viewer_preview.png"/>
 </p>
 
 ## Example
