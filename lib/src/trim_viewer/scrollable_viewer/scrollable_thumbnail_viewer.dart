@@ -13,6 +13,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
   final int numberOfThumbnails;
   final int quality;
   final ScrollController scrollController;
+  final VoidCallback onThumbnailLoadingComplete;
 
   /// For showing the thumbnails generated from the video,
   /// like a frame by frame preview
@@ -24,6 +25,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
     required this.numberOfThumbnails,
     required this.fit,
     required this.scrollController,
+    required this.onThumbnailLoadingComplete,
     this.quality = 75,
   }) : super(key: key);
 
@@ -52,6 +54,9 @@ class ScrollableThumbnailViewer extends StatelessWidget {
         bytes = lastBytes;
       }
       byteList.add(bytes);
+      if (byteList.length == numberOfThumbnails) {
+        onThumbnailLoadingComplete();
+      }
       yield byteList;
     }
   }

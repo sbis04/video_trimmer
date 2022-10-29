@@ -81,6 +81,10 @@ class TrimViewer extends StatefulWidget {
   /// Properties for customizing the trim area.
   final TrimAreaProperties areaProperties;
 
+  /// Callback for thumbnail loader to know when all the
+  /// thumbnails are loaded.
+  final VoidCallback? onThumbnailLoadingComplete;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -154,6 +158,10 @@ class TrimViewer extends StatefulWidget {
   ///
   /// * [areaProperties] defines properties for customizing the trim area.
   ///
+  ///
+  /// * [onThumbnailLoadingComplete] is a callback for thumbnail loader to
+  /// know when all the thumbnails are loaded.
+  ///
   const TrimViewer({
     Key? key,
     required this.trimmer,
@@ -169,6 +177,7 @@ class TrimViewer extends StatefulWidget {
     this.paddingFraction = 0.2,
     this.editorProperties = const TrimEditorProperties(),
     this.areaProperties = const TrimAreaProperties(),
+    this.onThumbnailLoadingComplete,
   }) : super(key: key);
 
   @override
@@ -218,6 +227,11 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       paddingFraction: widget.paddingFraction,
       editorProperties: widget.editorProperties,
       areaProperties: widget.areaProperties,
+      onThumbnailLoadingComplete: () {
+        if (widget.onThumbnailLoadingComplete != null) {
+          widget.onThumbnailLoadingComplete!();
+        }
+      },
     );
 
     final fixedTrimViewer = FixedTrimViewer(
@@ -236,6 +250,11 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
         thumbnailQuality: widget.areaProperties.thumbnailQuality,
         borderRadius: widget.areaProperties.borderRadius,
       ),
+      onThumbnailLoadingComplete: () {
+        if (widget.onThumbnailLoadingComplete != null) {
+          widget.onThumbnailLoadingComplete!();
+        }
+      },
     );
 
     return _isScrollableAllowed == null
