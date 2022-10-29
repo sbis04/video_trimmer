@@ -12,7 +12,7 @@
 </a>
 
 <p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/cover.png" alt="Video Trimmer" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/main/screenshots/cover.png" alt="Video Trimmer" />
 </p>
 
 <h4 align="center">A Flutter package for trimming videos</h4>
@@ -31,25 +31,16 @@ Also, supports conversion to **GIF**.
 Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview.png" alt="Trim Editor" />
+  <img src="
+  https://github.com/sbis04/video_trimmer/raw/main/screenshots/trim_viewer_preview.png" alt="Trim Editor" />
 </p>
 
-<h4 align="center">TRIM VIEWER</h4>
+## Example
+
+The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) running on a iPhone 13 Pro device:
 
 <p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/editor_demo.gif" alt="Trim Editor" />
-</p>
-
-<h4 align="center">EXAMPLE APP</h4>
-
-<p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trimmer.png" alt="Trimmer"/>
-</p>
-
-<h4 align="center">CUSTOMIZABLE VIDEO TRIMMER</h4>
-
-<p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/master/screenshots/trim_editor.gif" alt="Trim Editor" />
+  <img src="https://github.com/sbis04/video_trimmer/raw/main/screenshots/updated_trimmer_demo.gif" alt="Trimmer"/>
 </p>
 
 ## Usage
