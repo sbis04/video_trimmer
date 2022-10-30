@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Add new property for specifying `DurationStyle`.
+
 ## 2.0.0
 
 * **BREAKING CHANGE:** Overhaul of the entire video trimmer implementation.
