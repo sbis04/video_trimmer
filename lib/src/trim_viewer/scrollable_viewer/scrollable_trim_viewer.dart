@@ -10,6 +10,7 @@ import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_area_properties.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_editor_properties.dart';
 import 'package:video_trimmer/src/trimmer.dart';
+import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
 import 'scrollable_thumbnail_viewer.dart';
@@ -38,6 +39,11 @@ class ScrollableTrimViewer extends StatefulWidget {
   ///
   /// By default it is set to `TextStyle(color: Colors.white)`
   final TextStyle durationTextStyle;
+
+  /// For specifying a style of the duration
+  ///
+  /// By default it is set to `DurationStyle.FORMAT_HH_MM_SS`.
+  final DurationStyle durationStyle;
 
   /// Callback to the video start position
   ///
@@ -121,6 +127,7 @@ class ScrollableTrimViewer extends StatefulWidget {
     this.viewerHeight = 50,
     this.showDuration = true,
     this.durationTextStyle = const TextStyle(color: Colors.white),
+    this.durationStyle = DurationStyle.FORMAT_HH_MM_SS,
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
@@ -587,22 +594,19 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                       children: <Widget>[
                         Text(
                           Duration(milliseconds: _videoStartPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                              .format(widget.durationStyle),
                           style: widget.durationTextStyle,
                         ),
                         videoPlayerController.value.isPlaying
                             ? Text(
                                 Duration(milliseconds: _currentPosition.toInt())
-                                    .toString()
-                                    .split('.')[0],
+                                    .format(widget.durationStyle),
                                 style: widget.durationTextStyle,
                               )
                             : Container(),
                         Text(
                           Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                              .format(widget.durationStyle),
                           style: widget.durationTextStyle,
                         ),
                       ],

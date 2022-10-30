@@ -54,6 +54,11 @@ class TrimViewer extends StatefulWidget {
   /// By default it is set to `TextStyle(color: Colors.white)`
   final TextStyle durationTextStyle;
 
+  /// For specifying a style of the duration
+  ///
+  /// By default it is set to `DurationStyle.FORMAT_HH_MM_SS`.
+  final DurationStyle durationStyle;
+
   /// Callback to the video start position
   ///
   /// Returns the selected video start position in `milliseconds`.
@@ -171,6 +176,7 @@ class TrimViewer extends StatefulWidget {
     this.viewerHeight = 50,
     this.showDuration = true,
     this.durationTextStyle = const TextStyle(color: Colors.white),
+    this.durationStyle = DurationStyle.FORMAT_HH_MM_SS,
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
@@ -221,6 +227,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,
       durationTextStyle: widget.durationTextStyle,
+      durationStyle: widget.durationStyle,
       onChangeStart: widget.onChangeStart,
       onChangeEnd: widget.onChangeEnd,
       onChangePlaybackState: widget.onChangePlaybackState,
@@ -241,6 +248,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,
       durationTextStyle: widget.durationTextStyle,
+      durationStyle: widget.durationStyle,
       onChangeStart: widget.onChangeStart,
       onChangeEnd: widget.onChangeEnd,
       onChangePlaybackState: widget.onChangePlaybackState,

@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
 import 'package:video_trimmer/src/trimmer.dart';
+import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
 import '../trim_area_properties.dart';
@@ -36,6 +37,11 @@ class FixedTrimViewer extends StatefulWidget {
   ///
   /// By default it is set to `TextStyle(color: Colors.white)`
   final TextStyle durationTextStyle;
+
+  /// For specifying a style of the duration
+  ///
+  /// By default it is set to `DurationStyle.FORMAT_HH_MM_SS`.
+  final DurationStyle durationStyle;
 
   /// Callback to the video start position
   ///
@@ -115,6 +121,7 @@ class FixedTrimViewer extends StatefulWidget {
     this.maxVideoLength = const Duration(milliseconds: 0),
     this.showDuration = true,
     this.durationTextStyle = const TextStyle(color: Colors.white),
+    this.durationStyle = DurationStyle.FORMAT_HH_MM_SS,
     this.onChangeStart,
     this.onChangeEnd,
     this.onChangePlaybackState,
@@ -431,22 +438,19 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
                       children: <Widget>[
                         Text(
                           Duration(milliseconds: _videoStartPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                              .format(widget.durationStyle),
                           style: widget.durationTextStyle,
                         ),
                         videoPlayerController.value.isPlaying
                             ? Text(
                                 Duration(milliseconds: _currentPosition.toInt())
-                                    .toString()
-                                    .split('.')[0],
+                                    .format(widget.durationStyle),
                                 style: widget.durationTextStyle,
                               )
                             : Container(),
                         Text(
                           Duration(milliseconds: _videoEndPos.toInt())
-                              .toString()
-                              .split('.')[0],
+                              .format(widget.durationStyle),
                           style: widget.durationTextStyle,
                         ),
                       ],
