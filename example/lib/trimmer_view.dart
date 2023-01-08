@@ -27,6 +27,12 @@ class _TrimmerViewState extends State<TrimmerView> {
 
     _loadVideo();
   }
+  
+  @override
+  void dispose() {
+    _trimmer.dispose();
+    super.dispose();
+  }
 
   void _loadVideo() {
     _trimmer.loadVideo(videoFile: widget.file);
