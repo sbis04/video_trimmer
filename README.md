@@ -138,7 +138,7 @@ await _trimmer
 Returns the video playback state. If **true** then the video is playing, otherwise it is paused.
 
 ```dart
-await _trimmer.videPlaybackControl(
+await _trimmer.videoPlaybackControl(
   startValue: _startValue,
   endValue: _endValue,
 );
@@ -367,7 +367,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                           color: Colors.white,
                         ),
                   onPressed: () async {
-                    bool playbackState = await _trimmer.videPlaybackControl(
+                    bool playbackState = await _trimmer.videoPlaybackControl(
                       startValue: _startValue,
                       endValue: _endValue,
                     );
