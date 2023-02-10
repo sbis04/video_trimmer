@@ -14,7 +14,7 @@ dependencies:
   ffmpeg_kit_flutter: ^5.1.0-LTS
   video_thumbnail: ^0.5.3
   path_provider: ^2.0.11
-  intl: ^0.17.0
+  intl: ^0.18.0
   path: ^1.8.2
   transparent_image: ^2.0.0
 
