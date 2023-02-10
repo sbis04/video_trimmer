@@ -94,7 +94,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                     padding: const EdgeInsets.all(8.0),
                     child: TrimViewer(
                       trimmer: _trimmer,
-                      viewerHeight: 50.0,
+                      viewerHeight: 60.0,
                       viewerWidth: MediaQuery.of(context).size.width,
                       durationStyle: DurationStyle.FORMAT_MM_SS,
                       maxVideoLength: const Duration(seconds: 10),

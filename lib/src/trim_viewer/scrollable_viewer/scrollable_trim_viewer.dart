@@ -203,6 +203,21 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   Timer? _scrollStartTimer;
   Timer? _scrollingTimer;
 
+  int x = 1;
+  String size = "";
+  getFileSize() async {
+    var file = _videoFile;
+    int bytes = await file!.length();
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    var i = (math.log(bytes) / math.log(1024)).floor();
+    setState(() {
+      x = i;
+      size = suffixes[i];
+    });
+    return ((bytes / math.pow(1024, i)));
+  }
+
   void startScrolling(bool isTowardsEnd) {
     _scrollingTimer =
         Timer.periodic(const Duration(milliseconds: 300), (timer) {
@@ -297,6 +312,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       _initializeVideoController();
       // The video has been initialized, now we can load stuff
       videoPlayerController.seekTo(const Duration(milliseconds: 0));
+      getFileSize();
       setState(() {
         final totalDuration = videoPlayerController.value.duration;
         log('Total Video Length: $totalDuration');
@@ -727,6 +743,16 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
               ),
             ],
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "${(((_videoEndPos - _videoStartPos).toInt() / _videoDuration) * x).toStringAsFixed(2)}${size} (Approx)",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          )
         ],
       ),
     );
