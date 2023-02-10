@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Update plugin versions.
+
 ## 2.0.1
 
 * Add new property for specifying `DurationStyle`.
