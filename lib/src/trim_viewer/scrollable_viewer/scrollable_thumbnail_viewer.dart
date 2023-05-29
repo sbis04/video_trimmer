@@ -27,12 +27,16 @@ class ScrollableThumbnailViewer extends StatelessWidget {
     this.quality = 75,
   }) : super(key: key);
 
-  Stream<List<Uint8List?>> generateThumbnail() async* {
+  Stream<List<Uint8List>> generateThumbnail() async* {
     final String videoPath = videoFile.path;
+
     double eachPart = videoDuration / numberOfThumbnails;
-    List<Uint8List?> byteList = [];
+
+    List<Uint8List> byteList = [];
+
     // the cache of last thumbnail
     Uint8List? lastBytes;
+
     for (int i = 1; i <= numberOfThumbnails; i++) {
       Uint8List? bytes;
       try {
@@ -51,8 +55,8 @@ class ScrollableThumbnailViewer extends StatelessWidget {
       } else {
         bytes = lastBytes;
       }
-      byteList.add(bytes);
 
+      byteList.add(bytes!);
       yield byteList;
     }
   }
@@ -66,11 +70,11 @@ class ScrollableThumbnailViewer extends StatelessWidget {
         child: SizedBox(
           width: numberOfThumbnails * thumbnailHeight,
           height: thumbnailHeight,
-          child: StreamBuilder<List<Uint8List?>>(
+          child: StreamBuilder<List<Uint8List>>(
             stream: generateThumbnail(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                List<Uint8List?> imageBytes = snapshot.data!;
+                List<Uint8List> imageBytes = snapshot.data!;
                 return Row(
                   mainAxisSize: MainAxisSize.max,
                   children: List.generate(
@@ -84,14 +88,14 @@ class ScrollableThumbnailViewer extends StatelessWidget {
                           Opacity(
                             opacity: 0.2,
                             child: Image.memory(
-                              imageBytes[0] ?? kTransparentImage,
+                              imageBytes[0],
                               fit: fit,
                             ),
                           ),
                           index < imageBytes.length
                               ? FadeInImage(
                                   placeholder: MemoryImage(kTransparentImage),
-                                  image: MemoryImage(imageBytes[index]!),
+                                  image: MemoryImage(imageBytes[index]),
                                   fit: fit,
                                 )
                               : const SizedBox(),
