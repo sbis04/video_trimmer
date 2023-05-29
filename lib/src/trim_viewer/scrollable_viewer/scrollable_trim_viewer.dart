@@ -72,8 +72,6 @@ class ScrollableTrimViewer extends StatefulWidget {
   /// Properties for customizing the trim area.
   final TrimAreaProperties areaProperties;
 
-  final VoidCallback onThumbnailLoadingComplete;
-
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -122,7 +120,6 @@ class ScrollableTrimViewer extends StatefulWidget {
     super.key,
     required this.trimmer,
     required this.maxVideoLength,
-    required this.onThumbnailLoadingComplete,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
     this.showDuration = true,
@@ -341,7 +338,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
           thumbnailHeight: _thumbnailViewerH,
           numberOfThumbnails: _numberOfThumbnails,
           quality: widget.areaProperties.thumbnailQuality,
-          onThumbnailLoadingComplete: widget.onThumbnailLoadingComplete,
         );
         this.thumbnailWidget = thumbnailWidget;
         log('=========================');

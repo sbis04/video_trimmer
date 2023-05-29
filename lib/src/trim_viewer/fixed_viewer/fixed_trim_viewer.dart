@@ -66,8 +66,6 @@ class FixedTrimViewer extends StatefulWidget {
   /// Properties for customizing the fixed trim area.
   final FixedTrimAreaProperties areaProperties;
 
-  final VoidCallback onThumbnailLoadingComplete;
-
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -115,7 +113,6 @@ class FixedTrimViewer extends StatefulWidget {
   const FixedTrimViewer({
     super.key,
     required this.trimmer,
-    required this.onThumbnailLoadingComplete,
     this.viewerWidth = 50.0 * 8,
     this.viewerHeight = 50,
     this.maxVideoLength = const Duration(milliseconds: 0),
@@ -211,7 +208,6 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
           thumbnailHeight: _thumbnailViewerH,
           numberOfThumbnails: _numberOfThumbnails,
           quality: widget.areaProperties.thumbnailQuality,
-          onThumbnailLoadingComplete: widget.onThumbnailLoadingComplete,
         );
         this.thumbnailWidget = thumbnailWidget;
         Duration totalDuration = videoPlayerController.value.duration;

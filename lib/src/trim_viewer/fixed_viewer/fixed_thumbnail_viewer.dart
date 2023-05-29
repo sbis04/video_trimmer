@@ -11,7 +11,7 @@ class FixedThumbnailViewer extends StatelessWidget {
   final double thumbnailHeight;
   final BoxFit fit;
   final int numberOfThumbnails;
-  final VoidCallback onThumbnailLoadingComplete;
+
   final int quality;
 
   /// For showing the thumbnails generated from the video,
@@ -23,7 +23,6 @@ class FixedThumbnailViewer extends StatelessWidget {
     required this.thumbnailHeight,
     required this.numberOfThumbnails,
     required this.fit,
-    required this.onThumbnailLoadingComplete,
     this.quality = 75,
   }) : super(key: key);
 
@@ -52,9 +51,7 @@ class FixedThumbnailViewer extends StatelessWidget {
         bytes = lastBytes;
       }
       byteList.add(bytes);
-      if (byteList.length == numberOfThumbnails) {
-        onThumbnailLoadingComplete();
-      }
+
       yield byteList;
     }
   }

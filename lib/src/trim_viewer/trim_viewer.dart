@@ -234,11 +234,6 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       paddingFraction: widget.paddingFraction,
       editorProperties: widget.editorProperties,
       areaProperties: widget.areaProperties,
-      onThumbnailLoadingComplete: () {
-        if (widget.onThumbnailLoadingComplete != null) {
-          widget.onThumbnailLoadingComplete!();
-        }
-      },
     );
 
     final fixedTrimViewer = FixedTrimViewer(
@@ -258,11 +253,6 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
         thumbnailQuality: widget.areaProperties.thumbnailQuality,
         borderRadius: widget.areaProperties.borderRadius,
       ),
-      onThumbnailLoadingComplete: () {
-        if (widget.onThumbnailLoadingComplete != null) {
-          widget.onThumbnailLoadingComplete!();
-        }
-      },
     );
 
     return _isScrollableAllowed == null
