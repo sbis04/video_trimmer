@@ -4,6 +4,10 @@
 * Updates minimum Flutter version to 3.0.
 * Updates plugin versions.
 
+## 3.0.0-LTS
+
+* Same as `3.0.0` but uses the LTS version of FFmpeg.
+
 ## 2.1.0
 
 * Update plugin versions.
