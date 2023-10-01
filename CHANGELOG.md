@@ -2,7 +2,7 @@
 
 * Updates readme.
 
-## 3.0.1
+## 3.0.1-LTS
 
 * Same as `3.0.1` but uses the LTS version of FFmpeg.
 
