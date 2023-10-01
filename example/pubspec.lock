@@ -294,7 +294,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "3.0.0-LTS"
+    version: "3.0.1-LTS"
   web:
     dependency: transitive
     description:
