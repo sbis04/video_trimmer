@@ -1,55 +1,50 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:appinio_video_player/appinio_video_player.dart';
 
 class Preview extends StatefulWidget {
-  final String? outputVideoPath;
-
-  const Preview(this.outputVideoPath, {Key? key}) : super(key: key);
+  const Preview({super.key, required this.path});
+  static const route = '/VideoMessage';
+  final String? path;
 
   @override
   State<Preview> createState() => _PreviewState();
 }
 
 class _PreviewState extends State<Preview> {
-  late VideoPlayerController _controller;
-
+  File? pa;
+  late VideoPlayerController videoPlayerControll;
+  late CustomVideoPlayerController _customVideoPlayerController;
   @override
   void initState() {
     super.initState();
-
-    _controller = VideoPlayerController.file(File(widget.outputVideoPath!))
-      ..initialize().then((_) {
+    videoPlayerControll = VideoPlayerController.file(File(widget.path!))
+      ..initialize().then((value) {
         setState(() {});
-        _controller.play();
       });
+    _customVideoPlayerController = CustomVideoPlayerController(
+      context: context,
+      videoPlayerController: videoPlayerControll,
+    );
   }
 
   @override
   void dispose() {
+    _customVideoPlayerController.dispose();
     super.dispose();
-    _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Preview"),
-      ),
-      body: Center(
-        child: AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: _controller.value.isInitialized
-              ? VideoPlayer(_controller)
-              : const Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Colors.white,
-                  ),
-                ),
-        ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CustomVideoPlayer(
+              customVideoPlayerController: _customVideoPlayerController),
+          SizedBox(height: 20),
+        ],
       ),
     );
   }
