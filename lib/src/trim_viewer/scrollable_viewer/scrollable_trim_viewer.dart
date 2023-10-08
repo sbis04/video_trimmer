@@ -126,7 +126,7 @@ class ScrollableTrimViewer extends StatefulWidget {
     required this.trimmer,
     required this.maxVideoLength,
     required this.onThumbnailLoadingComplete,
-    this.scrollDelay = 300,
+    required this.scrollDelay,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
     this.showDuration = true,
