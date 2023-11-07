@@ -10,9 +10,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Video Trimmer',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.pink,
+      ),
+      themeMode: ThemeMode.light,
       home: const HomePage(),
     );
   }
