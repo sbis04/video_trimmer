@@ -36,6 +36,10 @@ class TrimViewer extends StatefulWidget {
   /// By default it is set to `ViewerType.auto`.
   final ViewerType type;
 
+  /// For defining the delay in a scrollable viewer in milliseconds
+  /// Scrollviewer defaults to 300 milliseconds
+  final int? scrollDelay;
+
   /// For defining the maximum length of the output video.
   ///
   /// **NOTE:** When explicitly setting the `type` to `scrollable`,
@@ -184,6 +188,7 @@ class TrimViewer extends StatefulWidget {
     this.editorProperties = const TrimEditorProperties(),
     this.areaProperties = const TrimAreaProperties(),
     this.onThumbnailLoadingComplete,
+    this.scrollDelay,
   }) : super(key: key);
 
   @override
@@ -226,6 +231,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       viewerWidth: widget.viewerWidth,
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,
+      scrollDelay: widget.scrollDelay ?? 50,
       durationTextStyle: widget.durationTextStyle,
       durationStyle: widget.durationStyle,
       onChangeStart: widget.onChangeStart,
