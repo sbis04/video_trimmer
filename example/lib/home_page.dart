@@ -17,19 +17,19 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           child: const Text("LOAD VIDEO"),
-          onPressed: () async {
-            FilePickerResult? result = await FilePicker.platform.pickFiles(
-              type: FileType.video,
-              allowCompression: false,
-            );
-            if (result != null) {
-              File file = File(result.files.single.path!);
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) {
-                  return TrimmerView(file);
-                }),
-              );
-            }
+          onPressed: () {
+            FilePicker.platform
+                .pickFiles(type: FileType.video, allowCompression: false)
+                .then((value) {
+              if (value != null) {
+                File file = File(value.files.single.path!);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) {
+                    return TrimmerView(file);
+                  }),
+                );
+              }
+            });
           },
         ),
       ),

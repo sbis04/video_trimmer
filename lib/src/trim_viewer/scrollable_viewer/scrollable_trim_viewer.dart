@@ -651,6 +651,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                         ? AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  widget.areaProperties.borderRadius),
                               gradient: widget.areaProperties.blurEdges
                                   ? LinearGradient(
                                       stops: const [0.0, 0.1, 0.9, 1.0],
