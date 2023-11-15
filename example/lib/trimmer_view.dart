@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:example/core/constants.dart';
+import 'package:example/loading_screen.dart';
 import 'package:example/preview.dart';
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -20,7 +21,6 @@ class _TrimmerViewState extends State<TrimmerView> {
   double _endValue = 0.0;
 
   bool _isPlaying = false;
-  bool _progressVisibility = false;
 
   @override
   void initState() {
@@ -31,17 +31,13 @@ class _TrimmerViewState extends State<TrimmerView> {
   }
 
   _saveVideo() {
-    setState(() {
-      _progressVisibility = true;
-    });
+    LoadingScreen(scaffoldGlobalKey).show();
 
     _trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
       onSave: (outputPath) {
-        setState(() {
-          _progressVisibility = false;
-        });
+        LoadingScreen(scaffoldGlobalKey).hide();
         debugPrint('OUTPUT PATH: $outputPath');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -63,6 +59,7 @@ class _TrimmerViewState extends State<TrimmerView> {
         }
       },
       child: Scaffold(
+        key: scaffoldGlobalKey,
         appBar: AppBar(
           backgroundColor: AppColors.backgroundLighter,
           elevation: 1,
@@ -71,9 +68,8 @@ class _TrimmerViewState extends State<TrimmerView> {
               Navigator.of(context).pop();
             },
             icon: const Icon(
-              Icons.arrow_back_ios,
+              Icons.close_rounded,
               color: AppColors.textColor,
-              size: 23,
             ),
           ),
           centerTitle: true,
@@ -89,14 +85,10 @@ class _TrimmerViewState extends State<TrimmerView> {
                 shadowColor: AppColors.backgroundLighter,
                 elevation: 0,
               ),
-              onPressed: _progressVisibility ? null : () => _saveVideo(),
-              child: const Text(
-                'Apply',
-                // L10n.of(context).textBtnPost,
-                style: TextStyle(
-                  color: AppColors.emphasisTextColor,
-                  backgroundColor: Colors.white,
-                ),
+              onPressed: () => _saveVideo(),
+              child: const Icon(
+                Icons.check,
+                color: AppColors.accent,
               ),
             ),
           ],
@@ -107,12 +99,6 @@ class _TrimmerViewState extends State<TrimmerView> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Visibility(
-                visible: _progressVisibility,
-                child: const LinearProgressIndicator(
-                  backgroundColor: AppColors.emphasisTextColor,
-                ),
-              ),
               Expanded(
                 child: VideoViewer(trimmer: _trimmer),
               ),
