@@ -1,3 +1,17 @@
+## 3.0.1
+
+* Updates readme.
+
+## 3.0.0
+
+* **NOTE:** Separates the LTS version into a branched package version. By default, it will use the latest "Full" version of FFmpeg. To install the "LTS" version use the "x.x.x-LTS" version of the package.
+* Updates minimum Flutter version to 3.0.
+* Updates plugin versions.
+
+## 2.1.0
+
+* Update plugin versions.
+
 ## 2.0.1
 
 * Add new property for specifying `DurationStyle`.

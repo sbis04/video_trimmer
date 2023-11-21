@@ -15,7 +15,7 @@ extension DurationFormatExt on Duration {
     final formatPart = style.toString().split('.')[1].split('_');
     formatPart.removeAt(0);
     // HH_MM_SS
-    final millisecondTime = this.inMilliseconds;
+    final millisecondTime = inMilliseconds;
     final hoursStr = _getDisplayTimeHours(millisecondTime);
     final mStr = _getDisplayTimeMinute(millisecondTime, hours: true);
     final sStr = _getDisplayTimeSecond(millisecondTime);

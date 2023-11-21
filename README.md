@@ -12,7 +12,7 @@
 </a>
 
 <p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/main/screenshots/cover.png" alt="Video Trimmer" />
+  <img src="screenshots/cover.png" alt="Video Trimmer" />
 </p>
 
 <h4 align="center">A Flutter package for trimming videos</h4>
@@ -26,29 +26,38 @@
 
 Also, supports conversion to **GIF**.
 
-> **Migrating to v2.0.0:** If you were using 1.x.x version of this package, checkout the BREAKING CHANGES by going to the **Changelog** tab on the `pub.dev` package page.
+> NOTE: Versions `3.0.0` and above uses the "Full" version of Flutter FFmpeg. To install the "LTS" version, use the "x.x.x-LTS" version of this package.
 
 Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
 
 <p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/main/screenshots/trim_preview.png"/>
+  <img src="screenshots/trim_preview.png"/>
 </p>
 
 ## Example
 
-The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) running on a iPhone 13 Pro device:
+The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) running on an iPhone 13 Pro device:
 
 <p align="center">
-  <img src="https://github.com/sbis04/video_trimmer/raw/main/screenshots/updated_trimmer_demo.gif" alt="Trimmer"/>
+  <img src="screenshots/updated_trimmer_demo.gif" alt="Trimmer"/>
 </p>
 
 ## Usage
 
 Add the dependency `video_trimmer` to your **pubspec.yaml** file:
 
+For using main version of FFmpeg package:
+
 ```yaml
 dependencies:
-  video_trimmer: ^2.0.0
+  video_trimmer: ^3.0.0
+```
+
+For using LTS version of FFmpeg package:
+
+```yaml
+dependencies:
+  video_trimmer: ^3.0.0-LTS
 ```
 
 ### Android configuration
@@ -67,44 +76,42 @@ No additional configuration is needed for using on Android platform. You are goo
   <string>Used to demonstrate image picker plugin</string>
   ```
 
-* Set the platform version in `ios/Podfile` to **10**.
-  
-  > Refer to the [FFmpeg Release](#ffmpeg-release) section.
-
-   ```
-   platform :ios, '10'
-   ```
-
 ## FFmpeg Release
 
-This package uses [LTS version](https://github.com/tanersener/ffmpeg-kit#10-lts-releases) of the FFmpeg implementation.
+This package supports both Main and [LTS version](https://github.com/arthenica/ffmpeg-kit/wiki/LTS-Releases) of the FFmpeg implementation.
 
 <table>
 <thead>
     <tr>
         <th align="center"></th>
+        <th align="center">Main Release</th>
         <th align="center">LTS Release</th>
     </tr>
 </thead>
 <tbody>
     <tr>
         <td align="center">Android API Level</td>
+        <td align="center">24</td>
         <td align="center">16</td>
     </tr>
     <tr>
         <td align="center">Android Camera Access</td>
+        <td align="center">Yes</td>
         <td align="center">-</td>
     </tr>
     <tr>
         <td align="center">Android Architectures</td>
+        <td align="center">arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
         <td align="center">arm-v7a<br>arm-v7a-neon<br>arm64-v8a<br>x86<br>x86-64</td>
     </tr>
     <tr>
         <td align="center">iOS Min SDK</td>
+        <td align="center">12.1</td>
         <td align="center">10</td>
     </tr>
     <tr>
         <td align="center">iOS Architectures</td>
+        <td align="center">arm64<br>arm64-simulator<br>arm64-mac-catalyst<br>x86-64<br>x86-64-mac-catalyst</td>
         <td align="center">armv7<br>arm64<br>i386<br>x86-64</td>
     </tr>
 </tbody>
@@ -138,7 +145,7 @@ await _trimmer
 Returns the video playback state. If **true** then the video is playing, otherwise it is paused.
 
 ```dart
-await _trimmer.videPlaybackControl(
+await _trimmer.videoPlaybackControl(
   startValue: _startValue,
   endValue: _endValue,
 );
@@ -367,7 +374,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                           color: Colors.white,
                         ),
                   onPressed: () async {
-                    bool playbackState = await _trimmer.videPlaybackControl(
+                    bool playbackState = await _trimmer.videoPlaybackControl(
                       startValue: _startValue,
                       endValue: _endValue,
                     );
@@ -386,7 +393,7 @@ class _TrimmerViewState extends State<TrimmerView> {
 }
 ```
 
-## Troubleshooting
+## Troubleshooting LTS version
 
 While running on the Android platform if it gives an error that the `minSdkVersion` needs to be `24`, or on iOS platform that the Podfile platform version should be `11`, first go to `pubspec.lock` file and see if the version of `ffmpeg_kit_flutter` has `-LTS` suffix. This should fix all issues for iOS platform.
 
@@ -400,7 +407,7 @@ On Android, if you still face the same issue, try adding the following to the `<
 
 ## License
 
-Copyright (c) 2022 Souvik Biswas
+Copyright (c) 2023 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

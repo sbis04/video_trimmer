@@ -19,7 +19,7 @@ enum TrimmerEvent { initialized }
 /// are:
 /// * [loadVideo()]
 /// * [saveTrimmedVideo()]
-/// * [videPlaybackControl()]
+/// * [videoPlaybackControl()]
 class Trimmer {
   // final FlutterFFmpeg _flutterFFmpeg = FFmpegKit();
 

@@ -6,7 +6,7 @@ version: 1.0.0+1
 publish_to: none
 
 environment:
-  sdk: ">=2.18.2 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -14,8 +14,8 @@ dependencies:
   video_trimmer:
     path: ../
 
-  video_player: ^2.4.7
-  file_picker: ^5.2.2
+  video_player: ^2.7.2
+  file_picker: ^5.5.0
 
 dev_dependencies:
   flutter_lints: ^2.0.1
