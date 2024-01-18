@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
@@ -192,11 +195,16 @@ class TrimViewer extends StatefulWidget {
 
 class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
   bool? _isScrollableAllowed;
+  late StreamSubscription<TrimmerEvent> _eventSubscription;
 
   @override
   void initState() {
     super.initState();
-    widget.trimmer.eventStream.listen((event) {
+    _init();
+  }
+
+  void _init() {
+    _eventSubscription = widget.trimmer.eventStream.listen((event) {
       if (event == TrimmerEvent.initialized) {
         final totalDuration =
             widget.trimmer.videoPlayerController!.value.duration;
@@ -219,29 +227,36 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final scrollableViewer = ScrollableTrimViewer(
-      trimmer: widget.trimmer,
-      maxVideoLength: widget.maxVideoLength,
-      viewerWidth: widget.viewerWidth,
-      viewerHeight: widget.viewerHeight,
-      showDuration: widget.showDuration,
-      durationTextStyle: widget.durationTextStyle,
-      durationStyle: widget.durationStyle,
-      onChangeStart: widget.onChangeStart,
-      onChangeEnd: widget.onChangeEnd,
-      onChangePlaybackState: widget.onChangePlaybackState,
-      paddingFraction: widget.paddingFraction,
-      editorProperties: widget.editorProperties,
-      areaProperties: widget.areaProperties,
-      onThumbnailLoadingComplete: () {
-        if (widget.onThumbnailLoadingComplete != null) {
-          widget.onThumbnailLoadingComplete!();
-        }
-      },
-    );
+  void didUpdateWidget(covariant TrimViewer oldWidget) {
+    if (oldWidget.trimmer != widget.trimmer) {
+      _eventSubscription.cancel();
+      _init();
+    }
+    super.didUpdateWidget(oldWidget);
+    log("TrimViewer didUpdateWidget");
+  }
 
-    final fixedTrimViewer = FixedTrimViewer(
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isScrollableAllowed == null) {
+      return const SizedBox();
+    }
+
+    if (widget.type == ViewerType.scrollable || _isScrollableAllowed == true) {
+      return _buildScrollableTrimViewer();
+    }
+
+    return _buildFixedTrimViewer();
+  }
+
+  Widget _buildFixedTrimViewer() {
+    return FixedTrimViewer(
       trimmer: widget.trimmer,
       maxVideoLength: widget.maxVideoLength,
       viewerWidth: widget.viewerWidth,
@@ -264,15 +279,28 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
         }
       },
     );
+  }
 
-    return _isScrollableAllowed == null
-        ? const SizedBox()
-        : widget.type == ViewerType.fixed
-            ? fixedTrimViewer
-            : widget.type == ViewerType.scrollable
-                ? scrollableViewer
-                : _isScrollableAllowed == true
-                    ? scrollableViewer
-                    : fixedTrimViewer;
+  Widget _buildScrollableTrimViewer() {
+    return ScrollableTrimViewer(
+      trimmer: widget.trimmer,
+      maxVideoLength: widget.maxVideoLength,
+      viewerWidth: widget.viewerWidth,
+      viewerHeight: widget.viewerHeight,
+      showDuration: widget.showDuration,
+      durationTextStyle: widget.durationTextStyle,
+      durationStyle: widget.durationStyle,
+      onChangeStart: widget.onChangeStart,
+      onChangeEnd: widget.onChangeEnd,
+      onChangePlaybackState: widget.onChangePlaybackState,
+      paddingFraction: widget.paddingFraction,
+      editorProperties: widget.editorProperties,
+      areaProperties: widget.areaProperties,
+      onThumbnailLoadingComplete: () {
+        if (widget.onThumbnailLoadingComplete != null) {
+          widget.onThumbnailLoadingComplete!();
+        }
+      },
+    );
   }
 }
