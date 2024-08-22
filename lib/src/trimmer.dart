@@ -226,7 +226,7 @@ class Trimmer {
         ' -ss $startPoint -i "$videoPath" -t ${endPoint - startPoint} -avoid_negative_ts auto ';
 
     if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a copy ';
+      command = '$trimLengthCommand ';
 
       if (!applyVideoEncoding) {
         command += '-c:v copy ';
