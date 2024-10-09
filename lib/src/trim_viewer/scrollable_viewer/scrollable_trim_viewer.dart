@@ -200,6 +200,10 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   double currentScrollValue = 0.0;
   double totalVideoLengthInPixels = 0.0;
 
+  double get _maxScrollExtent => _scrollController.position.maxScrollExtent > 0
+      ? _scrollController.position.maxScrollExtent
+      : 1;
+
   Timer? _scrollStartTimer;
   Timer? _scrollingTimer;
 
@@ -253,9 +257,9 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         curve: Curves.easeOut,
         duration: const Duration(milliseconds: 100),
       );
-      final durationChange = (_scrollController.position.pixels /
-              _scrollController.position.maxScrollExtent) *
-          _remainingDuration;
+      final durationChange =
+          (_scrollController.position.pixels / _maxScrollExtent) *
+              _remainingDuration;
       _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationChange;
       _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
     });
@@ -517,8 +521,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     if (_scrollingTimer?.isActive ?? false) return;
     _startFraction = (_startPos.dx / _thumbnailViewerW);
     _videoStartPos = (_trimmerAreaDuration * _startFraction) +
-        (_scrollController.position.pixels /
-                _scrollController.position.maxScrollExtent) *
+        (_scrollController.position.pixels / _maxScrollExtent) *
             _remainingDuration;
     widget.onChangeStart!(_videoStartPos);
     _linearTween.begin = _startPos.dx;
@@ -531,8 +534,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     if (_scrollingTimer?.isActive ?? false) return;
     _endFraction = _endPos.dx / _thumbnailViewerW;
     _videoEndPos = (_trimmerAreaDuration * _endFraction) +
-        (_scrollController.position.pixels /
-                _scrollController.position.maxScrollExtent) *
+        (_scrollController.position.pixels / _maxScrollExtent) *
             _remainingDuration;
     widget.onChangeEnd!(_videoEndPos);
     _linearTween.end = _endPos.dx;
