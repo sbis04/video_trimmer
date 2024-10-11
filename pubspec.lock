@@ -103,10 +103,10 @@ packages:
     dependency: "direct main"
     description:
       name: get_video_thumbnail
-      sha256: "3b9d92f39c691947e0ddb5fe8f9b93c6d164352f2a37069e90a9d70adb0eb70f"
+      sha256: "3d688e3694811b3ddcbe1e27b5d1b91890a93eb44fe42af844c40b95bc13bbe0"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.4"
+    version: "0.6.5"
   html:
     dependency: transitive
     description:
