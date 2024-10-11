@@ -87,7 +87,7 @@ class FixedThumbnailViewer extends StatelessWidget {
                     index < imageBytes.length
                         ? FadeInImage(
                             placeholder: MemoryImage(kTransparentImage),
-                            image: MemoryImage(imageBytes[index]!),
+                            image: MemoryImage(imageBytes[index]?? kTransparentImage),
                             fit: fit,
                           )
                         : const SizedBox(),
