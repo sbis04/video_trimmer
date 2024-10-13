@@ -119,10 +119,10 @@ packages:
     dependency: transitive
     description:
       name: get_video_thumbnail
-      sha256: "3d688e3694811b3ddcbe1e27b5d1b91890a93eb44fe42af844c40b95bc13bbe0"
+      sha256: "55191547059b9e07c7699834b5643639c1f8933c1f387d125c88c6fe202333d0"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.5"
+    version: "0.7.0"
   html:
     dependency: transitive
     description:
@@ -350,7 +350,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "3.0.3"
+    version: "3.0.5"
   web:
     dependency: transitive
     description:
