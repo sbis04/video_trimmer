@@ -1,3 +1,8 @@
+## 3.0.3
+
+* All libraries upgraded to latest versions
+
+
 ## 3.0.2
 
 * Handled a scenario where video thumbnails are not generated due to video_thumbnail library issue
