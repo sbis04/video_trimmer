@@ -44,13 +44,13 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) run
 
 ## Usage
 
-Add the dependency `video_trimmer` to your **pubspec.yaml** file:
+Add the dependency `flutter_video_trimmer` to your **pubspec.yaml** file:
 
 For using main version of FFmpeg package:
 
 ```yaml
 dependencies:
-  video_trimmer: ^3.0.0
+  flutter_video_trimmer: ^3.0.0
 ```
 
 For using LTS version of FFmpeg package:
@@ -204,7 +204,7 @@ TrimViewer(
 
 ## Example
 
-Before using this example directly in a Flutter app, don't forget to add the `video_trimmer` & `file_picker` packages to your `pubspec.yaml` file.
+Before using this example directly in a Flutter app, don't forget to add the `flutter_video_trimmer` & `file_picker` packages to your `pubspec.yaml` file.
 
 You can try out this example by replacing the entire content of `main.dart` file of a newly created Flutter project.
 
@@ -213,7 +213,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:video_trimmer/video_trimmer.dart';
+import 'package:flutter_video_trimmer/flutter_video_trimmer.dart';
 
 void main() => runApp(MyApp());
 

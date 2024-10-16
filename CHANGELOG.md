@@ -1,3 +1,9 @@
+## 3.0.2
+
+* Handled a scenario where video thumbnails are not generated due to video_thumbnail library issue
+* handled null pointer issue in video thumbnail generation
+* Library renamed from video_trimmer to flutter_video_trimmer
+
 ## 3.0.1
 
 * Updates readme.

@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
-import 'package:video_trimmer/src/trimmer.dart';
-import 'package:video_trimmer/src/utils/duration_style.dart';
+import 'package:flutter_video_trimmer/src/trim_viewer/trim_editor_painter.dart';
+import 'package:flutter_video_trimmer/src/trimmer.dart';
+import 'package:flutter_video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
 import '../trim_area_properties.dart';

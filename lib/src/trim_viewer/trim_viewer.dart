@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:video_trimmer/video_trimmer.dart';
+import 'package:flutter_video_trimmer/flutter_video_trimmer.dart';
 
 import 'fixed_viewer/fixed_trim_viewer.dart';
 import 'scrollable_viewer/scrollable_trim_viewer.dart';

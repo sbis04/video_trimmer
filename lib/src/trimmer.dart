@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/src/utils/file_formats.dart';
-import 'package:video_trimmer/src/utils/storage_dir.dart';
+import 'package:flutter_video_trimmer/src/utils/file_formats.dart';
+import 'package:flutter_video_trimmer/src/utils/storage_dir.dart';
 
 enum TrimmerEvent { initialized }
 

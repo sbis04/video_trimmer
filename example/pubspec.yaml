@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  video_trimmer:
+  flutter_video_trimmer:
     path: ../
 
   video_player: ^2.7.2
