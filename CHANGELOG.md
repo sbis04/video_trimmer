@@ -1,3 +1,7 @@
+## 4.0.1
+
+* Update readme.
+
 ## 4.0.0
 
 * Fix thumbnail loading issue while using certain video formats.
