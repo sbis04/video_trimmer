@@ -12,7 +12,7 @@
 </a>
 
 <p align="center">
-  <img src="screenshots/cover.png" alt="Video Trimmer" />
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/cover.png" alt="Video Trimmer" />
 </p>
 
 <h4 align="center">A Flutter package for trimming videos</h4>
@@ -31,7 +31,7 @@ Also, supports conversion to **GIF**.
 Following image shows the structure of the `TrimViewer`. It consists of the `Duration` on top (displaying the start, end, and scrubber time), `TrimArea` consisting of the thumbnails, and `TrimEditor` which is an overlay that let's you select a portion from the video.
 
 <p align="center">
-  <img src="screenshots/trim_preview.png"/>
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_preview.png"/>
 </p>
 
 ## Example
@@ -39,7 +39,7 @@ Following image shows the structure of the `TrimViewer`. It consists of the `Dur
 The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) running on an iPhone 13 Pro device:
 
 <p align="center">
-  <img src="screenshots/updated_trimmer_demo.gif" alt="Trimmer"/>
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/updated_trimmer_demo.gif" alt="Trimmer"/>
 </p>
 
 ## Usage
