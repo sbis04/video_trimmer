@@ -1,3 +1,9 @@
+## 4.0.0
+
+* Fix thumbnail loading issue while using certain video formats.
+* Upgrade dependencies and remove `video_thumbnail` package (uses FFmpeg which is more reliable and efficient).
+* Fix an issue with the video trimmer length being incorrectly calculated breaking the UI.
+
 ## 3.0.1
 
 * Updates readme.

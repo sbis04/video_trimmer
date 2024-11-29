@@ -6,7 +6,7 @@ version: 1.0.0+1
 publish_to: none
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.5.3
 
 dependencies:
   flutter:
@@ -14,11 +14,11 @@ dependencies:
   video_trimmer:
     path: ../
 
-  video_player: ^2.7.2
-  file_picker: ^5.5.0
+  video_player: ^2.9.2
+  file_picker: ^8.0.7
 
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

@@ -3,21 +3,42 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:video_trimmer/src/utils/trimmer_utils.dart';
 
 class FixedThumbnailViewer extends StatelessWidget {
+  /// The video file from which thumbnails are generated.
   final File videoFile;
+
+  /// The total duration of the video in milliseconds.
   final int videoDuration;
+
+  /// The height of each thumbnail.
   final double thumbnailHeight;
+
+  /// How the thumbnails should be inscribed into the allocated space.
   final BoxFit fit;
+
+  /// The number of thumbnails to generate.
   final int numberOfThumbnails;
+
+  /// Callback function that is called when thumbnail loading is complete.
   final VoidCallback onThumbnailLoadingComplete;
+
+  /// The quality of the generated thumbnails, ranging from 0 to 100.
   final int quality;
 
   /// For showing the thumbnails generated from the video,
   /// like a frame by frame preview
+  ///
+  /// - [videoFile] is the video file from which thumbnails are generated.
+  /// - [videoDuration] is the total duration of the video in milliseconds.
+  /// - [thumbnailHeight] is the height of each thumbnail.
+  /// - [numberOfThumbnails] is the number of thumbnails to generate.
+  /// - [fit] is how the thumbnails should be inscribed into the allocated space.
+  /// - [onThumbnailLoadingComplete] is the callback function that is called when thumbnail loading is complete.
+  /// - [quality] is the quality of the generated thumbnails, ranging from 0 to 100. Defaults to 75.
   const FixedThumbnailViewer({
-    Key? key,
+    super.key,
     required this.videoFile,
     required this.videoDuration,
     required this.thumbnailHeight,
@@ -25,44 +46,17 @@ class FixedThumbnailViewer extends StatelessWidget {
     required this.fit,
     required this.onThumbnailLoadingComplete,
     this.quality = 75,
-  }) : super(key: key);
-
-  Stream<List<Uint8List?>> generateThumbnail() async* {
-    final String videoPath = videoFile.path;
-    double eachPart = videoDuration / numberOfThumbnails;
-    List<Uint8List?> byteList = [];
-    // the cache of last thumbnail
-    Uint8List? lastBytes;
-    for (int i = 1; i <= numberOfThumbnails; i++) {
-      Uint8List? bytes;
-      try {
-        bytes = await VideoThumbnail.thumbnailData(
-          video: videoPath,
-          imageFormat: ImageFormat.JPEG,
-          timeMs: (eachPart * i).toInt(),
-          quality: quality,
-        );
-      } catch (e) {
-        debugPrint('ERROR: Couldn\'t generate thumbnails: $e');
-      }
-      // if current thumbnail is null use the last thumbnail
-      if (bytes != null) {
-        lastBytes = bytes;
-      } else {
-        bytes = lastBytes;
-      }
-      byteList.add(bytes);
-      if (byteList.length == numberOfThumbnails) {
-        onThumbnailLoadingComplete();
-      }
-      yield byteList;
-    }
-  }
+  });
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Uint8List?>>(
-      stream: generateThumbnail(),
+      stream: generateThumbnail(
+          videoPath: videoFile.path,
+          videoDuration: videoDuration,
+          numberOfThumbnails: numberOfThumbnails,
+          quality: quality,
+          onThumbnailLoadingComplete: onThumbnailLoadingComplete),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Uint8List?> imageBytes = snapshot.data!;
