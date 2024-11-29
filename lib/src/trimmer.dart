@@ -17,9 +17,9 @@ enum TrimmerEvent { initialized }
 /// Helps in loading video from file, saving trimmed video to a file
 /// and gives video playback controls. Some of the helpful methods
 /// are:
-/// * [loadVideo()]
-/// * [saveTrimmedVideo()]
-/// * [videoPlaybackControl()]
+/// - [loadVideo()]
+/// - [saveTrimmedVideo()]
+/// - [videoPlaybackControl()]
 class Trimmer {
   // final FlutterFFmpeg _flutterFFmpeg = FFmpegKit();
 

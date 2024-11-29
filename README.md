@@ -50,14 +50,14 @@ For using main version of FFmpeg package:
 
 ```yaml
 dependencies:
-  video_trimmer: ^3.0.0
+  video_trimmer: ^4.0.0
 ```
 
 For using LTS version of FFmpeg package:
 
 ```yaml
 dependencies:
-  video_trimmer: ^3.0.0-LTS
+  video_trimmer: ^4.0.0-LTS
 ```
 
 ### Android configuration
@@ -407,7 +407,7 @@ On Android, if you still face the same issue, try adding the following to the `<
 
 ## License
 
-Copyright (c) 2023 Souvik Biswas
+Copyright (c) 2024 Souvik Biswas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
