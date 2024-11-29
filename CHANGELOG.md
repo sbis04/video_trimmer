@@ -1,4 +1,4 @@
-## 4.0.0
+## 4.0.0-LTS
 
 * Same as `4.0.0` but uses the LTS version of FFmpeg.
 
