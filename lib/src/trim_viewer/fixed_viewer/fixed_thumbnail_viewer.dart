@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:video_trimmer/src/trim_viewer/thumbnail/thumbnails_row.dart';
 import 'package:video_trimmer/src/utils/trimmer_utils.dart';
 
 class FixedThumbnailViewer extends StatelessWidget {
@@ -59,35 +60,12 @@ class FixedThumbnailViewer extends StatelessWidget {
           onThumbnailLoadingComplete: onThumbnailLoadingComplete),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          List<Uint8List?> imageBytes = snapshot.data!;
-          return Row(
-            mainAxisSize: MainAxisSize.max,
-            children: List.generate(
-              numberOfThumbnails,
-              (index) => SizedBox(
-                height: thumbnailHeight,
-                width: thumbnailHeight,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Opacity(
-                      opacity: 0.2,
-                      child: Image.memory(
-                        imageBytes[0] ?? kTransparentImage,
-                        fit: fit,
-                      ),
-                    ),
-                    index < imageBytes.length
-                        ? FadeInImage(
-                            placeholder: MemoryImage(kTransparentImage),
-                            image: MemoryImage(imageBytes[index]!),
-                            fit: fit,
-                          )
-                        : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
+          final imageBytes = snapshot.data ?? [];
+          return ThumbnailsRow(
+            length: numberOfThumbnails,
+            size: Size(thumbnailHeight, thumbnailHeight),
+            fit: fit,
+            imageBytes: imageBytes,
           );
         } else {
           return Container(
