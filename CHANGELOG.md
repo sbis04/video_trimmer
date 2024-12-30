@@ -1,3 +1,7 @@
+## 4.0.2
+
+* Use `withValues` instead of `withOpacity` as it's deprecated.
+
 ## 4.0.1
 
 * Update readme.
