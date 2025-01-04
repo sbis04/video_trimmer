@@ -173,6 +173,8 @@ class Trimmer {
     String? videoFileName,
     StorageDir? storageDir,
   }) async {
+    final Completer<void> completer = Completer<void>();
+
     final String videoPath = currentVideoFile!.path;
     final String videoName = basename(videoPath).split('.')[0];
 
@@ -258,10 +260,13 @@ class Trimmer {
         debugPrint("FFmpeg processing completed successfully.");
         debugPrint('Video successfully saved');
         onSave(outputPath);
+        completer.complete();
+
       } else {
         debugPrint("FFmpeg processing failed.");
         debugPrint('Couldn\'t save the video');
         onSave(null);
+        completer.completeError('FFmpeg processing failed');
       }
     });
 
