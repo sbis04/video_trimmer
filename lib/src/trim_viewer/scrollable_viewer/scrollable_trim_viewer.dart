@@ -75,6 +75,9 @@ class ScrollableTrimViewer extends StatefulWidget {
 
   final VoidCallback onThumbnailLoadingComplete;
 
+  /// A value that will represent how long before the viewer will start scrolling in milliseconds
+  final int scrollDelay;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -123,6 +126,7 @@ class ScrollableTrimViewer extends StatefulWidget {
     required this.trimmer,
     required this.maxVideoLength,
     required this.onThumbnailLoadingComplete,
+    required this.scrollDelay,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
     this.showDuration = true,
@@ -205,7 +209,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   void startScrolling(bool isTowardsEnd) {
     _scrollingTimer =
-        Timer.periodic(const Duration(milliseconds: 300), (timer) {
+        Timer.periodic(Duration(milliseconds: widget.scrollDelay), (timer) {
       setState(() {
         final midPoint = (_endPos.dx - _startPos.dx) / 2;
         var speedMultiplier = 1;
@@ -263,7 +267,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   }
 
   void startTimer(bool isTowardsEnd) {
-    var start = 300;
+    var start = widget.scrollDelay;
     _scrollStartTimer = Timer.periodic(
       const Duration(milliseconds: 100),
       (Timer timer) {
@@ -649,7 +653,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                     ),
                     _scrollController.positions.isNotEmpty
                         ? AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
+                            duration:
+                                Duration(milliseconds: widget.scrollDelay),
                             decoration: BoxDecoration(
                               gradient: widget.areaProperties.blurEdges
                                   ? LinearGradient(
@@ -678,7 +683,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                                         _scrollController.position.pixels != 0.0
                                             ? 1.0
                                             : 0.0,
-                                    duration: const Duration(milliseconds: 300),
+                                    duration: Duration(
+                                        milliseconds: widget.scrollDelay),
                                     child: widget.areaProperties.startIcon),
                                 const Spacer(),
                                 AnimatedOpacity(
@@ -687,7 +693,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                                               .position.maxScrollExtent
                                       ? 1.0
                                       : 0.0,
-                                  duration: const Duration(milliseconds: 300),
+                                  duration: Duration(
+                                      milliseconds: widget.scrollDelay),
                                   child: widget.areaProperties.endIcon,
                                 ),
                               ],
