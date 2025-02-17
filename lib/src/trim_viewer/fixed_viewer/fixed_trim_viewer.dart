@@ -324,11 +324,10 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     }
 
     // Now we determine which part is dragged
-    if (details.localPosition.dx <=
-        _startPos.dx + widget.editorProperties.sideTapSize) {
+    final span = 1;
+    if (details.localPosition.dx <= _startPos.dx + span) {
       _dragType = EditorDragType.left;
-    } else if (details.localPosition.dx <=
-        _endPos.dx - widget.editorProperties.sideTapSize) {
+    } else if (details.localPosition.dx <= _endPos.dx - span) {
       _dragType = EditorDragType.center;
     } else {
       _dragType = EditorDragType.right;
@@ -344,8 +343,11 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     if (_dragType == EditorDragType.left) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_startPos.dx + details.delta.dx <= _endPos.dx) &&
-          !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
+          (_startPos.dx + details.delta.dx <= _endPos.dx)) {
+        if (_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!) {
+          _endPos += details.delta;
+          _onEndDragged();
+        }
         _startPos += details.delta;
         _onStartDragged();
       }
@@ -362,8 +364,11 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     } else {
       _endCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
-          !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
+          (_endPos.dx + details.delta.dx >= _startPos.dx)) {
+        if (_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!) {
+          _startPos += details.delta;
+          _onStartDragged();
+        }
         _endPos += details.delta;
         _onEndDragged();
       }
