@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -324,7 +325,9 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     }
 
     // Now we determine which part is dragged
-    final span = 1;
+    final span = maxLengthPixels == null
+        ? 12
+        : math.min(12, (maxLengthPixels! * 0.9).toInt());
     if (details.localPosition.dx <= _startPos.dx + span) {
       _dragType = EditorDragType.left;
     } else if (details.localPosition.dx <= _endPos.dx - span) {
@@ -491,6 +494,22 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
               ),
             ),
           ),
+          widget.showDuration
+              ? SizedBox(
+                  width: _thumbnailViewerW,
+                  child: Container(
+                    alignment: Alignment.topLeft,
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      Duration(
+                              milliseconds:
+                                  _videoEndPos.toInt() - _videoStartPos.toInt())
+                          .format(DurationStyle.FORMAT_MM_SS),
+                      style: widget.durationTextStyle,
+                    ),
+                  ),
+                )
+              : Container(),
         ],
       ),
     );
