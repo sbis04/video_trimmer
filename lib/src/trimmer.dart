@@ -159,10 +159,9 @@ class Trimmer {
   /// video format is passed in [customVideoFormat], then the app may
   /// crash.
   ///
-  Future<void> saveTrimmedVideo({
+  Future<String?> saveTrimmedVideo({
     required double startValue,
     required double endValue,
-    required Function(String? outputPath) onSave,
     bool applyVideoEncoding = false,
     FileFormat? outputFormat,
     String? ffmpegCommand,
@@ -173,99 +172,101 @@ class Trimmer {
     String? videoFileName,
     StorageDir? storageDir,
   }) async {
-    final String videoPath = currentVideoFile!.path;
-    final String videoName = basename(videoPath).split('.')[0];
+    String? result = null;
+    try {
+      final String videoPath = currentVideoFile!.path;
+      final String videoName = basename(videoPath).split('.')[0];
 
-    String command;
+      String command;
 
-    // Formatting Date and Time
-    String dateTime = DateFormat.yMMMd()
-        .addPattern('-')
-        .add_Hms()
-        .format(DateTime.now())
-        .toString();
+      // Formatting Date and Time
+      String dateTime = DateFormat("yyyyMMddHHmmssSSS").format(DateTime.now());
 
-    // String _resultString;
-    String outputPath;
-    String? outputFormatString;
-    String formattedDateTime = dateTime.replaceAll(' ', '');
+      // String _resultString;
+      String outputPath;
+      String? outputFormatString;
+      String formattedDateTime = dateTime.replaceAll(' ', '');
 
-    debugPrint("DateTime: $dateTime");
-    debugPrint("Formatted: $formattedDateTime");
+      debugPrint("DateTime: $dateTime");
+      debugPrint("Formatted: $formattedDateTime");
 
-    videoFolderName ??= "Trimmer";
+      videoFolderName ??= "Trimmer";
 
-    videoFileName ??= "${videoName}_trimmed:$formattedDateTime";
+      videoFileName ??= "${videoName}_trimmed_$formattedDateTime";
 
-    videoFileName = videoFileName.replaceAll(' ', '_');
+      videoFileName = videoFileName.replaceAll(' ', '_');
 
-    String path = await _createFolderInAppDocDir(
-      videoFolderName,
-      storageDir,
-    ).whenComplete(
-      () => debugPrint("Retrieved Trimmer folder"),
-    );
+      String path = await _createFolderInAppDocDir(
+        videoFolderName,
+        storageDir,
+      ).whenComplete(
+        () => debugPrint("Retrieved Trimmer folder"),
+      );
 
-    Duration startPoint = Duration(milliseconds: startValue.toInt());
-    Duration endPoint = Duration(milliseconds: endValue.toInt());
+      Duration startPoint = Duration(milliseconds: startValue.toInt());
+      Duration endPoint = Duration(milliseconds: endValue.toInt());
 
-    // Checking the start and end point strings
-    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
+      // Checking the start and end point strings
+      debugPrint(
+          "Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
 
-    debugPrint(path);
+      debugPrint(path);
 
-    if (outputFormat == null) {
-      outputFormat = FileFormat.mp4;
-      outputFormatString = outputFormat.toString();
-      debugPrint('OUTPUT: $outputFormatString');
-    } else {
-      outputFormatString = outputFormat.toString();
-    }
-
-    String trimLengthCommand =
-        ' -ss $startPoint -i "$videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
-
-    if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a copy ';
-
-      if (!applyVideoEncoding) {
-        command += '-c:v copy ';
-      }
-
-      if (outputFormat == FileFormat.gif) {
-        fpsGIF ??= 10;
-        scaleGIF ??= 480;
-        command =
-            '$trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
-      }
-    } else {
-      command = '$trimLengthCommand $ffmpegCommand ';
-      outputFormatString = customVideoFormat;
-    }
-
-    outputPath = '$path$videoFileName$outputFormatString';
-
-    command += '"$outputPath"';
-
-    FFmpegKit.executeAsync(command, (session) async {
-      final state =
-          FFmpegKitConfig.sessionStateToString(await session.getState());
-      final returnCode = await session.getReturnCode();
-
-      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        debugPrint("FFmpeg processing completed successfully.");
-        debugPrint('Video successfully saved');
-        onSave(outputPath);
+      if (outputFormat == null) {
+        outputFormat = FileFormat.mp4;
+        outputFormatString = outputFormat.toString();
+        debugPrint('OUTPUT: $outputFormatString');
       } else {
-        debugPrint("FFmpeg processing failed.");
-        debugPrint('Couldn\'t save the video');
-        onSave(null);
+        outputFormatString = outputFormat.toString();
       }
-    });
 
-    // return _outputPath;
+      String trimLengthCommand =
+          ' -ss $startPoint -i "$videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
+
+      if (ffmpegCommand == null) {
+        command = '$trimLengthCommand -c:a copy ';
+
+        if (!applyVideoEncoding) {
+          command += '-c:v copy ';
+        }
+
+        if (outputFormat == FileFormat.gif) {
+          fpsGIF ??= 10;
+          scaleGIF ??= 480;
+          command =
+              '$trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+        }
+      } else {
+        command = '$trimLengthCommand $ffmpegCommand ';
+        outputFormatString = customVideoFormat;
+      }
+
+      outputPath = '$path$videoFileName$outputFormatString';
+
+      command += '"$outputPath"';
+
+      FFmpegKit.executeAsync(command, (session) async {
+        final state =
+            FFmpegKitConfig.sessionStateToString(await session.getState());
+        final returnCode = await session.getReturnCode();
+
+        debugPrint(
+            "FFmpeg process exited with state $state and rc $returnCode");
+
+        if (ReturnCode.isSuccess(returnCode)) {
+          debugPrint("FFmpeg processing completed successfully.");
+          debugPrint('Video successfully saved');
+          result = outputPath;
+        } else {
+          debugPrint("FFmpeg processing failed.");
+          debugPrint('Couldn\'t save the video');
+        }
+      });
+    } catch (error) {
+      debugPrint("----> Trimmer error: $error");
+    }
+
+    return result;
   }
 
   /// For getting the video controller state, to know whether the

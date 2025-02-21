@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -324,11 +325,12 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     }
 
     // Now we determine which part is dragged
-    if (details.localPosition.dx <=
-        _startPos.dx + widget.editorProperties.sideTapSize) {
+    final span = maxLengthPixels == null
+        ? 12
+        : math.min(12, (maxLengthPixels! * 0.9).toInt());
+    if (details.localPosition.dx <= _startPos.dx + span) {
       _dragType = EditorDragType.left;
-    } else if (details.localPosition.dx <=
-        _endPos.dx - widget.editorProperties.sideTapSize) {
+    } else if (details.localPosition.dx <= _endPos.dx - span) {
       _dragType = EditorDragType.center;
     } else {
       _dragType = EditorDragType.right;
@@ -344,8 +346,11 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     if (_dragType == EditorDragType.left) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_startPos.dx + details.delta.dx <= _endPos.dx) &&
-          !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
+          (_startPos.dx + details.delta.dx <= _endPos.dx)) {
+        if (_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!) {
+          _endPos += details.delta;
+          _onEndDragged();
+        }
         _startPos += details.delta;
         _onStartDragged();
       }
@@ -362,8 +367,11 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     } else {
       _endCircleSize = widget.editorProperties.circleSizeOnDrag;
       if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
-          !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
+          (_endPos.dx + details.delta.dx >= _startPos.dx)) {
+        if (_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!) {
+          _startPos += details.delta;
+          _onStartDragged();
+        }
         _endPos += details.delta;
         _onEndDragged();
       }
@@ -486,6 +494,22 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
               ),
             ),
           ),
+          widget.showDuration
+              ? SizedBox(
+                  width: _thumbnailViewerW,
+                  child: Container(
+                    alignment: Alignment.topLeft,
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      Duration(
+                              milliseconds:
+                                  _videoEndPos.toInt() - _videoStartPos.toInt())
+                          .format(DurationStyle.FORMAT_MM_SS),
+                      style: widget.durationTextStyle,
+                    ),
+                  ),
+                )
+              : Container(),
         ],
       ),
     );
