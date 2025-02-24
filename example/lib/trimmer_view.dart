@@ -86,7 +86,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TrimViewer(
+                    child: TrimViewer.withGlobalKey(
                       trimmer: _trimmer,
                       viewerHeight: 50.0,
                       viewerWidth: MediaQuery.of(context).size.width,

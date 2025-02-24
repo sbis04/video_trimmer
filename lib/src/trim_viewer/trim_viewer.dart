@@ -186,6 +186,48 @@ class TrimViewer extends StatefulWidget {
     this.onThumbnailLoadingComplete,
   }) : super(key: key);
 
+  // Create a method to get a GlobalKey if none is provided
+  static Key _getKey(Key? providedKey) => providedKey ?? GlobalKey();
+
+  // Non-const factory constructor that ensures a GlobalKey is used
+  factory TrimViewer.withGlobalKey({
+    Key? key,
+    required Trimmer trimmer,
+    Duration maxVideoLength = const Duration(milliseconds: 0),
+    ViewerType type = ViewerType.auto,
+    double viewerWidth = 50 * 8,
+    double viewerHeight = 50,
+    bool showDuration = true,
+    TextStyle durationTextStyle = const TextStyle(color: Colors.white),
+    DurationStyle durationStyle = DurationStyle.FORMAT_HH_MM_SS,
+    Function(double startValue)? onChangeStart,
+    Function(double endValue)? onChangeEnd,
+    Function(bool isPlaying)? onChangePlaybackState,
+    double paddingFraction = 0.2,
+    TrimEditorProperties editorProperties = const TrimEditorProperties(),
+    TrimAreaProperties areaProperties = const TrimAreaProperties(),
+    VoidCallback? onThumbnailLoadingComplete,
+  }) {
+    return TrimViewer(
+      key: _getKey(key),
+      trimmer: trimmer,
+      maxVideoLength: maxVideoLength,
+      type: type,
+      viewerWidth: viewerWidth,
+      viewerHeight: viewerHeight,
+      showDuration: showDuration,
+      durationTextStyle: durationTextStyle,
+      durationStyle: durationStyle,
+      onChangeStart: onChangeStart,
+      onChangeEnd: onChangeEnd,
+      onChangePlaybackState: onChangePlaybackState,
+      paddingFraction: paddingFraction,
+      editorProperties: editorProperties,
+      areaProperties: areaProperties,
+      onThumbnailLoadingComplete: onThumbnailLoadingComplete,
+    );
+  }
+
   @override
   State<TrimViewer> createState() => _TrimViewerState();
 }
@@ -196,30 +238,73 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _checkTrimmerType();
+    
+    // Listen for initialization event
     widget.trimmer.eventStream.listen((event) {
       if (event == TrimmerEvent.initialized) {
-        final totalDuration =
-            widget.trimmer.videoPlayerController!.value.duration;
-        final maxVideoLength = widget.maxVideoLength;
-        final paddingFraction = widget.paddingFraction;
-        final trimAreaDuration = Duration(
-            milliseconds: (maxVideoLength.inMilliseconds +
-                ((paddingFraction * maxVideoLength.inMilliseconds) * 2)
-                    .toInt()));
-
-        final shouldScroll = trimAreaDuration <= totalDuration &&
-            maxVideoLength.compareTo(const Duration(milliseconds: 0)) != 0;
-        if (widget.type == ViewerType.scrollable && !shouldScroll) {
-          throw 'Total video duration is less than maxVideoLength + padding. '
-              'Can\'t use `ScrollableTrimViewer`. Change the type to `ViewerType.auto`.';
-        }
-        setState(() => _isScrollableAllowed = shouldScroll);
+        _checkTrimmerType();
       }
     });
+  }
+  
+  @override
+  void didUpdateWidget(TrimViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // If the trimmer instance changed, we need to re-check the type
+    if (widget.trimmer != oldWidget.trimmer) {
+      _checkTrimmerType();
+    }
+    
+    // If viewWidth, maxVideoLength, or type changed, we need to re-check
+    if (widget.viewerWidth != oldWidget.viewerWidth ||
+        widget.maxVideoLength != oldWidget.maxVideoLength ||
+        widget.type != oldWidget.type) {
+      _checkTrimmerType();
+    }
+  }
+  
+  void _checkTrimmerType() {
+    if (!mounted) return;
+    
+    if (widget.trimmer.videoPlayerController != null) {
+      final totalDuration = 
+          widget.trimmer.videoPlayerController!.value.duration;
+      final maxVideoLength = widget.maxVideoLength;
+      final paddingFraction = widget.paddingFraction;
+      final trimAreaDuration = Duration(
+          milliseconds: (maxVideoLength.inMilliseconds +
+              ((paddingFraction * maxVideoLength.inMilliseconds) * 2)
+                  .toInt()));
+
+      final shouldScroll = trimAreaDuration <= totalDuration &&
+          maxVideoLength.compareTo(const Duration(milliseconds: 0)) != 0;
+      
+      if (widget.type == ViewerType.scrollable && !shouldScroll) {
+        debugPrint('Total video duration is less than maxVideoLength + padding. '
+            'Can\'t use `ScrollableTrimViewer`. Using `ViewerType.auto` instead.');
+        // Instead of throwing an error, default to auto mode
+        setState(() => _isScrollableAllowed = false);
+      } else {
+        setState(() => _isScrollableAllowed = shouldScroll);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show a loading indicator while we wait for initialization
+    if (widget.trimmer.videoPlayerController == null) {
+      return SizedBox(
+        width: widget.viewerWidth,
+        height: widget.viewerHeight + (widget.showDuration ? 30 : 0),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final scrollableViewer = ScrollableTrimViewer(
       trimmer: widget.trimmer,
       maxVideoLength: widget.maxVideoLength,
@@ -266,7 +351,13 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
     );
 
     return _isScrollableAllowed == null
-        ? const SizedBox()
+        ? SizedBox(
+            width: widget.viewerWidth,
+            height: widget.viewerHeight + (widget.showDuration ? 30 : 0),
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
         : widget.type == ViewerType.fixed
             ? fixedTrimViewer
             : widget.type == ViewerType.scrollable
@@ -276,3 +367,4 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
                     : fixedTrimViewer;
   }
 }
+
