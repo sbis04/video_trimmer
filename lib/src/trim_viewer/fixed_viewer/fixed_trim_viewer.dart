@@ -188,8 +188,14 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     _endCircleSize = widget.editorProperties.circleSize;
     _borderRadius = widget.editorProperties.borderRadius;
     _thumbnailViewerH = widget.viewerHeight;
+    _initializeWidgetLayout();
+  }
+
+  void _initializeWidgetLayout() {
     log('thumbnailViewerW: $_thumbnailViewerW');
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      
       final renderBox =
           _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
       final trimmerActualWidth = renderBox?.size.width;
@@ -201,6 +207,8 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
       _numberOfThumbnails = trimmerActualWidth ~/ _thumbnailViewerH;
       log('numberOfThumbnails: $_numberOfThumbnails');
       log('thumbnailViewerW: $_thumbnailViewerW');
+      
+      if (!mounted) return;
       setState(() {
         _thumbnailViewerW = _numberOfThumbnails * _thumbnailViewerH;
 
@@ -238,8 +246,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
           maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
           _thumbnailViewerH,
         );
-
-        // Defining the tween points
+        
         _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
         _animationController = AnimationController(
           vsync: this,
@@ -258,6 +265,40 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
           });
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(FixedTrimViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    bool needsReinitialize = false;
+    
+    // Check if any properties that would affect the layout have changed
+    if (widget.viewerHeight != oldWidget.viewerHeight || 
+        widget.viewerWidth != oldWidget.viewerWidth ||
+        widget.maxVideoLength != oldWidget.maxVideoLength ||
+        widget.trimmer != oldWidget.trimmer) {
+      needsReinitialize = true;
+    }
+    
+    // Check if thumbnails need to be regenerated
+    if (widget.areaProperties.thumbnailQuality != oldWidget.areaProperties.thumbnailQuality ||
+        widget.areaProperties.thumbnailFit != oldWidget.areaProperties.thumbnailFit) {
+      needsReinitialize = true;
+    }
+    
+    // Update circle and border properties even if not reinitializing
+    _startCircleSize = widget.editorProperties.circleSize;
+    _endCircleSize = widget.editorProperties.circleSize;
+    _borderRadius = widget.editorProperties.borderRadius;
+    
+    if (needsReinitialize) {
+      _thumbnailViewerH = widget.viewerHeight;
+      // Only reinitialize if the widget is still mounted
+      if (mounted) {
+        _initializeWidgetLayout();
+      }
+    }
   }
 
   Future<void> _initializeVideoController() async {

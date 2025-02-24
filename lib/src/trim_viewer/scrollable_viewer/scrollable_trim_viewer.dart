@@ -287,7 +287,48 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     _endCircleSize = widget.editorProperties.circleSize;
     _borderRadius = widget.editorProperties.borderRadius;
     _thumbnailViewerH = widget.viewerHeight;
+    _initializeWidgetLayout();
+  }
+  
+  @override
+  void didUpdateWidget(ScrollableTrimViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    bool needsReinitialize = false;
+    
+    // Check if any properties that would affect the layout have changed
+    if (widget.viewerHeight != oldWidget.viewerHeight || 
+        widget.viewerWidth != oldWidget.viewerWidth ||
+        widget.maxVideoLength != oldWidget.maxVideoLength ||
+        widget.paddingFraction != oldWidget.paddingFraction ||
+        widget.trimmer != oldWidget.trimmer) {
+      needsReinitialize = true;
+    }
+    
+    // Check if thumbnails need to be regenerated
+    if (widget.areaProperties.thumbnailQuality != oldWidget.areaProperties.thumbnailQuality ||
+        widget.areaProperties.thumbnailFit != oldWidget.areaProperties.thumbnailFit) {
+      needsReinitialize = true;
+    }
+    
+    // Update circle and border properties even if not reinitializing
+    _startCircleSize = widget.editorProperties.circleSize;
+    _endCircleSize = widget.editorProperties.circleSize;
+    _borderRadius = widget.editorProperties.borderRadius;
+    
+    if (needsReinitialize) {
+      _thumbnailViewerH = widget.viewerHeight;
+      // Only reinitialize if the widget is still mounted
+      if (mounted) {
+        _initializeWidgetLayout();
+      }
+    }
+  }
+  
+  void _initializeWidgetLayout() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      
       final renderBox =
           _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
       final trimmerActualWidth = renderBox?.size.width;
@@ -297,6 +338,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       _initializeVideoController();
       // The video has been initialized, now we can load stuff
       videoPlayerController.seekTo(const Duration(milliseconds: 0));
+      
+      if (!mounted) return;
       setState(() {
         final totalDuration = videoPlayerController.value.duration;
         log('Total Video Length: $totalDuration');

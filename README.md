@@ -426,3 +426,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Proper Usage with Conditional Rendering
+
+When using TrimViewer in conditional rendering scenarios (like inside if statements, ternary expressions, or when parents are frequently changed), use the `TrimViewer.withGlobalKey` constructor to ensure proper state management:
+
+```dart
+TrimViewer.withGlobalKey(
+  trimmer: _trimmer,
+  viewerHeight: 50.0,
+  viewerWidth: MediaQuery.of(context).size.width,
+  // other properties...
+)
+```
+
+This ensures that the TrimViewer maintains its state even when:
+- It's conditionally rendered in the widget tree
+- Parent widgets are added or changed
+- The widget tree is restructured
+
+Using the `withGlobalKey` factory constructor adds a GlobalKey to the TrimViewer, helping Flutter preserve its state during rebuilds.
