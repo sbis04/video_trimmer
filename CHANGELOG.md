@@ -15,6 +15,7 @@ Got rid of the `flutter_ffmpeg` package and now uses a **native video trimmer** 
 
 #### Other changes
 
+* New property `qualityGIF` to specify the quality of the GIF.
 * Update dependencies.
 * Update example project.
 * Update README.
