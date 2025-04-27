@@ -14,8 +14,8 @@ dependencies:
   video_trimmer:
     path: ../
 
-  video_player: ^2.9.2
-  file_picker: ^8.0.7
+  video_player: ^2.9.5
+  file_picker: ^10.1.2
 
 dev_dependencies:
   flutter_lints: ^5.0.0

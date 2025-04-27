@@ -41,13 +41,12 @@ class _TrimmerViewState extends State<TrimmerView> {
       startValue: _startValue,
       endValue: _endValue,
       onSave: (outputPath) {
-        setState(() {
-          _progressVisibility = false;
-        });
+        setState(() => _progressVisibility = false);
         debugPrint('OUTPUT PATH: $outputPath');
-        Navigator.of(context).pushReplacement(
+        Navigator.pushReplacement(
+          context,
           MaterialPageRoute(
-            builder: (context) => Preview(outputPath),
+            builder: (_) => Preview(outputPath),
           ),
         );
       },
@@ -61,7 +60,7 @@ class _TrimmerViewState extends State<TrimmerView> {
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
-          title: const Text("Video Trimmer"),
+          title: const Text('Video Trimmer'),
         ),
         body: Center(
           child: Container(
@@ -78,7 +77,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                 ),
                 ElevatedButton(
                   onPressed: _progressVisibility ? null : () => _saveVideo(),
-                  child: const Text("SAVE"),
+                  child: const Text('SAVE'),
                 ),
                 Expanded(
                   child: VideoViewer(trimmer: _trimmer),
@@ -99,7 +98,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                         circlePaintColor: Colors.yellow.shade800,
                       ),
                       areaProperties: TrimAreaProperties.edgeBlur(
-                        thumbnailQuality: 10,
+                        thumbnailQuality: 50,
                       ),
                       onChangeStart: (value) => _startValue = value,
                       onChangeEnd: (value) => _endValue = value,
