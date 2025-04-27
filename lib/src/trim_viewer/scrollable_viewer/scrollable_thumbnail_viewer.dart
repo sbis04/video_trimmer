@@ -69,6 +69,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
               videoPath: videoFile.path,
               videoDuration: videoDuration,
               numberOfThumbnails: numberOfThumbnails,
+              thumbnailHeight: thumbnailHeight,
               quality: quality,
               onThumbnailLoadingComplete: onThumbnailLoadingComplete,
             ),

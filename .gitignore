@@ -76,7 +76,12 @@ build/
 .vscode/settings.json
 example/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 .vscode/launch.json
+
+# Android related
 example/android/.project
 example/android/.settings/org.eclipse.buildship.core.prefs
+example/android/app/.cxx/
+
+
 example/ios/Flutter/.last_build_id
 .fvm/

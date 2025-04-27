@@ -12,7 +12,7 @@ class FixedThumbnailViewer extends StatelessWidget {
   /// The total duration of the video in milliseconds.
   final int videoDuration;
 
-  /// The height of each thumbnail.
+  /// The height of each thumbnail. Always maintains 1:1 aspect ratio.
   final double thumbnailHeight;
 
   /// How the thumbnails should be inscribed into the allocated space.
@@ -32,7 +32,7 @@ class FixedThumbnailViewer extends StatelessWidget {
   ///
   /// - [videoFile] is the video file from which thumbnails are generated.
   /// - [videoDuration] is the total duration of the video in milliseconds.
-  /// - [thumbnailHeight] is the height of each thumbnail.
+  /// - [thumbnailHeight] is the height of each thumbnail. Always maintains 1:1 aspect ratio.
   /// - [numberOfThumbnails] is the number of thumbnails to generate.
   /// - [fit] is how the thumbnails should be inscribed into the allocated space.
   /// - [onThumbnailLoadingComplete] is the callback function that is called when thumbnail loading is complete.
@@ -52,11 +52,13 @@ class FixedThumbnailViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<List<Uint8List?>>(
       stream: generateThumbnail(
-          videoPath: videoFile.path,
-          videoDuration: videoDuration,
-          numberOfThumbnails: numberOfThumbnails,
-          quality: quality,
-          onThumbnailLoadingComplete: onThumbnailLoadingComplete),
+        videoPath: videoFile.path,
+        videoDuration: videoDuration,
+        numberOfThumbnails: numberOfThumbnails,
+        thumbnailHeight: thumbnailHeight,
+        quality: quality,
+        onThumbnailLoadingComplete: onThumbnailLoadingComplete,
+      ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Uint8List?> imageBytes = snapshot.data!;
