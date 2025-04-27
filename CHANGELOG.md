@@ -1,6 +1,6 @@
 ## 5.0.0
 
-Got rid of the `flutter_ffmpeg` package and now uses a native video trimmer (Android and iOS)! 🎉
+Got rid of the `flutter_ffmpeg` package and now uses a **native video trimmer** (Android and iOS)! 🎉
 
 #### Why the change?
 
@@ -9,15 +9,15 @@ Got rid of the `flutter_ffmpeg` package and now uses a native video trimmer (And
 
 #### BREAKING CHANGES
 
-* Removed `ffmpegCommand` and `customVideoFormat` properties. As those were specific to `flutter_ffmpeg` package.
+* Remove `ffmpegCommand` and `customVideoFormat` properties. As those were specific to `flutter_ffmpeg` package.
 * `FileFormat` no longer exists. A new enum is introduced called `OutputType` to choose between GIF and video output file.
 * `outputFormat` no longer exists. By default the output has the same format as the original video.
 
 #### Other changes
 
-* Updated dependencies.
-* Updated example project.
-* Updated README.
+* Update dependencies.
+* Update example project.
+* Update README.
 
 ## 4.0.2
 
