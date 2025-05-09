@@ -42,6 +42,12 @@ class TrimViewer extends StatefulWidget {
   /// specifying this property is mandatory.
   final Duration maxVideoLength;
 
+  /// For defining the minimal length of the output video.
+  ///
+  /// **NOTE:** When explicitly setting the `type` to `scrollable`,
+  /// specifying this property is mandatory.
+  final Duration minVideoLength;
+
   /// For showing the start and the end point of the
   /// video on top of the trimmer area.
   ///
@@ -119,6 +125,10 @@ class TrimViewer extends StatefulWidget {
   ///
   /// * [maxVideoLength] for specifying the maximum length of the
   /// output video.
+  /// 
+  /// 
+  /// * [minVideoLength] for specifying the minimal length of the
+  /// output video.
   ///
   ///
   /// * [circlePaintColor] for specifying a color to the circle.
@@ -171,6 +181,7 @@ class TrimViewer extends StatefulWidget {
     super.key,
     required this.trimmer,
     this.maxVideoLength = const Duration(milliseconds: 0),
+    this.minVideoLength = const Duration(milliseconds: 0),
     this.type = ViewerType.auto,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
@@ -223,6 +234,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
     final scrollableViewer = ScrollableTrimViewer(
       trimmer: widget.trimmer,
       maxVideoLength: widget.maxVideoLength,
+      minVideoLength: widget.minVideoLength,
       viewerWidth: widget.viewerWidth,
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,
