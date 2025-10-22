@@ -46,7 +46,7 @@ class Trimmer {
     if (videoFile.existsSync()) {
       _videoPlayerController = VideoPlayerController.file(currentVideoFile!);
       await _videoPlayerController!.initialize().then((_) {
-        _controller.add(TrimmerEvent.initialized);
+        if (!_controller.isClosed) _controller.add(TrimmerEvent.initialized);
       });
     }
   }
