@@ -258,6 +258,13 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
           _remainingDuration;
       _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationChange;
       _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
+      // Notify the consumer so external state (e.g. duration label,
+      // confirm-button enabled state) tracks the new selection while
+      // auto-scroll is shifting the visible window. Without this, the
+      // selected range displayed outside the trimmer would stay frozen
+      // at the values captured when scrolling started.
+      widget.onChangeStart?.call(_videoStartPos);
+      widget.onChangeEnd?.call(_videoEndPos);
     });
     setState(() {});
   }
@@ -501,12 +508,28 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     }
     // log('Video Duration :: Start: ${_videoStartPos / 1000}ms, End: ${_videoEndPos / 1000}ms');
     // log('UPDATE => START: ${_startPos.dx}, END: ${_endPos.dx}');
-    _scrollStartTimer?.cancel();
-    if (_endPos.dx >= _autoEndScrollPos &&
-        currentScrollValue <= totalVideoLengthInPixels) {
+    // Fix (iOS 26): only cancel the auto-scroll countdown timer when the
+    // trim window leaves the trigger zone, and only restart it when no
+    // timer is currently active.
+    //
+    // iOS 26 emits a stream of drag-update events with delta=0 even when
+    // the user's finger is stationary. The previous implementation called
+    // `_scrollStartTimer?.cancel()` unconditionally at the start of every
+    // drag-update, then re-scheduled the 300ms countdown via startTimer.
+    // With iOS 26's continuous zero-delta events, the timer was repeatedly
+    // cancelled before its 300ms could elapse, so startScrolling never ran
+    // and the user could not auto-scroll past the visible thumbnail strip.
+    final shouldStartEnd = _endPos.dx >= _autoEndScrollPos &&
+        currentScrollValue <= totalVideoLengthInPixels;
+    final shouldStartStart =
+        _startPos.dx <= _autoStartScrollPos && currentScrollValue != 0.0;
+    if (!shouldStartEnd && !shouldStartStart) {
+      _scrollStartTimer?.cancel();
+    }
+    if (shouldStartEnd && (_scrollStartTimer?.isActive ?? false) == false) {
       startTimer(true);
-    } else if (_startPos.dx <= _autoStartScrollPos &&
-        currentScrollValue != 0.0) {
+    } else if (shouldStartStart &&
+        (_scrollStartTimer?.isActive ?? false) == false) {
       startTimer(false);
     }
 
