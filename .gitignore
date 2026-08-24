@@ -85,3 +85,4 @@ example/android/app/.cxx/
 
 example/ios/Flutter/.last_build_id
 .fvm/
+**/ios/Flutter/ephemeral/

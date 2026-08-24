@@ -232,7 +232,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
             ? _videoDuration.toDouble() * fraction!
             : _videoDuration.toDouble();
 
-        widget.onChangeEnd!(_videoEndPos);
+        widget.onChangeEnd?.call(_videoEndPos);
 
         _endPos = Offset(
           maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
@@ -262,42 +262,44 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
 
   Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
-      videoPlayerController.addListener(() {
-        final bool isPlaying = videoPlayerController.value.isPlaying;
-
-        if (isPlaying) {
-          widget.onChangePlaybackState!(true);
-          setState(() {
-            _currentPosition =
-                videoPlayerController.value.position.inMilliseconds;
-
-            if (_currentPosition > _videoEndPos.toInt()) {
-              videoPlayerController.pause();
-              widget.onChangePlaybackState!(false);
-              _animationController!.stop();
-            } else {
-              if (!_animationController!.isAnimating) {
-                widget.onChangePlaybackState!(true);
-                _animationController!.forward();
-              }
-            }
-          });
-        } else {
-          if (videoPlayerController.value.isInitialized) {
-            if (_animationController != null) {
-              if ((_scrubberAnimation?.value ?? 0).toInt() ==
-                  (_endPos.dx).toInt()) {
-                _animationController!.reset();
-              }
-              _animationController!.stop();
-              widget.onChangePlaybackState!(false);
-            }
-          }
-        }
-      });
+      videoPlayerController.addListener(_onPlayerValueChanged);
 
       videoPlayerController.setVolume(1.0);
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
+    }
+  }
+
+  void _onPlayerValueChanged() {
+    if (!mounted) return;
+    final bool isPlaying = videoPlayerController.value.isPlaying;
+
+    if (isPlaying) {
+      widget.onChangePlaybackState?.call(true);
+      setState(() {
+        _currentPosition = videoPlayerController.value.position.inMilliseconds;
+
+        if (_currentPosition > _videoEndPos.toInt()) {
+          videoPlayerController.pause();
+          widget.onChangePlaybackState?.call(false);
+          _animationController!.stop();
+        } else {
+          if (!_animationController!.isAnimating) {
+            widget.onChangePlaybackState?.call(true);
+            _animationController!.forward();
+          }
+        }
+      });
+    } else {
+      if (videoPlayerController.value.isInitialized) {
+        if (_animationController != null) {
+          if ((_scrubberAnimation?.value ?? 0).toInt() ==
+              (_endPos.dx).toInt()) {
+            _animationController!.reset();
+          }
+          _animationController!.stop();
+          widget.onChangePlaybackState?.call(false);
+        }
+      }
     }
   }
 
@@ -374,7 +376,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
   void _onStartDragged() {
     _startFraction = (_startPos.dx / _thumbnailViewerW);
     _videoStartPos = _videoDuration * _startFraction;
-    widget.onChangeStart!(_videoStartPos);
+    widget.onChangeStart?.call(_videoStartPos);
     _linearTween.begin = _startPos.dx;
     _animationController!.duration =
         Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -384,7 +386,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
   void _onEndDragged() {
     _endFraction = _endPos.dx / _thumbnailViewerW;
     _videoEndPos = _videoDuration * _endFraction;
-    widget.onChangeEnd!(_videoEndPos);
+    widget.onChangeEnd?.call(_videoEndPos);
     _linearTween.end = _endPos.dx;
     _animationController!.duration =
         Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
@@ -408,12 +410,15 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
 
   @override
   void dispose() {
+    // Detach before pausing: pause() notifies listeners synchronously, and
+    // dispose runs inside a locked build scope, so the listener's setState
+    // (and the playback-state callback it fires) would throw.
+    videoPlayerController.removeListener(_onPlayerValueChanged);
     videoPlayerController.pause();
-    widget.onChangePlaybackState!(false);
+    // No consumer callbacks from here either, for the same reason.
     if (_videoFile != null) {
       videoPlayerController.setVolume(0.0);
       videoPlayerController.dispose();
-      widget.onChangePlaybackState!(false);
     }
     super.dispose();
   }

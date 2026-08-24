@@ -15,6 +15,9 @@ import 'package:video_trimmer/src/utils/duration_style.dart';
 import '../../utils/editor_drag_type.dart';
 import 'scrollable_thumbnail_viewer.dart';
 
+/// Tolerance for comparing scroll offsets, which are doubles.
+const double _kEps = 0.5;
+
 /// Widget for displaying the video trimmer.
 class ScrollableTrimViewer extends StatefulWidget {
   /// The Trimmer instance controlling the data.
@@ -148,8 +151,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   double _videoStartPos = 0.0;
   double _videoEndPos = 0.0;
 
-  double _localPosition = 0.0;
-
   Offset _startPos = const Offset(0, 0);
   Offset _endPos = const Offset(0, 0);
 
@@ -166,9 +167,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   int _numberOfThumbnails = 0;
 
-  double _autoStartScrollPos = 0.0;
-  double _autoEndScrollPos = 0.0;
-
   late double _startCircleSize;
   late double _endCircleSize;
   late double _borderRadius;
@@ -180,7 +178,10 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   Animation<double>? _scrubberAnimation;
   AnimationController? _animationController;
-  late Tween<double> _linearTween;
+
+  /// Initialized eagerly so a scroll arriving before the first layout pass
+  /// can't trip a late-initialization error.
+  Tween<double> _linearTween = Tween<double>(begin: 0.0, end: 0.0);
 
   /// Quick access to VideoPlayerController, only not null after [TrimmerEvent.initialized]
   /// has been emitted.
@@ -195,94 +196,185 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   /// of the frame, to make the UI more realistic.
   bool _allowDrag = true;
 
+  /// Whether a trim handle is currently under the user's finger. Auto-scroll
+  /// only runs while this is true.
+  bool _isDragging = false;
+
+  /// Whether the current gesture is panning the thumbnail strip rather than
+  /// dragging the trim frame. Decided once, in [_onDragStart].
+  bool _panningStrip = false;
+
   late final ScrollController _scrollController;
-  double scrollByValue = 10.0;
-  double currentScrollValue = 0.0;
   double totalVideoLengthInPixels = 0.0;
 
-  Timer? _scrollStartTimer;
-  Timer? _scrollingTimer;
+  /// Drives auto-scrolling once per frame, so the strip glides instead of
+  /// hopping. Replaces the periodic timers this used to run on.
+  Ticker? _autoScrollTicker;
 
-  void startScrolling(bool isTowardsEnd) {
-    _scrollingTimer =
-        Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      setState(() {
-        final midPoint = (_endPos.dx - _startPos.dx) / 2;
-        var speedMultiplier = 1;
-        if (isTowardsEnd) {
-          if (_localPosition >= _endPos.dx) {
-            speedMultiplier = 5;
-          } else if (_localPosition > (midPoint + (midPoint * 2 / 3))) {
-            speedMultiplier = 4;
-          } else if (_localPosition > (midPoint + midPoint / 3)) {
-            speedMultiplier = 2;
-          }
-          log('End scroll speed: ${speedMultiplier}x');
-          if (_endPos.dx >= _autoEndScrollPos &&
-              currentScrollValue <= totalVideoLengthInPixels) {
-            currentScrollValue = math.min(
-                currentScrollValue + scrollByValue * speedMultiplier,
-                _numberOfThumbnails * _thumbnailViewerH);
-          } else {
-            _scrollingTimer?.cancel();
-            return;
-          }
-        } else {
-          if (_localPosition <= _startPos.dx) {
-            speedMultiplier = 5;
-          } else if (_localPosition < (midPoint - (midPoint * 2 / 3))) {
-            speedMultiplier = 4;
-          } else if (_localPosition < (midPoint - midPoint / 3)) {
-            speedMultiplier = 2;
-          }
-          log('Start scroll speed: ${speedMultiplier}x');
-          if (_startPos.dx <= _autoStartScrollPos && currentScrollValue != 0) {
-            currentScrollValue = math.max(
-                0, currentScrollValue - scrollByValue * speedMultiplier);
-          } else {
-            _scrollingTimer?.cancel();
-            return;
-          }
-        }
-        // log('scroll pixels: ${_scrollController.position.pixels}');
-      });
+  /// Signed auto-scroll speed in logical pixels per second. Negative scrolls
+  /// back towards the start of the video.
+  double _autoScrollVelocity = 0.0;
 
-      log('SCROLL: $currentScrollValue, (${((_scrollController.position.pixels / _scrollController.position.maxScrollExtent) * 100).toStringAsFixed(2)}%)');
-      _scrollController.animateTo(
-        currentScrollValue,
-        curve: Curves.easeOut,
-        duration: const Duration(milliseconds: 100),
-      );
-      final durationChange = (_scrollController.position.pixels /
-              _scrollController.position.maxScrollExtent) *
-          _remainingDuration;
-      _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationChange;
-      _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
-    });
-    setState(() {});
+  /// Ticker elapsed time at the previous frame, used to derive dt.
+  Duration _lastTickerElapsed = Duration.zero;
+
+  /// Pending [TrimAreaProperties.autoScrollStartDelay] timer, if any.
+  Timer? _autoScrollDelayTimer;
+
+  /// How far the strip has been scrolled, expressed as a duration into the
+  /// video. Returns `0` before the strip has been laid out, or when the whole
+  /// video already fits in the trim area.
+  double _scrolledDurationOffset() {
+    if (!_scrollController.hasClients) return 0.0;
+    final position = _scrollController.position;
+    if (position.maxScrollExtent <= 0) return 0.0;
+    return (position.pixels / position.maxScrollExtent) * _remainingDuration;
   }
 
-  void startTimer(bool isTowardsEnd) {
-    var start = 300;
-    _scrollStartTimer = Timer.periodic(
-      const Duration(milliseconds: 100),
-      (Timer timer) {
-        if (start == 0) {
-          timer.cancel();
-          log('ANIMATE');
-          if (_scrollingTimer?.isActive ?? false) return;
-          startScrolling(isTowardsEnd);
-        } else {
-          start -= 100;
-        }
-      },
+  /// Derives the selected trim range from the handle positions plus how far
+  /// the strip has scrolled. Both dragging and scrolling funnel through here,
+  /// so the two can happen at once without fighting each other.
+  void _recomputeTrimPositions() {
+    if (_thumbnailViewerW <= 0) return;
+    final durationOffset = _scrolledDurationOffset();
+
+    _startFraction = _startPos.dx / _thumbnailViewerW;
+    _endFraction = _endPos.dx / _thumbnailViewerW;
+
+    _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationOffset;
+    _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationOffset;
+
+    widget.onChangeStart?.call(_videoStartPos);
+    widget.onChangeEnd?.call(_videoEndPos);
+
+    _linearTween
+      ..begin = _startPos.dx
+      ..end = _endPos.dx;
+    _animationController?.duration = Duration(
+      milliseconds: math.max(1, (_videoEndPos - _videoStartPos).toInt()),
     );
+    _animationController?.reset();
+  }
+
+  /// Keeps the trim range in step with the strip, whether it moved because of
+  /// auto-scroll or because the user dragged the strip directly.
+  void _onScrollChanged() {
+    if (!mounted) return;
+    setState(_recomputeTrimPositions);
+  }
+
+  /// Re-evaluates whether a handle is inside an edge zone, and how fast the
+  /// strip should be travelling as a result. Speed ramps with how far the
+  /// handle is pushed in, which is what makes this feel continuous rather
+  /// than stepped.
+  void _updateAutoScroll() {
+    if (!_isDragging || !_scrollController.hasClients) {
+      _cancelAutoScroll();
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.maxScrollExtent <= 0) {
+      _cancelAutoScroll();
+      return;
+    }
+
+    final zone = widget.areaProperties.autoScrollEdgeZone;
+    final maxVelocity = widget.areaProperties.maxAutoScrollVelocity;
+    if (zone <= 0 || maxVelocity <= 0) {
+      _cancelAutoScroll();
+      return;
+    }
+
+    final canScrollForward = position.pixels < position.maxScrollExtent - _kEps;
+    final canScrollBack = position.pixels > _kEps;
+    final forwardEdge = _thumbnailViewerW - zone;
+
+    double velocity = 0.0;
+    // The left handle can only pull the strip backwards and the right handle
+    // only forwards; dragging the whole frame can do either.
+    if (_dragType != EditorDragType.left &&
+        _endPos.dx > forwardEdge &&
+        canScrollForward) {
+      final depth = ((_endPos.dx - forwardEdge) / zone).clamp(0.0, 1.0);
+      velocity = maxVelocity * _autoScrollRamp(depth);
+    } else if (_dragType != EditorDragType.right &&
+        _startPos.dx < zone &&
+        canScrollBack) {
+      final depth = ((zone - _startPos.dx) / zone).clamp(0.0, 1.0);
+      velocity = -maxVelocity * _autoScrollRamp(depth);
+    }
+
+    _setAutoScrollVelocity(velocity);
+  }
+
+  /// Maps edge-zone depth to a fraction of the maximum speed. Starts at a
+  /// usable crawl the moment the zone is entered rather than at zero, then
+  /// accelerates towards the edge.
+  double _autoScrollRamp(double depth) =>
+      0.18 + 0.82 * Curves.easeInCubic.transform(depth);
+
+  void _setAutoScrollVelocity(double velocity) {
+    if (velocity == 0.0) {
+      _cancelAutoScroll();
+      return;
+    }
+    _autoScrollVelocity = velocity;
+    if (_autoScrollTicker?.isTicking ?? false) return;
+
+    final delay = widget.areaProperties.autoScrollStartDelay;
+    if (delay <= Duration.zero) {
+      _startAutoScrollTicker();
+    } else {
+      _autoScrollDelayTimer ??= Timer(delay, () {
+        _autoScrollDelayTimer = null;
+        if (_autoScrollVelocity != 0.0) _startAutoScrollTicker();
+      });
+    }
+  }
+
+  void _startAutoScrollTicker() {
+    final ticker = _autoScrollTicker;
+    if (ticker == null || ticker.isTicking) return;
+    _lastTickerElapsed = Duration.zero;
+    ticker.start();
+  }
+
+  void _cancelAutoScroll() {
+    _autoScrollDelayTimer?.cancel();
+    _autoScrollDelayTimer = null;
+    _autoScrollVelocity = 0.0;
+    if (_autoScrollTicker?.isTicking ?? false) _autoScrollTicker!.stop();
+  }
+
+  /// Advances the strip by `velocity * dt` every frame. Using [ScrollController.jumpTo]
+  /// here is deliberate: the motion is already smooth because it is
+  /// recalculated each frame, and an animation would fight the next tick.
+  void _onAutoScrollTick(Duration elapsed) {
+    final dtMicros = (elapsed - _lastTickerElapsed).inMicroseconds;
+    _lastTickerElapsed = elapsed;
+    if (dtMicros <= 0 || _autoScrollVelocity == 0.0) return;
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    final delta =
+        _autoScrollVelocity * (dtMicros / Duration.microsecondsPerSecond);
+    final target =
+        (position.pixels + delta).clamp(0.0, position.maxScrollExtent);
+
+    if ((target - position.pixels).abs() < _kEps) {
+      // Reached one end of the strip, so there is nothing left to scroll.
+      _cancelAutoScroll();
+      return;
+    }
+    _scrollController.jumpTo(target);
   }
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    _scrollController = ScrollController()..addListener(_onScrollChanged);
+    _autoScrollTicker = createTicker(_onAutoScrollTick);
     _startCircleSize = widget.editorProperties.circleSize;
     _endCircleSize = widget.editorProperties.circleSize;
     _borderRadius = widget.editorProperties.borderRadius;
@@ -315,11 +407,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _remainingDuration = remainingDuration.inMilliseconds;
         final trimAreaLength = _thumbnailViewerW;
         log('TRIM AREA LENGTH: $trimAreaLength');
-        final autoScrollAreaLength = trimAreaLength * 0.02;
-        log('autoScrollAreaLength: $autoScrollAreaLength');
-        _autoStartScrollPos = autoScrollAreaLength;
-        _autoEndScrollPos = trimAreaLength - autoScrollAreaLength;
-        log('autoStartScrollPos: $_autoStartScrollPos, autoEndScrollPos: $_autoEndScrollPos');
         final thumbnailHeight = widget.viewerHeight;
         final numberOfThumbnailsInArea = trimAreaLength / thumbnailHeight;
         final numberOfThumbnailsTotal = (numberOfThumbnailsInArea *
@@ -365,7 +452,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _videoEndPos =
             preciseAreaDuration.inMilliseconds.toDouble() * trimmerFraction;
         log('Video End Pos: $_videoEndPos ms');
-        widget.onChangeEnd!(_videoEndPos);
+        widget.onChangeEnd?.call(_videoEndPos);
         log('Video Selected Duration: ${_videoEndPos - _videoStartPos}');
 
         // Defining the tween points
@@ -391,76 +478,117 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   Future<void> _initializeVideoController() async {
     if (_videoFile == null) return;
-    videoPlayerController.addListener(() {
-      final bool isPlaying = videoPlayerController.value.isPlaying;
-
-      if (isPlaying) {
-        widget.onChangePlaybackState!(true);
-        setState(() {
-          _currentPosition =
-              videoPlayerController.value.position.inMilliseconds;
-
-          if (_currentPosition > _videoEndPos.toInt()) {
-            videoPlayerController.pause();
-            widget.onChangePlaybackState!(false);
-            _animationController!.stop();
-          } else {
-            if (!_animationController!.isAnimating) {
-              widget.onChangePlaybackState!(true);
-              _animationController!.forward();
-            }
-          }
-        });
-      } else {
-        if (videoPlayerController.value.isInitialized) {
-          if (_animationController != null) {
-            if ((_scrubberAnimation?.value ?? 0).toInt() ==
-                (_endPos.dx).toInt()) {
-              _animationController!.reset();
-            }
-            _animationController!.stop();
-            widget.onChangePlaybackState!(false);
-          }
-        }
-      }
-    });
+    videoPlayerController.addListener(_onPlayerValueChanged);
 
     videoPlayerController.setVolume(1.0);
     _videoDuration = videoPlayerController.value.duration.inMilliseconds;
   }
 
+  void _onPlayerValueChanged() {
+    if (!mounted) return;
+    final bool isPlaying = videoPlayerController.value.isPlaying;
+
+    if (isPlaying) {
+      widget.onChangePlaybackState?.call(true);
+      setState(() {
+        _currentPosition = videoPlayerController.value.position.inMilliseconds;
+
+        if (_currentPosition > _videoEndPos.toInt()) {
+          videoPlayerController.pause();
+          widget.onChangePlaybackState?.call(false);
+          _animationController!.stop();
+        } else {
+          if (!_animationController!.isAnimating) {
+            widget.onChangePlaybackState?.call(true);
+            _animationController!.forward();
+          }
+        }
+      });
+    } else {
+      if (videoPlayerController.value.isInitialized) {
+        if (_animationController != null) {
+          if ((_scrubberAnimation?.value ?? 0).toInt() ==
+              (_endPos.dx).toInt()) {
+            _animationController!.reset();
+          }
+          _animationController!.stop();
+          widget.onChangePlaybackState?.call(false);
+        }
+      }
+    }
+  }
+
   /// Called when the user starts dragging the frame, on either side on the whole frame.
   /// Determine which [EditorDragType] is used.
   void _onDragStart(DragStartDetails details) {
-    log("onDragStart");
-    log(details.localPosition.toString());
-    log((_startPos.dx - details.localPosition.dx).abs().toString());
-    log((_endPos.dx - details.localPosition.dx).abs().toString());
+    final dx = details.localPosition.dx;
+    final tolerance = widget.editorProperties.sideTapSize.toDouble();
+    final startDistance = (dx - _startPos.dx).abs();
+    final endDistance = (dx - _endPos.dx).abs();
 
-    final startDifference = _startPos.dx - details.localPosition.dx;
-    final endDifference = _endPos.dx - details.localPosition.dx;
+    _panningStrip = false;
 
-    // First we determine whether the dragging motion should be allowed. The allowed
-    // zone is widget.sideTapSize (left) + frame (center) + widget.sideTapSize (right)
-    if (startDifference <= widget.editorProperties.sideTapSize &&
-        endDifference >= -widget.editorProperties.sideTapSize) {
+    // Whichever handle is within reach wins, closest first. Slicing the frame
+    // into zones instead used to hand edge grabs to `center`, which moved both
+    // handles when the user meant to move one.
+    if (startDistance <= tolerance || endDistance <= tolerance) {
+      _dragType = startDistance <= endDistance
+          ? EditorDragType.left
+          : EditorDragType.right;
       _allowDrag = true;
+    } else if (dx > _startPos.dx && dx < _endPos.dx) {
+      _dragType = EditorDragType.center;
+      _allowDrag = true;
+    } else if (widget.areaProperties.allowManualScroll) {
+      // Outside the frame, so pan the strip under it instead.
+      _panningStrip = true;
+      _allowDrag = true;
+      _cancelStripFling();
     } else {
-      debugPrint("Dragging is outside of frame, ignoring gesture...");
+      log('Dragging is outside of frame, ignoring gesture...');
       _allowDrag = false;
       return;
     }
 
-    // Now we determine which part is dragged
-    if (details.localPosition.dx <=
-        _startPos.dx + widget.editorProperties.sideTapSize) {
-      _dragType = EditorDragType.left;
-    } else if (details.localPosition.dx <=
-        _endPos.dx - widget.editorProperties.sideTapSize) {
-      _dragType = EditorDragType.center;
-    } else {
-      _dragType = EditorDragType.right;
-    }
+    _isDragging = !_panningStrip;
+  }
+
+  /// Moves the strip with the finger. Content follows the drag, so pulling
+  /// right rewinds towards the start of the video.
+  void _panStrip(double deltaDx) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.maxScrollExtent <= 0) return;
+    final target =
+        (position.pixels - deltaDx).clamp(0.0, position.maxScrollExtent);
+    if ((target - position.pixels).abs() < _kEps) return;
+    _scrollController.jumpTo(target);
+  }
+
+  /// Carries the strip on after the finger lifts, so a flick glides to a stop
+  /// instead of halting dead.
+  void _flingStrip(double velocityDx) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.maxScrollExtent <= 0) return;
+    if (velocityDx.abs() < 50) return;
+
+    // A quarter second of travel at the release velocity reads as natural
+    // deceleration without overshooting the clip.
+    final target = (position.pixels - velocityDx * 0.25)
+        .clamp(0.0, position.maxScrollExtent);
+    if ((target - position.pixels).abs() < 1.0) return;
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _cancelStripFling() {
+    if (!_scrollController.hasClients) return;
+    // Stop any in-flight fling by pinning the strip where it currently sits.
+    _scrollController.jumpTo(_scrollController.position.pixels);
   }
 
   /// Called during dragging, only executed if [_allowDrag] was set to true in
@@ -469,8 +597,10 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   void _onDragUpdate(DragUpdateDetails details) {
     if (!_allowDrag) return;
 
-    // log('Local pos: ${details.localPosition}');
-    _localPosition = details.localPosition.dx;
+    if (_panningStrip) {
+      _panStrip(details.delta.dx);
+      return;
+    }
 
     if (_dragType == EditorDragType.left) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
@@ -499,53 +629,26 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _onEndDragged();
       }
     }
-    // log('Video Duration :: Start: ${_videoStartPos / 1000}ms, End: ${_videoEndPos / 1000}ms');
-    // log('UPDATE => START: ${_startPos.dx}, END: ${_endPos.dx}');
-    _scrollStartTimer?.cancel();
-    if (_endPos.dx >= _autoEndScrollPos &&
-        currentScrollValue <= totalVideoLengthInPixels) {
-      startTimer(true);
-    } else if (_startPos.dx <= _autoStartScrollPos &&
-        currentScrollValue != 0.0) {
-      startTimer(false);
-    }
-
+    _updateAutoScroll();
     setState(() {});
   }
 
-  void _onStartDragged() {
-    if (_scrollingTimer?.isActive ?? false) return;
-    _startFraction = (_startPos.dx / _thumbnailViewerW);
-    _videoStartPos = (_trimmerAreaDuration * _startFraction) +
-        (_scrollController.position.pixels /
-                _scrollController.position.maxScrollExtent) *
-            _remainingDuration;
-    widget.onChangeStart!(_videoStartPos);
-    _linearTween.begin = _startPos.dx;
-    _animationController!.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController!.reset();
-  }
+  void _onStartDragged() => _recomputeTrimPositions();
 
-  void _onEndDragged() {
-    if (_scrollingTimer?.isActive ?? false) return;
-    _endFraction = _endPos.dx / _thumbnailViewerW;
-    _videoEndPos = (_trimmerAreaDuration * _endFraction) +
-        (_scrollController.position.pixels /
-                _scrollController.position.maxScrollExtent) *
-            _remainingDuration;
-    widget.onChangeEnd!(_videoEndPos);
-    _linearTween.end = _endPos.dx;
-    _animationController!.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController!.reset();
-  }
+  void _onEndDragged() => _recomputeTrimPositions();
 
   /// Drag gesture ended, update UI accordingly.
   void _onDragEnd(DragEndDetails details) {
     log('onDragEnd');
-    _scrollStartTimer?.cancel();
-    _scrollingTimer?.cancel();
+    _isDragging = false;
+    _cancelAutoScroll();
+
+    if (_panningStrip) {
+      _panningStrip = false;
+      _flingStrip(details.velocity.pixelsPerSecond.dx);
+      return;
+    }
+
     setState(() {
       _startCircleSize = widget.editorProperties.circleSize;
       _endCircleSize = widget.editorProperties.circleSize;
@@ -559,176 +662,194 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     });
   }
 
+  /// The gesture was taken over or interrupted, so unwind the drag state.
+  void _onDragCancel() {
+    _isDragging = false;
+    _panningStrip = false;
+    _cancelAutoScroll();
+    if (!mounted) return;
+    setState(() {
+      _startCircleSize = widget.editorProperties.circleSize;
+      _endCircleSize = widget.editorProperties.circleSize;
+    });
+  }
+
   @override
   void dispose() {
+    // Detach before pausing: pause() notifies listeners synchronously, and
+    // dispose runs inside a locked build scope, so the listener's setState
+    // (and the playback-state callback it fires) would throw.
+    videoPlayerController.removeListener(_onPlayerValueChanged);
     videoPlayerController.pause();
+    _autoScrollDelayTimer?.cancel();
+    _autoScrollTicker?.dispose();
+    _scrollController.removeListener(_onScrollChanged);
     _scrollController.dispose();
-    _scrollStartTimer?.cancel();
-    _scrollingTimer?.cancel();
-    widget.onChangePlaybackState!(false);
+    // No consumer callbacks from here: dispose runs inside a locked build
+    // scope, so a listener that calls setState would throw.
     if (_videoFile != null) {
       videoPlayerController.setVolume(0.0);
       videoPlayerController.dispose();
-      widget.onChangePlaybackState!(false);
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragStart: _onDragStart,
-      onHorizontalDragUpdate: _onDragUpdate,
-      onHorizontalDragEnd: _onDragEnd,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          widget.showDuration
-              ? SizedBox(
-                  width: _thumbnailViewerW,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Text(
-                          Duration(milliseconds: _videoStartPos.toInt())
-                              .format(widget.durationStyle),
-                          style: widget.durationTextStyle,
-                        ),
-                        videoPlayerController.value.isPlaying
-                            ? Text(
-                                Duration(milliseconds: _currentPosition.toInt())
-                                    .format(widget.durationStyle),
-                                style: widget.durationTextStyle,
-                              )
-                            : Container(),
-                        Text(
-                          Duration(milliseconds: _videoEndPos.toInt())
-                              .format(widget.durationStyle),
-                          style: widget.durationTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Container(),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CustomPaint(
-                foregroundPainter: TrimEditorPainter(
-                  startPos: _startPos,
-                  endPos: _endPos,
-                  scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
-                  startCircleSize: _startCircleSize,
-                  endCircleSize: _endCircleSize,
-                  borderRadius: _borderRadius,
-                  borderWidth: widget.editorProperties.borderWidth,
-                  scrubberWidth: widget.editorProperties.scrubberWidth,
-                  circlePaintColor: widget.editorProperties.circlePaintColor,
-                  borderPaintColor: widget.editorProperties.borderPaintColor,
-                  scrubberPaintColor:
-                      widget.editorProperties.scrubberPaintColor,
-                ),
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                          widget.areaProperties.borderRadius),
-                      child: Container(
-                        key: _trimmerAreaKey,
-                        color: Colors.grey[900],
-                        height: _thumbnailViewerH,
-                        width: _thumbnailViewerW == 0.0
-                            ? widget.viewerWidth
-                            : _thumbnailViewerW,
-                        child: thumbnailWidget ?? Container(),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        widget.showDuration
+            ? SizedBox(
+                width: _thumbnailViewerW,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Text(
+                        Duration(milliseconds: _videoStartPos.toInt())
+                            .format(widget.durationStyle),
+                        style: widget.durationTextStyle,
                       ),
-                    ),
-                    _scrollController.positions.isNotEmpty
-                        ? AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            decoration: BoxDecoration(
-                              gradient: widget.areaProperties.blurEdges
-                                  ? LinearGradient(
-                                      stops: const [0.0, 0.1, 0.9, 1.0],
-                                      colors: [
-                                        _scrollController.position.pixels == 0.0
-                                            ? Colors.transparent
-                                            : widget.areaProperties.blurColor,
-                                        Colors.transparent,
-                                        Colors.transparent,
-                                        _scrollController.position.pixels ==
-                                                _scrollController
-                                                    .position.maxScrollExtent
-                                            ? Colors.transparent
-                                            : widget.areaProperties.blurColor,
-                                      ],
-                                    )
-                                  : null,
-                            ),
-                            height: _thumbnailViewerH,
-                            width: widget.viewerWidth,
-                            child: Row(
-                              children: [
-                                AnimatedOpacity(
-                                    opacity:
-                                        _scrollController.position.pixels != 0.0
-                                            ? 1.0
-                                            : 0.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: widget.areaProperties.startIcon),
-                                const Spacer(),
-                                AnimatedOpacity(
-                                  opacity: _scrollController.position.pixels !=
-                                          _scrollController
-                                              .position.maxScrollExtent
-                                      ? 1.0
-                                      : 0.0,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: widget.areaProperties.endIcon,
+                      videoPlayerController.value.isPlaying
+                          ? Text(
+                              Duration(milliseconds: _currentPosition.toInt())
+                                  .format(widget.durationStyle),
+                              style: widget.durationTextStyle,
+                            )
+                          : Container(),
+                      Text(
+                        Duration(milliseconds: _videoEndPos.toInt())
+                            .format(widget.durationStyle),
+                        style: widget.durationTextStyle,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : Container(),
+        NotificationListener<ScrollEndNotification>(
+          // A manual scroll of the strip moves the selection, so bring the
+          // preview along with it. Handle drags seek in `_onDragEnd` instead,
+          // and auto-scroll fires this every frame, so both are excluded.
+          onNotification: (_) {
+            if (!_isDragging) {
+              videoPlayerController
+                  .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+            }
+            return false;
+          },
+          child: GestureDetector(
+            // Opaque because everything below is wrapped in IgnorePointer:
+            // this detector owns the strip's gestures outright and routes each
+            // one to either the trim frame or a strip pan.
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragStart: _onDragStart,
+            onHorizontalDragUpdate: _onDragUpdate,
+            onHorizontalDragEnd: _onDragEnd,
+            onHorizontalDragCancel: _onDragCancel,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CustomPaint(
+                  foregroundPainter: TrimEditorPainter(
+                    startPos: _startPos,
+                    endPos: _endPos,
+                    scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
+                    startCircleSize: _startCircleSize,
+                    endCircleSize: _endCircleSize,
+                    borderRadius: _borderRadius,
+                    borderWidth: widget.editorProperties.borderWidth,
+                    scrubberWidth: widget.editorProperties.scrubberWidth,
+                    circlePaintColor: widget.editorProperties.circlePaintColor,
+                    borderPaintColor: widget.editorProperties.borderPaintColor,
+                    scrubberPaintColor:
+                        widget.editorProperties.scrubberPaintColor,
+                  ),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                            widget.areaProperties.borderRadius),
+                        child: Container(
+                          key: _trimmerAreaKey,
+                          color: Colors.grey[900],
+                          height: _thumbnailViewerH,
+                          width: _thumbnailViewerW == 0.0
+                              ? widget.viewerWidth
+                              : _thumbnailViewerW,
+                          child: thumbnailWidget ?? Container(),
+                        ),
+                      ),
+                      // The blur and the edge chevrons are decoration only.
+                      // Without IgnorePointer the icons swallow drags right
+                      // where the user reaches to scroll the strip.
+                      _scrollController.positions.isNotEmpty
+                          ? IgnorePointer(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                decoration: BoxDecoration(
+                                  gradient: widget.areaProperties.blurEdges
+                                      ? LinearGradient(
+                                          stops: const [0.0, 0.1, 0.9, 1.0],
+                                          colors: [
+                                            _scrollController.position.pixels ==
+                                                    0.0
+                                                ? Colors.transparent
+                                                : widget
+                                                    .areaProperties.blurColor,
+                                            Colors.transparent,
+                                            Colors.transparent,
+                                            _scrollController.position.pixels ==
+                                                    _scrollController.position
+                                                        .maxScrollExtent
+                                                ? Colors.transparent
+                                                : widget
+                                                    .areaProperties.blurColor,
+                                          ],
+                                        )
+                                      : null,
                                 ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox(),
-                  ],
+                                height: _thumbnailViewerH,
+                                width: widget.viewerWidth,
+                                child: Row(
+                                  children: [
+                                    AnimatedOpacity(
+                                        opacity:
+                                            _scrollController.position.pixels !=
+                                                    0.0
+                                                ? 1.0
+                                                : 0.0,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: widget.areaProperties.startIcon),
+                                    const Spacer(),
+                                    AnimatedOpacity(
+                                      opacity:
+                                          _scrollController.position.pixels !=
+                                                  _scrollController
+                                                      .position.maxScrollExtent
+                                              ? 1.0
+                                              : 0.0,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      child: widget.areaProperties.endIcon,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : const SizedBox(),
+                    ],
+                  ),
                 ),
-              ),
-              // This widget is used in development for making the DEBUGGING
-              // process of this package easier.
-              Visibility(
-                visible: false,
-                child: Row(
-                  children: [
-                    Container(
-                      color: Colors.red.withValues(alpha: 0.6),
-                      height: _thumbnailViewerH,
-                      // 2% of total trimmer width
-                      width: (_thumbnailViewerW == 0.0
-                              ? widget.viewerWidth
-                              : _thumbnailViewerW) *
-                          0.02,
-                    ),
-                    const Spacer(),
-                    Container(
-                      color: Colors.red.withValues(alpha: 0.6),
-                      height: _thumbnailViewerH,
-                      // 2% of total trimmer width
-                      width: (_thumbnailViewerW == 0.0
-                              ? widget.viewerWidth
-                              : _thumbnailViewerW) *
-                          0.02,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

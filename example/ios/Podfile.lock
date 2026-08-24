@@ -1,38 +1,4 @@
 PODS:
-  - DKImagePickerController/Core (4.3.4):
-    - DKImagePickerController/ImageDataManager
-    - DKImagePickerController/Resource
-  - DKImagePickerController/ImageDataManager (4.3.4)
-  - DKImagePickerController/PhotoGallery (4.3.4):
-    - DKImagePickerController/Core
-    - DKPhotoGallery
-  - DKImagePickerController/Resource (4.3.4)
-  - DKPhotoGallery (0.0.17):
-    - DKPhotoGallery/Core (= 0.0.17)
-    - DKPhotoGallery/Model (= 0.0.17)
-    - DKPhotoGallery/Preview (= 0.0.17)
-    - DKPhotoGallery/Resource (= 0.0.17)
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Core (0.0.17):
-    - DKPhotoGallery/Model
-    - DKPhotoGallery/Preview
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Model (0.0.17):
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Preview (0.0.17):
-    - DKPhotoGallery/Model
-    - DKPhotoGallery/Resource
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Resource (0.0.17):
-    - SDWebImage
-    - SwiftyGif
-  - file_picker (0.0.1):
-    - DKImagePickerController/PhotoGallery
-    - Flutter
   - Flutter (1.0.0)
   - flutter_native_video_trimmer (1.0.0):
     - Flutter
@@ -51,59 +17,29 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - SDWebImage (5.18.2):
-    - SDWebImage/Core (= 5.18.2)
-  - SDWebImage/Core (5.18.2)
-  - SwiftyGif (5.4.4)
-  - video_player_avfoundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
 
 DEPENDENCIES:
-  - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_native_video_trimmer (from `.symlinks/plugins/flutter_native_video_trimmer/ios`)
   - get_thumbnail_video (from `.symlinks/plugins/get_thumbnail_video/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
 
 SPEC REPOS:
   trunk:
-    - DKImagePickerController
-    - DKPhotoGallery
     - libwebp
-    - SDWebImage
-    - SwiftyGif
 
 EXTERNAL SOURCES:
-  file_picker:
-    :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
   flutter_native_video_trimmer:
     :path: ".symlinks/plugins/flutter_native_video_trimmer/ios"
   get_thumbnail_video:
     :path: ".symlinks/plugins/get_thumbnail_video/ios"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  video_player_avfoundation:
-    :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  DKImagePickerController: b512c28220a2b8ac7419f21c491fc8534b7601ac
-  DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
-  file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_native_video_trimmer: 11f6c679971dc3844519b485b9c878df8675ae3a
   get_thumbnail_video: 1a754d46b860dffefcc57b7290a43089cd5d7e58
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
-  SDWebImage: c0de394d7cf7f9838aed1fd6bb6037654a4572e4
-  SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
-  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
 PODFILE CHECKSUM: 7adbc9d59f05e1b01f554ea99b6c79e97f2214a2
 
