@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -19,7 +21,6 @@ class VideoViewer extends StatefulWidget {
   /// area. By default it is set to `EdgeInsets.all(0.0)`.
   final EdgeInsets padding;
 
-  // ignore: use_key_in_widget_constructors
   /// For showing the video playback area.
   ///
   /// This only contains optional parameters. They are:
@@ -36,18 +37,20 @@ class VideoViewer extends StatefulWidget {
   /// area. By default it is set to `EdgeInsets.all(0.0)`.
   ///
   const VideoViewer({
-    Key? key,
+    super.key,
     required this.trimmer,
     this.borderColor = Colors.transparent,
     this.borderWidth = 0.0,
     this.padding = const EdgeInsets.all(0.0),
-  }) : super(key: key);
+  });
 
   @override
   State<VideoViewer> createState() => _VideoViewerState();
 }
 
 class _VideoViewerState extends State<VideoViewer> {
+  StreamSubscription<TrimmerEvent>? _subscription;
+
   /// Quick access to VideoPlayerController, only not null after [TrimmerEvent.initialized]
   /// has been emitted.
   VideoPlayerController? get videoPlayerController =>
@@ -55,13 +58,21 @@ class _VideoViewerState extends State<VideoViewer> {
 
   @override
   void initState() {
-    widget.trimmer.eventStream.listen((event) {
-      if (event == TrimmerEvent.initialized) {
-        //The video has been initialized, now we can load stuff
+    super.initState();
+    _subscription = widget.trimmer.eventStream.listen((event) {
+      if (event == TrimmerEvent.initialized && mounted) {
         setState(() {});
       }
     });
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // Only the subscription is ours. This used to call
+    // `widget.trimmer.dispose()`, closing a stream controller the widget does
+    // not own, which broke every later loadVideo on the same Trimmer.
+    _subscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -70,7 +81,7 @@ class _VideoViewerState extends State<VideoViewer> {
     return controller == null
         ? Container()
         : Padding(
-            padding: const EdgeInsets.all(0.0),
+            padding: widget.padding,
             child: Center(
               child: AspectRatio(
                 aspectRatio: controller.value.aspectRatio,
@@ -92,11 +103,5 @@ class _VideoViewerState extends State<VideoViewer> {
               ),
             ),
           );
-  }
-
-  @override
-  void dispose() {
-    widget.trimmer.dispose();
-    super.dispose();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -184,6 +186,90 @@ void main() {
 
     expect(readout('start'), lessThan(scrolledStart),
         reason: 'dragging the strip right should rewind the selection');
+  });
+
+  testWidgets('renders when mounted after the video already initialized',
+      (tester) async {
+    // Regression for the missed-event bug: TrimViewer waited on a broadcast
+    // stream that never replays, so a viewer built after loadVideo() finished
+    // stayed an empty SizedBox forever. Changing the config remounts the
+    // viewer against an already-initialized controller, which is that path.
+    await openSampleTrimmer(tester);
+
+    await tester.tap(find.byKey(const Key('open_config')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('fixed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('APPLY'));
+    await pumpUntil(
+      tester,
+      () => find.byType(TrimViewer).evaluate().isNotEmpty,
+      reason: 'TrimViewer to remount',
+    );
+    // Let the post-frame layout pass run.
+    for (var i = 0; i < 30; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+
+    final size = tester.getSize(find.byType(TrimViewer));
+    expect(size.height, greaterThan(20),
+        reason: 'remounted viewer collapsed to an empty box');
+    expect(find.byType(FixedTrimViewer), findsOneWidget,
+        reason: 'ViewerType.fixed should build the fixed viewer');
+  });
+
+  testWidgets('the Trimmer survives leaving and re-entering the trimmer',
+      (tester) async {
+    // Regression for VideoViewer.dispose() calling trimmer.dispose(): the
+    // second load used to throw "Cannot add new events after calling close".
+    await openSampleTrimmer(tester);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('use_sample')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('use_sample')));
+    await pumpUntil(
+      tester,
+      () => find.byType(TrimViewer).evaluate().isNotEmpty,
+      reason: 'TrimViewer to mount a second time',
+    );
+    await pumpUntil(
+      tester,
+      () => find.byIcon(Icons.check_circle_outline).evaluate().isNotEmpty,
+      timeout: const Duration(seconds: 90),
+      reason: 'thumbnails on the second load',
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(readout('length'), greaterThan(0.5),
+        reason: 'second load should report a real trim window');
+  });
+
+  testWidgets('saves a trim to a path free of awkward characters',
+      (tester) async {
+    await openSampleTrimmer(tester);
+
+    await tester.tap(find.byKey(const Key('save_video')));
+    await pumpUntil(
+      tester,
+      () => find.text('Preview').evaluate().isNotEmpty,
+      timeout: const Duration(seconds: 120),
+      reason: 'the trim to finish and the preview to open',
+    );
+
+    // The preview prints the output path; issue #203 was colons and commas in
+    // it breaking downstream media tooling.
+    final pathFinder = find.textContaining('/Trimmer/');
+    expect(pathFinder, findsOneWidget, reason: 'no output path on screen');
+    final outputPath = (pathFinder.evaluate().single.widget as Text).data!;
+
+    expect(outputPath, isNot(contains(':')));
+    expect(outputPath, isNot(contains(',')));
+    expect(outputPath, isNot(contains(' ')));
+    expect(File(outputPath).existsSync(), isTrue,
+        reason: 'trimmed file should exist at $outputPath');
+    expect(File(outputPath).lengthSync(), greaterThan(0));
   });
 
   testWidgets('builds with every optional callback omitted', (tester) async {

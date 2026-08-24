@@ -20,6 +20,8 @@ dependencies:
   image: ^4.5.4
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
   lints: ^5.0.0
 

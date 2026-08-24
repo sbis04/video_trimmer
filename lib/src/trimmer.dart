@@ -8,9 +8,9 @@ import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/src/utils/output_naming.dart';
 import 'package:video_trimmer/src/utils/storage_dir.dart';
 
 enum OutputType { video, gif }
@@ -38,16 +38,35 @@ class Trimmer {
   /// Listen to this stream to catch the events
   Stream<TrimmerEvent> get eventStream => _controller.stream;
 
+  /// Whether a video has been loaded and its controller initialized.
+  ///
+  /// Widgets that mount after [loadVideo] completes can read this instead of
+  /// waiting on [eventStream], which is a plain broadcast stream and so never
+  /// replays the event they missed.
+  bool get isVideoInitialized =>
+      _videoPlayerController?.value.isInitialized ?? false;
+
   /// Loads a video using the path provided.
   ///
-  /// Returns the loaded video file.
+  /// Throws a [FileSystemException] if [videoFile] does not exist, rather than
+  /// silently doing nothing.
   Future<void> loadVideo({required File videoFile}) async {
+    if (!videoFile.existsSync()) {
+      throw FileSystemException('Video file not found', videoFile.path);
+    }
+
+    // Release the previous video before replacing it, otherwise every reload
+    // leaks a controller and its platform-side player.
+    final previous = _videoPlayerController;
+    _videoPlayerController = null;
+    await previous?.dispose();
+
     currentVideoFile = videoFile;
-    if (videoFile.existsSync()) {
-      _videoPlayerController = VideoPlayerController.file(currentVideoFile!);
-      await _videoPlayerController!.initialize().then((_) {
-        _controller.add(TrimmerEvent.initialized);
-      });
+    final controller = VideoPlayerController.file(videoFile);
+    _videoPlayerController = controller;
+    await controller.initialize();
+    if (!_controller.isClosed) {
+      _controller.add(TrimmerEvent.initialized);
     }
   }
 
@@ -57,39 +76,34 @@ class Trimmer {
   ) async {
     Directory? directory;
 
-    if (storageDir == null) {
-      directory = await getApplicationDocumentsDirectory();
-    } else {
-      switch (storageDir.toString()) {
-        case 'temporaryDirectory':
-          directory = await getTemporaryDirectory();
-          break;
-
-        case 'applicationDocumentsDirectory':
-          directory = await getApplicationDocumentsDirectory();
-          break;
-
-        case 'externalStorageDirectory':
-          directory = await getExternalStorageDirectory();
-          break;
-      }
+    // Exhaustive switch on a real enum. This used to dispatch on
+    // `storageDir.toString()` with no default arm, so an unmatched value left
+    // `directory` null and the next line dereferenced it.
+    switch (storageDir ?? StorageDir.applicationDocumentsDirectory) {
+      case StorageDir.temporaryDirectory:
+        directory = await getTemporaryDirectory();
+      case StorageDir.applicationDocumentsDirectory:
+        directory = await getApplicationDocumentsDirectory();
+      case StorageDir.externalStorageDirectory:
+        // Returns null on every platform except Android.
+        directory = await getExternalStorageDirectory();
     }
 
-    // Directory + folder name
+    if (directory == null) {
+      throw UnsupportedError(
+        'StorageDir.externalStorageDirectory is not available on this '
+        'platform. Use temporaryDirectory or applicationDocumentsDirectory.',
+      );
+    }
+
     final Directory directoryFolder =
-        Directory('${directory!.path}/$folderName/');
+        Directory(join(directory.path, folderName));
 
     if (await directoryFolder.exists()) {
-      // If folder already exists return path
-      debugPrint('Exists');
       return directoryFolder.path;
-    } else {
-      debugPrint('Creating');
-      // If folder does not exists create folder and then return its path
-      final Directory directoryNewFolder =
-          await directoryFolder.create(recursive: true);
-      return directoryNewFolder.path;
     }
+    final Directory created = await directoryFolder.create(recursive: true);
+    return created.path;
   }
 
   /// Generates thumbnails from a video file based on a target FPS and width.
@@ -269,41 +283,31 @@ class Trimmer {
     StorageDir? storageDir,
     OutputType outputType = OutputType.video,
   }) async {
-    final String videoPath = currentVideoFile!.path;
-    final String videoName = basename(videoPath).split('.')[0];
+    final File? sourceFile = currentVideoFile;
+    if (sourceFile == null) {
+      throw StateError('No video loaded. Call loadVideo() before saving.');
+    }
+
+    final String videoPath = sourceFile.path;
     final String fileExtension =
         outputType == OutputType.gif ? '.gif' : extension(videoPath);
 
-    // Formatting Date and Time
-    String dateTime = DateFormat.yMMMd()
-        .addPattern('-')
-        .add_Hms()
-        .format(DateTime.now())
-        .toString();
+    videoFolderName = sanitizeFileName(videoFolderName ?? 'Trimmer');
+    final String outputFileName = buildOutputFileName(
+      sourcePath: videoPath,
+      timestamp: DateTime.now(),
+      customName: videoFileName,
+    );
 
-    String outputPath;
-    String formattedDateTime = dateTime.replaceAll(' ', '');
-
-    debugPrint("DateTime: $dateTime");
-    debugPrint("Formatted: $formattedDateTime");
-
-    videoFolderName ??= "Trimmer";
-    videoFileName ??= "${videoName}_trimmed:$formattedDateTime";
-    videoFileName = videoFileName.replaceAll(' ', '_');
-
-    String path = await _createFolderInAppDocDir(
+    final String path = await _createFolderInAppDocDir(
       videoFolderName,
       storageDir,
-    ).whenComplete(() => debugPrint("Retrieved Trimmer folder"));
+    );
 
-    Duration startPoint = Duration(milliseconds: startValue.toInt());
-    Duration endPoint = Duration(milliseconds: endValue.toInt());
+    final String outputPath = join(path, '$outputFileName$fileExtension');
 
-    // Checking the start and end point strings
-    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
-    debugPrint(path);
-
-    outputPath = '$path$videoFileName$fileExtension';
+    debugPrint('Trimming ${Duration(milliseconds: startValue.toInt())} to '
+        '${Duration(milliseconds: endValue.toInt())} -> $outputPath');
 
     if (outputType == OutputType.gif) {
       final gifPath = await _generateGifFromVideo(
@@ -363,8 +367,15 @@ class Trimmer {
     }
   }
 
-  /// Clean up
+  /// Releases the video controller and the event stream.
+  ///
+  /// Call this from the [State.dispose] of whatever created the [Trimmer].
+  /// The viewer widgets deliberately do not do it for you: they don't own the
+  /// controller, and tearing it down from a child broke every subsequent
+  /// `loadVideo` on the same instance.
   void dispose() {
+    _videoPlayerController?.dispose();
+    _videoPlayerController = null;
     _controller.close();
   }
 }

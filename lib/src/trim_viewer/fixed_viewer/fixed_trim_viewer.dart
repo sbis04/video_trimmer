@@ -415,11 +415,9 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     // (and the playback-state callback it fires) would throw.
     videoPlayerController.removeListener(_onPlayerValueChanged);
     videoPlayerController.pause();
-    // No consumer callbacks from here either, for the same reason.
-    if (_videoFile != null) {
-      videoPlayerController.setVolume(0.0);
-      videoPlayerController.dispose();
-    }
+    // The controller belongs to the Trimmer, not to this widget, so it is
+    // not disposed here. Rebuilding or replacing the viewer used to kill the
+    // shared controller and leave every other widget with a dead player.
     super.dispose();
   }
 

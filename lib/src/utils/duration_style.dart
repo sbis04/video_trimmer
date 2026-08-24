@@ -10,79 +10,61 @@ enum DurationStyle {
 }
 
 extension DurationFormatExt on Duration {
+  /// Renders this duration in the given [style].
+  ///
+  /// The largest unit the style asks for is never truncated: `FORMAT_MM_SS`
+  /// shows 1h30m15s as `90:15`, not `30:15`. Smaller units wrap as usual.
   String format(DurationStyle style) {
-    // DurationStyle.FORMAT_HH_MM_SS
-    final formatPart = style.toString().split('.')[1].split('_');
-    formatPart.removeAt(0);
-    // HH_MM_SS
-    final millisecondTime = inMilliseconds;
-    final hoursStr = _getDisplayTimeHours(millisecondTime);
-    final mStr = _getDisplayTimeMinute(millisecondTime, hours: true);
-    final sStr = _getDisplayTimeSecond(millisecondTime);
-    final msStr = _getDisplayTimeMillisecond(millisecondTime);
-    var result = '';
-    final hours = formatPart.contains('HH');
-    final minute = formatPart.contains('MM');
-    final second = formatPart.contains('SS');
-    final milliSecond = formatPart.contains('MS');
+    // e.g. FORMAT_HH_MM_SS -> {HH, MM, SS}
+    final parts = style.name.split('_').skip(1).toSet();
+    final hours = parts.contains('HH');
+    final minutes = parts.contains('MM');
+    final seconds = parts.contains('SS');
+    final milliSeconds = parts.contains('MS');
+
+    final ms = inMilliseconds;
+    final buffer = StringBuffer();
+
     if (hours) {
-      result += hoursStr;
+      buffer.write(_pad(_rawHours(ms)));
     }
-    if (minute) {
-      if (hours) {
-        result += ':';
-      }
-      result += mStr;
+    if (minutes) {
+      if (hours) buffer.write(':');
+      // Raw minutes when no hours field is carrying the overflow.
+      buffer.write(_pad(hours ? _minuteOfHour(ms) : _rawMinutes(ms)));
     }
-    if (second) {
-      if (minute) {
-        result += ':';
-      }
-      result += sStr;
+    if (seconds) {
+      if (minutes) buffer.write(':');
+      // Likewise: raw seconds when neither hours nor minutes are shown.
+      buffer.write(
+          _pad(hours || minutes ? _secondOfMinute(ms) : _rawSeconds(ms)));
     }
-    if (milliSecond) {
-      if (second) {
-        result += '.';
-      }
-      result += msStr;
+    if (milliSeconds) {
+      if (seconds) buffer.write('.');
+      buffer.write(_pad(_centisecondOfSecond(ms)));
     }
-    return result;
+    return buffer.toString();
   }
 
-  /// Get display hours time.
-  static String _getDisplayTimeHours(int mSec) {
-    return _getRawHours(mSec).floor().toString().padLeft(2, '0');
-  }
+  static String _pad(int value) => value.toString().padLeft(2, '0');
 
-  /// Get display minute time.
-  static String _getDisplayTimeMinute(int mSec, {bool hours = false}) {
-    if (hours) {
-      return _getMinute(mSec).floor().toString().padLeft(2, '0');
-    } else {
-      return _getRawMinute(mSec).floor().toString().padLeft(2, '0');
-    }
-  }
+  /// Total whole hours.
+  static int _rawHours(int ms) => ms ~/ Duration.millisecondsPerHour;
 
-  /// Get display second time.
-  static String _getDisplayTimeSecond(int mSec) {
-    final s = (mSec % 60000 / 1000).floor();
-    return s.toString().padLeft(2, '0');
-  }
+  /// Total whole minutes, ignoring any hours field.
+  static int _rawMinutes(int ms) => ms ~/ Duration.millisecondsPerMinute;
 
-  /// Get display millisecond time.
-  static String _getDisplayTimeMillisecond(int mSec) {
-    final ms = (mSec % 1000 / 10).floor();
-    return ms.toString().padLeft(2, '0');
-  }
+  /// Minutes within the hour, 0-59.
+  static int _minuteOfHour(int ms) =>
+      (ms ~/ Duration.millisecondsPerMinute) % 60;
 
-  /// Get Raw Hours.
-  static int _getRawHours(int milliSecond) =>
-      (milliSecond / (3600 * 1000)).floor();
+  /// Total whole seconds, ignoring any hours or minutes field.
+  static int _rawSeconds(int ms) => ms ~/ Duration.millisecondsPerSecond;
 
-  /// Get Raw Minute. 0 ~ 59. 1 hours = 0.
-  static int _getMinute(int milliSecond) =>
-      (milliSecond / (60 * 1000) % 60).floor();
+  /// Seconds within the minute, 0-59.
+  static int _secondOfMinute(int ms) =>
+      (ms ~/ Duration.millisecondsPerSecond) % 60;
 
-  /// Get Raw Minute
-  static int _getRawMinute(int milliSecond) => (milliSecond / 60000).floor();
+  /// Hundredths of a second within the second, 0-99.
+  static int _centisecondOfSecond(int ms) => (ms % 1000) ~/ 10;
 }

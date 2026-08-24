@@ -1,32 +1,19 @@
-/// Supported storage locations.
+/// Supported storage locations for the trimmed output.
 ///
-/// * [temporaryDirectory]
+/// * [temporaryDirectory] — only accessible from inside the app, and the
+///   system can clear it at any time.
 ///
-/// * [applicationDocumentsDirectory]
+/// * [applicationDocumentsDirectory] — only accessible from inside the app.
 ///
-/// * [externalStorageDirectory]
-///
-class StorageDir {
-  const StorageDir._(this.index);
+/// * [externalStorageDirectory] — Android only, accessible externally.
+///   Resolving this on any other platform throws.
+enum StorageDir {
+  temporaryDirectory,
+  applicationDocumentsDirectory,
+  externalStorageDirectory;
 
-  final int index;
-
-  static const StorageDir temporaryDirectory = StorageDir._(0);
-  static const StorageDir applicationDocumentsDirectory = StorageDir._(1);
-  static const StorageDir externalStorageDirectory = StorageDir._(2);
-
-  static const List<StorageDir> values = <StorageDir>[
-    temporaryDirectory,
-    applicationDocumentsDirectory,
-    externalStorageDirectory,
-  ];
-
+  /// Kept as the bare name for backwards compatibility: this used to be a
+  /// hand-rolled enum-like class whose `toString` returned just the name.
   @override
-  String toString() {
-    return const <int, String>{
-      0: 'temporaryDirectory',
-      1: 'applicationDocumentsDirectory',
-      2: 'externalStorageDirectory',
-    }[index]!;
-  }
+  String toString() => name;
 }
