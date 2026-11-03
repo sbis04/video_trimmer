@@ -1,13 +1,18 @@
 ## 6.0.0
 
-The biggest update since the native rewrite. It fixes the crashes and dead-UI
-reports that new integrations hit first, removes the thumbnail dependency that
-crashed iOS apps, reworks scrolling and playback, and adds `minVideoLength`
-and restoring a saved selection. See the README's "Migrating to 6.0.0" section
-when upgrading.
+The biggest update since the native rewrite. It adds macOS and web support,
+fixes the crashes and dead-UI reports that new integrations hit first, moves
+thumbnails and trimming into the package's own native code, reworks scrolling
+and playback, and adds line handles, `minVideoLength`, and restoring a saved
+selection. See the README's "Migrating to 6.0.0" section when upgrading.
 
 #### BREAKING CHANGES
 
+* `Trimmer.loadVideo` takes an `XFile` (from `cross_file`, re-exported by
+  `package:video_trimmer`) instead of a `dart:io` `File`, so the same code
+  runs on the web. Replace `loadVideo(videoFile: File(path))` with
+  `loadVideo(videoFile: XFile(path))`, or pass a picker's `XFile` directly.
+  `Trimmer.currentVideoFile` is an `XFile` too.
 * The viewer widgets no longer dispose the `VideoPlayerController` or the
   `Trimmer`. The `Trimmer` owns the controller, and `Trimmer.dispose()`
   releases it. Call `Trimmer.dispose()` from the `State` that created the
@@ -25,8 +30,8 @@ when upgrading.
   so a `.webm` or `.mkv` source on Android produced MP4 data under that name.
 * `onChangePlaybackState` fires only when playback starts or stops, not on
   every position update. ([#236])
-* `Trimmer.loadVideo` throws a `FileSystemException` when the file does not
-  exist, instead of silently doing nothing.
+* `Trimmer.loadVideo` throws a `FileSystemException` on native platforms when
+  the file does not exist, instead of silently doing nothing.
 * Default output file names changed from
   `<name>_trimmed:<localized date>.<ext>` to
   `<name>_trimmed_<yyyyMMdd_HHmmss>.<ext>`. ([#203], [#214])
@@ -45,6 +50,12 @@ when upgrading.
 
 #### New
 
+* Web support. Thumbnails are drawn from a `<video>` element, and trimming
+  runs in the browser with [Mediabunny](https://github.com/Vanilagy/mediabunny)
+  (MPL-2.0) on WebCodecs, producing MP4. `onSave` receives a blob: URL, and
+  GIF output works too. Mediabunny is embedded in the web plugin only, so
+  apps on other platforms don't carry it. No part of the package's shared
+  code imports `dart:io` any more, and it also compiles to WebAssembly.
 * macOS support. The iOS plugin code now lives in `darwin/` and is shared
   with macOS (`sharedDarwinSource`), so thumbnails and trimming use the same
   AVFoundation code on both. JPEG encoding moved from UIKit to ImageIO for

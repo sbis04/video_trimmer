@@ -480,7 +480,7 @@ void main() {
     final file = await sampleCopy('native_trim.mp4');
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
-    await trimmer.loadVideo(videoFile: file);
+    await trimmer.loadVideo(videoFile: XFile(file.path));
 
     String? saved;
     var done = false;
@@ -570,7 +570,7 @@ void main() {
     final file = await sampleCopy('loop_to_end.mp4');
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
-    await trimmer.loadVideo(videoFile: file);
+    await trimmer.loadVideo(videoFile: XFile(file.path));
     final controller = trimmer.videoPlayerController!;
     final durationMs = controller.value.duration.inMilliseconds;
 
@@ -670,7 +670,7 @@ void main() {
 
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
-    await trimmer.loadVideo(videoFile: file);
+    await trimmer.loadVideo(videoFile: XFile(file.path));
     final reports = <bool>[];
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
@@ -712,7 +712,7 @@ void main() {
       final file = await sampleCopy('initial_${type.name}.mp4');
       final trimmer = Trimmer();
       addTearDown(trimmer.dispose);
-      await trimmer.loadVideo(videoFile: file);
+      await trimmer.loadVideo(videoFile: XFile(file.path));
 
       double? start;
       double? end;
@@ -827,7 +827,7 @@ void main() {
     final file = await sampleCopy('min_${type.name}.mp4');
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
-    await trimmer.loadVideo(videoFile: file);
+    await trimmer.loadVideo(videoFile: XFile(file.path));
     var start = 0.0;
     var end = 0.0;
     await tester.pumpWidget(MaterialApp(
@@ -900,7 +900,7 @@ void main() {
     final events = <TrimmerEvent>[];
     trimmer.eventStream.listen(events.add);
 
-    final load = trimmer.loadVideo(videoFile: file);
+    final load = trimmer.loadVideo(videoFile: XFile(file.path));
     trimmer.dispose();
     Object? error;
     try {
@@ -921,7 +921,7 @@ void main() {
     final events = <TrimmerEvent>[];
     trimmer.eventStream.listen(events.add);
 
-    final load = trimmer.loadVideo(videoFile: file);
+    final load = trimmer.loadVideo(videoFile: XFile(file.path));
     // Let loadVideo get past releasing the (absent) previous controller, so
     // the new controller exists and is mid-initialize.
     while (trimmer.videoPlayerController == null) {
@@ -951,8 +951,8 @@ void main() {
     var initializedEvents = 0;
     trimmer.eventStream.listen((_) => initializedEvents++);
 
-    final a = trimmer.loadVideo(videoFile: first);
-    final b = trimmer.loadVideo(videoFile: second);
+    final a = trimmer.loadVideo(videoFile: XFile(first.path));
+    final b = trimmer.loadVideo(videoFile: XFile(second.path));
     final errors = <Object>[];
     await Future.wait([
       a.catchError((Object e) => errors.add(e)),

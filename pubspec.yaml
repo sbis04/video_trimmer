@@ -1,5 +1,5 @@
 name: video_trimmer
-description: A Flutter package for trimming videos. This supports retrieving, trimming, and storage of trimmed video files to the file system.
+description: Trim videos in Flutter on Android, iOS, macOS, and the web, with a customizable trim viewer, playback controls, and video or GIF output.
 version: 6.0.0
 homepage: https://github.com/sbis04/video_trimmer
 repository: https://github.com/sbis04/video_trimmer
@@ -17,6 +17,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  cross_file: ^0.3.4
+  web: ^1.0.0
 
   video_player: ^2.9.5
   path_provider: ^2.1.5
@@ -41,3 +45,6 @@ flutter:
       macos:
         pluginClass: VideoTrimmerNativePlugin
         sharedDarwinSource: true
+      web:
+        pluginClass: VideoTrimmerWeb
+        fileName: src/web/video_trimmer_web.dart

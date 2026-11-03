@@ -89,3 +89,6 @@ example/ios/Flutter/.last_build_id
 
 # Not needed in the published package: the README loads these from GitHub.
 screenshots/
+
+# Maintenance scripts, not needed by users.
+tool/

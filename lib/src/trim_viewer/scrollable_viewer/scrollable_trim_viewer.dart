@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
+import 'package:cross_file/cross_file.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -167,7 +167,7 @@ class ScrollableTrimViewer extends StatefulWidget {
 class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     with TickerProviderStateMixin {
   final _trimmerAreaKey = GlobalKey();
-  File? get _videoFile => widget.trimmer.currentVideoFile;
+  XFile? get _videoFile => widget.trimmer.currentVideoFile;
 
   double _videoStartPos = 0.0;
   double _videoEndPos = 0.0;

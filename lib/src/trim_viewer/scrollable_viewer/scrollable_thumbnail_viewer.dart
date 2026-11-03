@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:cross_file/cross_file.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
   });
 
   /// The video file from which thumbnails are generated.
-  final File videoFile;
+  final XFile videoFile;
 
   /// The total duration of the video in milliseconds.
   final int videoDuration;
