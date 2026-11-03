@@ -138,6 +138,10 @@ when upgrading.
 #### Other changes
 
 * Dependencies upgraded: `image` 4.12, `video_player` 2.14, `flutter_lints` 6.
+* `intl` and `transparent_image` are no longer dependencies. `intl` was only
+  used to format output file names, and its version is pinned by the Flutter
+  SDK through `flutter_localizations`, so every `intl` release risked a
+  version conflict for apps that localize.
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
 * README rewritten for 6.0.0: up-to-date usage, a migration guide, a full

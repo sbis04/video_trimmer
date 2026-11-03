@@ -40,6 +40,17 @@ void main() {
     });
   });
 
+  group('formatFileTimestamp', () {
+    test('zero-pads every field', () {
+      expect(formatFileTimestamp(DateTime(2026, 1, 2, 3, 4, 5)),
+          '20260102_030405');
+    });
+    test('keeps two-digit fields as they are', () {
+      expect(formatFileTimestamp(DateTime(2026, 11, 23, 14, 59, 30)),
+          '20261123_145930');
+    });
+  });
+
   group('buildOutputFileName', () {
     test('uses a filesystem-safe timestamp', () {
       expect(

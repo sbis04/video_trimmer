@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:transparent_image/transparent_image.dart';
+import 'package:video_trimmer/src/utils/transparent_image.dart';
 import 'package:video_trimmer/src/utils/trimmer_utils.dart';
 
 /// For showing the thumbnails generated from the video in a scrollable view,
