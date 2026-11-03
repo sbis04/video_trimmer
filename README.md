@@ -175,7 +175,7 @@ TrimViewer(
     borderPaintColor: Colors.yellow,
     borderWidth: 4,
     borderRadius: 5,
-    circlePaintColor: Colors.yellow.shade800, // handle color
+    circlePaintColor: Colors.white,           // handle color
     handleStyle: TrimHandleStyle.line,        // or TrimHandleStyle.circle
     handleHeight: TrimHandleHeight.percent(50), // or TrimHandleHeight.pixels(24)
   ),
