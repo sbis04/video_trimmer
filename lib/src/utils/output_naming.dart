@@ -1,16 +1,22 @@
-import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
 /// Characters that are safe in a file name on every platform this package
 /// targets, and that downstream media tooling reliably accepts.
 final RegExp _unsafeFileNameChars = RegExp(r'[^A-Za-z0-9._-]');
 
-/// Timestamp format for generated file names.
+/// Formats [time] as `yyyyMMdd_HHmmss` for generated file names.
 ///
 /// Deliberately not a localized format: `DateFormat.yMMMd().add_Hms()` used to
 /// produce names like `clip_trimmed:Apr28,2023-09:45:54.mp4`, and the colons
-/// and commas broke `MediaMetadataRetriever` and several transcoders.
-final DateFormat _stampFormat = DateFormat('yyyyMMdd_HHmmss');
+/// and commas broke `MediaMetadataRetriever` and several transcoders. Built by
+/// hand so the package does not depend on `intl`, whose version the Flutter
+/// SDK pins through `flutter_localizations`.
+String formatFileTimestamp(DateTime time) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${time.year.toString().padLeft(4, '0')}${two(time.month)}'
+      '${two(time.day)}_${two(time.hour)}${two(time.minute)}'
+      '${two(time.second)}';
+}
 
 /// Replaces anything outside `[A-Za-z0-9._-]` with an underscore, collapses
 /// runs of underscores, and trims leading and trailing separators.
@@ -38,5 +44,5 @@ String buildOutputFileName({
   // basenameWithoutExtension, not split('.').first: the old code truncated any
   // name containing a dot, so `my.clip.mp4` became `my`.
   final base = sanitizeFileName(basenameWithoutExtension(sourcePath));
-  return '${base}_trimmed_${_stampFormat.format(timestamp)}';
+  return '${base}_trimmed_${formatFileTimestamp(timestamp)}';
 }
