@@ -1,9 +1,5 @@
 library;
 
-// Trimmer.loadVideo takes an XFile on every platform, so apps can call it
-// without depending on cross_file themselves.
-export 'package:cross_file/cross_file.dart' show XFile;
-
 export 'package:video_trimmer/src/trimmer.dart';
 export 'package:video_trimmer/src/video_viewer.dart';
 export 'package:video_trimmer/src/utils/duration_style.dart';

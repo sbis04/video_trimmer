@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:cross_file/cross_file.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -167,7 +166,7 @@ class ScrollableTrimViewer extends StatefulWidget {
 class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     with TickerProviderStateMixin {
   final _trimmerAreaKey = GlobalKey();
-  XFile? get _videoFile => widget.trimmer.currentVideoFile;
+  String? get _videoPath => widget.trimmer.currentVideoPath;
 
   double _videoStartPos = 0.0;
   double _videoEndPos = 0.0;
@@ -431,7 +430,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         _numberOfThumbnails = numberOfThumbnailsTotal;
         final thumbnailWidget = ScrollableThumbnailViewer(
           scrollController: _scrollController,
-          videoFile: _videoFile!,
+          videoPath: _videoPath!,
           videoDuration: _videoDuration,
           fit: widget.areaProperties.thumbnailFit,
           thumbnailHeight: _thumbnailViewerH,
@@ -512,7 +511,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   }
 
   Future<void> _initializeVideoController() async {
-    if (_videoFile == null) return;
+    if (_videoPath == null) return;
     _playback?.dispose();
     _playback = TrimPlayback(
       player: videoPlayerController,

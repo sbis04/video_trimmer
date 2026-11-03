@@ -60,7 +60,7 @@ dependencies:
 **macOS:** a sandboxed app can only read files the user picks if it has the `com.apple.security.files.user-selected.read-only` entitlement (`read-write` if you also save next to the source). Add it to `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`. Trimmed videos are saved inside the app container by default.
 
 **Web:** no setup needed. Trimming runs in the browser with [Mediabunny](https://github.com/Vanilagy/mediabunny) on top of WebCodecs, so it needs a browser with WebCodecs (current Chrome, Edge, Safari, and Firefox). Mediabunny is bundled into web builds only; Android, iOS, and macOS apps don't carry it. A few things differ from the other platforms:
-* Videos come from a picker as an `XFile` (a blob: URL underneath), or from bytes with `XFile.fromData`.
+* `loadVideo` takes a blob: URL. A picker's `XFile.path` is one, and `XFile.fromData(bytes).path` turns bytes into one.
 * `onSave` receives a blob: URL instead of a file path, since there is no file system. Play it with `VideoPlayerController.networkUrl(Uri.parse(url))`, read it with `XFile(url).readAsBytes()`, or offer it as a download.
 * Output is always MP4 (or GIF), and `storageDir` and `videoFolderName` are ignored.
 * If your site sets a Content Security Policy, allow `blob:` in `script-src`: the bundled Mediabunny module is loaded from a blob: URL.
@@ -71,7 +71,7 @@ dependencies:
 
 Create one `Trimmer` per screen, load a video into it, and dispose of it when the screen goes away. The viewer widgets don't dispose of it for you.
 
-`loadVideo` takes an `XFile`, which `package:video_trimmer` re-exports and which works on every platform. Wrap a path as `XFile(path)`, or pass the `XFile` a picker gives you, for example `(await FilePicker.pickFile(type: FileType.video))?.xFile`.
+`loadVideo` takes the video's path: a file path on Android, iOS, and macOS, and a blob: URL on the web. A picker's `XFile.path` is exactly that on every platform, so `loadVideo(videoPath: picked.xFile.path)` works everywhere.
 
 ```dart
 final Trimmer _trimmer = Trimmer();
@@ -79,7 +79,7 @@ final Trimmer _trimmer = Trimmer();
 @override
 void initState() {
   super.initState();
-  _trimmer.loadVideo(videoFile: widget.file);
+  _trimmer.loadVideo(videoPath: widget.videoPath);
 }
 
 @override
@@ -204,7 +204,7 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 ## Migrating to 6.0.0
 
 * **Dispose the `Trimmer` yourself.** `VideoViewer` and `TrimViewer` no longer dispose it or its `VideoPlayerController`. Call `_trimmer.dispose()` from the `State` that created it.
-* **`loadVideo` takes an `XFile`** instead of a `dart:io` `File`, so the same code works on the web. Change `loadVideo(videoFile: File(path))` to `loadVideo(videoFile: XFile(path))`, or pass a picker's `XFile` directly. `XFile` is exported by `package:video_trimmer`, and `Trimmer.currentVideoFile` is an `XFile` too.
+* **`loadVideo` takes a path** instead of a `dart:io` `File`, so the same code works on the web: change `loadVideo(videoFile: file)` to `loadVideo(videoPath: file.path)`. On the web, pass a blob: URL, such as a picker's `XFile.path`. `Trimmer.currentVideoFile` is now `currentVideoPath`.
 * **`loadVideo` throws** a `FileSystemException` when the file doesn't exist (on native platforms), instead of doing nothing.
 * **Default output names** changed from `<name>_trimmed:<localized date>` to `<name>_trimmed_<yyyyMMdd_HHmmss>`, which every platform and transcoder accepts.
 * **`DurationStyle` keeps the largest unit.** For example, `FORMAT_MM_SS` renders 1h30m15s as `90:15` (it used to be `30:15`).
@@ -242,7 +242,8 @@ class HomePage extends StatelessWidget {
             final picked = await FilePicker.pickFile(type: FileType.video);
             if (picked == null || !context.mounted) return;
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => TrimmerView(picked.xFile),
+              // A file path natively, a blob: URL on the web.
+              builder: (_) => TrimmerView(picked.xFile.path),
             ));
           },
         ),
@@ -252,9 +253,9 @@ class HomePage extends StatelessWidget {
 }
 
 class TrimmerView extends StatefulWidget {
-  const TrimmerView(this.file, {super.key});
+  const TrimmerView(this.videoPath, {super.key});
 
-  final XFile file;
+  final String videoPath;
 
   @override
   State<TrimmerView> createState() => _TrimmerViewState();
@@ -271,7 +272,7 @@ class _TrimmerViewState extends State<TrimmerView> {
   @override
   void initState() {
     super.initState();
-    _trimmer.loadVideo(videoFile: widget.file);
+    _trimmer.loadVideo(videoPath: widget.videoPath);
   }
 
   @override

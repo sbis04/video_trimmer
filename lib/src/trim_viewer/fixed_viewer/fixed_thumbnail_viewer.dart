@@ -1,4 +1,3 @@
-import 'package:cross_file/cross_file.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,7 @@ import 'package:video_trimmer/src/utils/trimmer_utils.dart';
 
 class FixedThumbnailViewer extends StatelessWidget {
   /// The video file from which thumbnails are generated.
-  final XFile videoFile;
+  final String videoPath;
 
   /// The total duration of the video in milliseconds.
   final int videoDuration;
@@ -30,7 +29,8 @@ class FixedThumbnailViewer extends StatelessWidget {
   /// For showing the thumbnails generated from the video,
   /// like a frame by frame preview
   ///
-  /// - [videoFile] is the video file from which thumbnails are generated.
+  /// - [videoPath] is the video (a file path, or a blob: URL on the web)
+  /// from which thumbnails are generated.
   /// - [videoDuration] is the total duration of the video in milliseconds.
   /// - [thumbnailHeight] is the height of each thumbnail. Always maintains 1:1 aspect ratio.
   /// - [numberOfThumbnails] is the number of thumbnails to generate.
@@ -39,7 +39,7 @@ class FixedThumbnailViewer extends StatelessWidget {
   /// - [quality] is the quality of the generated thumbnails, ranging from 0 to 100. Defaults to 75.
   const FixedThumbnailViewer({
     super.key,
-    required this.videoFile,
+    required this.videoPath,
     required this.videoDuration,
     required this.thumbnailHeight,
     required this.numberOfThumbnails,
@@ -52,7 +52,7 @@ class FixedThumbnailViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<List<Uint8List?>>(
       stream: generateThumbnail(
-        videoPath: videoFile.path,
+        videoPath: videoPath,
         videoDuration: videoDuration,
         numberOfThumbnails: numberOfThumbnails,
         thumbnailHeight: thumbnailHeight,

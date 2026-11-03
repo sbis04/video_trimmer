@@ -1,6 +1,7 @@
 // Web counterpart of trimmer_flow_test.dart, which needs dart:io. Run it in
 // Chrome with test_driver/integration_test.dart (see that file).
 
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,7 +33,8 @@ void main() {
   Future<Trimmer> loadedTrimmer(WidgetTester tester) async {
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
-    await trimmer.loadVideo(videoFile: await sample());
+    // XFile.fromData's path is a blob: URL on the web.
+    await trimmer.loadVideo(videoPath: (await sample()).path);
     expect(trimmer.videoPlayerController!.value.duration.inSeconds, 30);
     return trimmer;
   }

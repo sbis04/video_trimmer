@@ -11,6 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # For the picker's XFile and the web sample's in-memory file.
+  cross_file: ^0.3.4
   video_trimmer:
     path: ../
 

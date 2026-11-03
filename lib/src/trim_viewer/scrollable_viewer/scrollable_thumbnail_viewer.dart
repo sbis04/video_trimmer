@@ -1,4 +1,3 @@
-import 'package:cross_file/cross_file.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -10,7 +9,8 @@ import 'package:video_trimmer/src/utils/trimmer_utils.dart';
 class ScrollableThumbnailViewer extends StatelessWidget {
   /// Creates a [ScrollableThumbnailViewer] widget.
   ///
-  /// - [videoFile] is the video file from which thumbnails are generated.
+  /// - [videoPath] is the video (a file path, or a blob: URL on the web)
+  /// from which thumbnails are generated.
   /// - [videoDuration] is the total duration of the video in milliseconds.
   /// - [thumbnailHeight] is the height of each thumbnail.
   /// - [numberOfThumbnails] is the number of thumbnails to generate.
@@ -20,7 +20,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
   /// - [quality] is the quality of the generated thumbnails, ranging from 0 to 100. Defaults to 75.
   const ScrollableThumbnailViewer({
     super.key,
-    required this.videoFile,
+    required this.videoPath,
     required this.videoDuration,
     required this.thumbnailHeight,
     required this.numberOfThumbnails,
@@ -31,7 +31,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
   });
 
   /// The video file from which thumbnails are generated.
-  final XFile videoFile;
+  final String videoPath;
 
   /// The total duration of the video in milliseconds.
   final int videoDuration;
@@ -70,7 +70,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
           height: thumbnailHeight,
           child: StreamBuilder<List<Uint8List?>>(
             stream: generateThumbnail(
-              videoPath: videoFile.path,
+              videoPath: videoPath,
               videoDuration: videoDuration,
               numberOfThumbnails: numberOfThumbnails,
               thumbnailHeight: thumbnailHeight,
