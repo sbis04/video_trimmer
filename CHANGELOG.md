@@ -1,31 +1,22 @@
 ## 6.0.0
 
-Fixes the crashes and dead-UI reports that new integrations hit first,
-reworks the scrollable timeline and playback, and replaces the thumbnail
-dependency that crashed iOS apps. Also adds restoring a saved selection.
-
-#### Smoother scrolling
-
-* The scrollable trim viewer's auto-scroll now advances once per frame instead
-  of hopping on a 300 ms timer, and its trigger zone is touch-sized rather than
-  2% of the strip width. ([#187], [#263])
-* The thumbnail strip can be dragged directly, with a fling on release.
-* Drag start picks the nearest handle within `sideTapSize` instead of slicing
-  the frame into zones, so grabs near either end no longer move both
-  handles. ([#234])
-* New `TrimAreaProperties` options: `allowManualScroll`, `autoScrollEdgeZone`,
-  `maxAutoScrollVelocity`, and `autoScrollStartDelay` ([#199]).
+The biggest update since the native rewrite. It fixes the crashes and dead-UI
+reports that new integrations hit first, removes the thumbnail dependency that
+crashed iOS apps, reworks scrolling and playback, and adds `minVideoLength`
+and restoring a saved selection. See the README's "Migrating to 6.0.0" section
+when upgrading.
 
 #### BREAKING CHANGES
 
-* `StorageDir` is now a real `enum`. Existing call sites
-  (`StorageDir.temporaryDirectory`, `.values`, `.index`, `toString()`) behave
-  as before, but it can no longer be subclassed.
-* The viewer widgets no longer dispose the `VideoPlayerController`. The
-  `Trimmer` owns it, and `Trimmer.dispose()` now releases it. Call
-  `Trimmer.dispose()` from the `State` that created the instance. ([#250])
-* `VideoViewer` no longer calls `Trimmer.dispose()`. It only owns its own
-  stream subscription.
+* The viewer widgets no longer dispose the `VideoPlayerController` or the
+  `Trimmer`. The `Trimmer` owns the controller, and `Trimmer.dispose()`
+  releases it. Call `Trimmer.dispose()` from the `State` that created the
+  instance. ([#250])
+* video_trimmer is now a Flutter plugin with its own native thumbnail code, and
+  `get_thumbnail_video` is no longer a dependency. Run `flutter clean` (and
+  `pod install` on iOS) if a build picks up stale plugin registrations.
+* `onChangePlaybackState` fires only when playback starts or stops, not on
+  every position update. ([#236])
 * `Trimmer.loadVideo` throws a `FileSystemException` when the file does not
   exist, instead of silently doing nothing.
 * Default output file names changed from
@@ -34,47 +25,70 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 * `DurationStyle` no longer truncates the largest unit it is asked for:
   `FORMAT_MM_SS` renders 1h30m15s as `90:15` rather than `30:15`, and
   `FORMAT_SS` renders 90s as `90` rather than `30`.
+* `StorageDir` is now a real `enum`. Existing call sites
+  (`StorageDir.temporaryDirectory`, `.values`, `.index`, `toString()`) behave
+  as before, but it can no longer be subclassed.
 * `ViewerType.scrollable` on a video too short to scroll now reports a Flutter
   error and falls back to the fixed viewer, rather than throwing a bare
   `String` from a stream listener.
 
 #### New
 
+* `TrimViewer.minVideoLength` sets the shortest selection allowed. The
+  handles stop rather than close in past it, and a saved range shorter than
+  it grows to fit. Set it equal to `maxVideoLength` for a fixed-length
+  selection that can only be moved. ([#188], [#269])
 * `TrimViewer` takes `initialStartValue` / `initialEndValue` (milliseconds,
   the same values `onChangeStart` / `onChangeEnd` report) to open on a saved
   selection. Both viewers honor them; the scrollable viewer scrolls the range
   into view, and the preview starts on its first frame. Either can be given
   alone, so `initialEndValue` also sets a shorter default selection than
   `maxVideoLength`. ([#73], [#274], [#209])
-* `TrimViewer.minVideoLength` sets the shortest selection allowed. The
-  handles stop rather than close in past it, and a saved range shorter than
-  it grows to fit. Set it equal to `maxVideoLength` for a fixed-length
-  selection that can only be moved. ([#188], [#269])
+* Smoother scrolling: the scrollable viewer's auto-scroll advances once per
+  frame instead of hopping on a 300 ms timer, its trigger zone is touch-sized
+  rather than 2% of the strip width, and the thumbnail strip can be dragged
+  directly with a fling on release. ([#187], [#263])
+* Drag start picks the nearest handle within `sideTapSize` instead of slicing
+  the frame into zones, so grabs near either end no longer move both
+  handles. ([#234])
+* New `TrimAreaProperties` options: `allowManualScroll`, `autoScrollEdgeZone`,
+  `maxAutoScrollVelocity`, and `autoScrollStartDelay`. ([#199])
+* Looping works inside the trim range. With
+  `videoPlayerController.setLooping(true)`, playback wraps from the trim end
+  back to the trim start instead of pausing. ([#237])
+* The scrubber follows the player's real position and playback speed instead
+  of running its own clock, so it no longer drifts after repeated pauses and
+  stays correct at 0.5x–2x. ([#137], [#212], [#218])
+* Swift Package Manager support on iOS.
 
 #### Fixes
 
-* `Trimmer.dispose()` while `loadVideo` was still running left a live,
-  initialized player behind. Two overlapping `loadVideo` calls both emitted
-  `initialized` and leaked the loser's player. Now the newest call wins,
-  a disposed `Trimmer` ignores `loadVideo`, and superseded loads release
-  everything they created.
+* Apps that also depend on `video_thumbnail` no longer crash at launch on iOS
+  with `Duplicate plugin key: VideoThumbnailPlugin`. The `get_thumbnail_video`
+  dependency, and its `libwebp` pod, are gone. ([#271], [#266], [#275])
+* `TrimViewer` and `VideoViewer` rendered nothing forever when the video
+  finished initializing before they mounted — the `await loadVideo()` then
+  `setState` pattern, conditional builds, and hot reload. They now check the
+  `Trimmer`'s state directly. ([#215])
+* Omitting `onChangeStart`, `onChangeEnd`, or `onChangePlaybackState` threw
+  `Null check operator used on a null value`. ([#268])
+* Callbacks that seek or play from `onChangePlaybackState` no longer re-enter
+  until the stack overflows. ([#236])
 * On Android, disposing a `Trimmer` (for example by leaving the page) while
   its video was still loading made that load hang forever and could stall the
   next one. A controller is now released only after its `initialize()`
   settles.
-* Looping now works inside the trim range. With
-  `videoPlayerController.setLooping(true)`, playback wraps from the trim end
-  back to the trim start instead of pausing. ([#237])
-* `onChangePlaybackState` fires only when playback starts or stops, not on
-  every position update. Callbacks that seek or play from it no longer
-  re-enter until the stack overflows. ([#236])
-* The scrubber follows the player's real position and playback speed instead
-  of running its own clock, so it no longer drifts after repeated pauses and
-  stays correct at 0.5x–2x. ([#137], [#212], [#218])
-* `videoPlaybackControl` starts from the trim start when the playhead is
-  before it, not only after the end.
-* The viewers' scrubber animation controllers were never disposed. They are
-  replaced by a single ticker that is.
+* `Trimmer.dispose()` while `loadVideo` was still running left a live,
+  initialized player behind, and two overlapping `loadVideo` calls both
+  emitted `initialized` and leaked the loser's player. Now the newest call
+  wins, a disposed `Trimmer` ignores `loadVideo`, and superseded loads release
+  everything they created.
+* `saveTrimmedVideo` calls `onSave(null)` when the native trimmer produces no
+  file, instead of throwing a null-check error.
+* `saveTrimmedVideo` dereferenced a null directory when
+  `StorageDir.externalStorageDirectory` was used off Android, and when the
+  storage value did not match its string-based switch. It now throws a clear
+  `UnsupportedError`. ([#225])
 * The scrollable viewer could not select the last part of a clip: with a 30 s
   clip and a 10 s max, the selection stopped 0.6–0.8 s before the end,
   depending on screen width. The scroll range now covers exactly what the
@@ -82,27 +96,20 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 * Fast drags in both viewers stop exactly on the strip's edge, the
   `maxVideoLength` cap, or the other handle, instead of up to one pointer
   delta short. Diagonal drags no longer shift the handles vertically.
-* Apps that also depend on `video_thumbnail` no longer crash at launch on iOS
-  with `Duplicate plugin key: VideoThumbnailPlugin`. Thumbnails now come from
-  this package's own native code instead of `get_thumbnail_video`, so that
-  dependency (and its `libwebp` pod) is gone. ([#271], [#266], [#275])
 * `intl` is accepted from 0.19.0, so apps whose Flutter SDK pins it through
   `flutter_localizations` resolve again. ([#261])
-* `TrimViewer` and `VideoViewer` rendered nothing forever when the video
-  finished initializing before they mounted — the `await loadVideo()` then
-  `setState` pattern, conditional builds, and hot reload. They now check the
-  `Trimmer`'s state directly. ([#215])
-* Omitting `onChangeStart`, `onChangeEnd`, or `onChangePlaybackState` threw
-  `Null check operator used on a null value`. ([#268])
+* `path` is accepted from 1.9.0. Flutter SDKs that pin `path` 1.9.0 through
+  `flutter_test`, such as 3.22, could not resolve the package at all.
+* The supported range is now declared: Flutter 3.22 or later (Dart 3.4),
+  which the dependencies already required. It is verified by analyzing and
+  unit-testing the package on Flutter 3.22.3.
+* `videoPlaybackControl` starts from the trim start when the playhead is
+  before it, not only after the end.
 * Both viewers invoked consumer callbacks from `dispose()`, which runs inside a
   locked build scope, so any consumer calling `setState` there crashed on
   teardown.
 * Neither viewer removed its video-player listener, so `dispose()`'s `pause()`
   notified it synchronously and crashed the same way.
-* `saveTrimmedVideo` dereferenced a null directory when
-  `StorageDir.externalStorageDirectory` was used off Android, and when the
-  storage value did not match its string-based switch. It now throws a clear
-  `UnsupportedError`. ([#225])
 * Default output names no longer truncate source file names containing dots:
   `my.holiday.clip.mp4` kept only `my`.
 * `VideoViewer`'s `padding` argument was accepted and then ignored.
@@ -112,22 +119,23 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 * The decorative edge chevrons hit-tested as opaque and swallowed drags right
   where users reach to scroll.
 * `Trimmer.loadVideo` leaked the previous `VideoPlayerController` on every
-  reload.
-* `TrimViewer` and `VideoViewer` never cancelled their stream subscriptions.
+  reload, and the viewers' scrubber animation controllers and stream
+  subscriptions were never disposed.
 
 #### Other changes
 
-* video_trimmer is now a Flutter plugin (Android and iOS) and supports Swift
-  Package Manager.
 * Dependencies upgraded: `image` 4.12, `video_player` 2.14, `flutter_lints` 6.
-  The example moves to `file_picker` 13 and the Flutter 3.47 Android template
-  (Gradle 9.3, AGP 9.1, Kotlin 2.4).
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
-* Add a unit test suite, and an integration test suite that drives the example
-  app against a bundled sample clip.
-* Rebuild the example as a customization playground covering every option the
-  package exposes.
+* README rewritten for 6.0.0: up-to-date usage, a migration guide, a full
+  example that compiles against the current API, and a new demo that also
+  renders on pub.dev.
+* The example is now a customization playground covering every option, with
+  loop and speed controls, per-file selection restore, a bundled sample clip,
+  and the Flutter 3.47 Android template (Gradle 9.3, AGP 9.1, Kotlin 2.4).
+* Unit tests for the pure logic (drag clamping, initial ranges, playhead,
+  naming, durations) and an integration suite of 25 tests that drives the
+  example app on iOS and Android.
 
 [#73]: https://github.com/sbis04/video_trimmer/issues/73
 [#137]: https://github.com/sbis04/video_trimmer/issues/137
