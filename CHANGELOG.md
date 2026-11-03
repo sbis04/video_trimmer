@@ -12,9 +12,17 @@ when upgrading.
   `Trimmer`. The `Trimmer` owns the controller, and `Trimmer.dispose()`
   releases it. Call `Trimmer.dispose()` from the `State` that created the
   instance. ([#250])
-* video_trimmer is now a Flutter plugin with its own native thumbnail code, and
-  `get_thumbnail_video` is no longer a dependency. Run `flutter clean` (and
-  `pod install` on iOS) if a build picks up stale plugin registrations.
+* video_trimmer is now a Flutter plugin with its own native code for
+  thumbnails and trimming: AVFoundation on iOS, Media3 Transformer on Android.
+  `get_thumbnail_video` and `flutter_native_video_trimmer` are no longer
+  dependencies. Run `flutter clean` (and `pod install` on iOS) if a build
+  picks up stale plugin registrations.
+* The Android `minSdk` is 24, the minimum `video_player_android` already
+  requires.
+* A trimmed video's extension matches the container actually written:
+  always `.mp4` on Android, and `.mp4` on iOS except for `.mov` and `.m4v`
+  sources, which keep theirs. It used to copy the source's extension, so a
+  `.webm` or `.mkv` source on Android produced MP4 data under that name.
 * `onChangePlaybackState` fires only when playback starts or stops, not on
   every position update. ([#236])
 * `Trimmer.loadVideo` throws a `FileSystemException` when the file does not
@@ -72,7 +80,11 @@ when upgrading.
 * The scrubber follows the player's real position and playback speed instead
   of running its own clock, so it no longer drifts after repeated pauses and
   stays correct at 0.5x–2x. ([#137], [#212], [#218])
-* Swift Package Manager support on iOS.
+* Swift Package Manager support on iOS. With `flutter_native_video_trimmer`
+  gone, no dependency of the package lacks it, so iOS builds no longer warn.
+* Trimming writes straight to the destination instead of exporting to the
+  cache and copying the result. Android uses Media3's trim optimization,
+  which copies the samples it can instead of re-encoding them.
 
 #### Fixes
 
@@ -138,10 +150,12 @@ when upgrading.
 #### Other changes
 
 * Dependencies upgraded: `image` 4.12, `video_player` 2.14, `flutter_lints` 6.
-* `intl` and `transparent_image` are no longer dependencies. `intl` was only
-  used to format output file names, and its version is pinned by the Flutter
-  SDK through `flutter_localizations`, so every `intl` release risked a
-  version conflict for apps that localize.
+* `intl`, `transparent_image`, and `flutter_native_video_trimmer` are no
+  longer dependencies. `intl` was only used to format output file names, and
+  its version is pinned by the Flutter SDK through `flutter_localizations`, so
+  every `intl` release risked a version conflict for apps that localize.
+  `transparent_image` supplied one placeholder image, now part of the
+  package.
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
 * README rewritten for 6.0.0: up-to-date usage, a migration guide, a full

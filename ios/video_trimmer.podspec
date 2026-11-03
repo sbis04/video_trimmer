@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name             = 'video_trimmer'
   s.version          = '6.0.0'
-  s.summary          = 'Native thumbnail extraction for the video_trimmer Flutter package.'
+  s.summary          = 'Native thumbnails and trimming for the video_trimmer Flutter package.'
   s.description      = <<-DESC
-Extracts JPEG frames from local video files for the video_trimmer trim viewer.
+Extracts JPEG frames for the video_trimmer trim viewer and trims videos with AVFoundation.
                        DESC
   s.homepage         = 'https://github.com/sbis04/video_trimmer'
   s.license          = { :file => '../LICENSE' }

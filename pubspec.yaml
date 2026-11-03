@@ -19,7 +19,6 @@ dependencies:
     sdk: flutter
 
   video_player: ^2.9.5
-  flutter_native_video_trimmer: ^1.1.9
   path_provider: ^2.1.5
   path: ^1.9.0
   image: ^4.5.4
@@ -35,6 +34,6 @@ flutter:
     platforms:
       android:
         package: com.souvikbiswas.video_trimmer
-        pluginClass: VideoTrimmerThumbnailsPlugin
+        pluginClass: VideoTrimmerNativePlugin
       ios:
-        pluginClass: VideoTrimmerThumbnailsPlugin
+        pluginClass: VideoTrimmerNativePlugin

@@ -467,6 +467,40 @@ void main() {
     return file;
   }
 
+  testWidgets('the native trimmer cuts exactly the selected range',
+      (tester) async {
+    final file = await sampleCopy('native_trim.mp4');
+    final trimmer = Trimmer();
+    addTearDown(trimmer.dispose);
+    await trimmer.loadVideo(videoFile: file);
+
+    String? saved;
+    var done = false;
+    await trimmer.saveTrimmedVideo(
+      startValue: 2000,
+      endValue: 5000,
+      storageDir: StorageDir.temporaryDirectory,
+      videoFileName: 'native_trim_out',
+      onSave: (path) {
+        saved = path;
+        done = true;
+      },
+    );
+    await pumpUntil(tester, () => done,
+        timeout: const Duration(seconds: 60), reason: 'the export to finish');
+
+    expect(saved, isNotNull, reason: 'onSave(null) means the export failed');
+    expect(saved, endsWith('.mp4'));
+    final out = File(saved!);
+    expect(out.existsSync(), isTrue);
+
+    final check = VideoPlayerController.file(out);
+    addTearDown(check.dispose);
+    await check.initialize();
+    expect(check.value.duration.inMilliseconds, closeTo(3000, 150),
+        reason: 'the output should be the 3 s that were selected');
+  });
+
   testWidgets('without looping, playback pauses at the trim end',
       (tester) async {
     await openSampleTrimmer(tester);

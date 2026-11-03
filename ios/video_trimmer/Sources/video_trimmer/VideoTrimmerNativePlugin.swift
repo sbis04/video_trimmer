@@ -2,13 +2,14 @@ import AVFoundation
 import Flutter
 import UIKit
 
-/// Extracts JPEG thumbnails from local video files for the trim viewer.
+/// The package's native side on iOS: JPEG thumbnails for the trim viewer
+/// (`video_trimmer/thumbnails`) and trimming (`video_trimmer/trim`).
 ///
 /// The class name is deliberately specific: Flutter registers plugins by class
 /// name, and generic names such as `VideoThumbnailPlugin` or
 /// `VideoTrimmerPlugin` are already used by other packages. Two plugins with
 /// the same name crash the app at launch on iOS.
-public class VideoTrimmerThumbnailsPlugin: NSObject, FlutterPlugin {
+public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
   private let queue = DispatchQueue(label: "video_trimmer.thumbnails", qos: .userInitiated)
 
   // Only touched on `queue`. The trim viewer asks for many frames of the same
@@ -17,9 +18,11 @@ public class VideoTrimmerThumbnailsPlugin: NSObject, FlutterPlugin {
   private var generatorPath: String?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(
-      name: "video_trimmer/thumbnails", binaryMessenger: registrar.messenger())
-    registrar.addMethodCallDelegate(VideoTrimmerThumbnailsPlugin(), channel: channel)
+    let instance = VideoTrimmerNativePlugin()
+    for name in ["video_trimmer/thumbnails", "video_trimmer/trim"] {
+      let channel = FlutterMethodChannel(name: name, binaryMessenger: registrar.messenger())
+      registrar.addMethodCallDelegate(instance, channel: channel)
+    }
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -52,6 +55,29 @@ public class VideoTrimmerThumbnailsPlugin: NSObject, FlutterPlugin {
           DispatchQueue.main.async { result(reply) }
         }
       }
+    case "trim":
+      guard let args = call.arguments as? [String: Any],
+        let path = args["path"] as? String,
+        let outputPath = args["outputPath"] as? String,
+        let startMs = (args["startMs"] as? NSNumber)?.int64Value,
+        let endMs = (args["endMs"] as? NSNumber)?.int64Value
+      else {
+        result(
+          FlutterError(
+            code: "bad_args", message: "path, outputPath, startMs and endMs are required",
+            details: nil))
+        return
+      }
+      Self.trim(path: path, outputPath: outputPath, startMs: startMs, endMs: endMs) { error in
+        DispatchQueue.main.async {
+          if let error = error {
+            result(
+              FlutterError(code: "trim_failed", message: error.localizedDescription, details: path))
+          } else {
+            result(outputPath)
+          }
+        }
+      }
     case "release":
       queue.async {
         self.generator = nil
@@ -63,13 +89,75 @@ public class VideoTrimmerThumbnailsPlugin: NSObject, FlutterPlugin {
     }
   }
 
+  private static func url(for path: String) -> URL {
+    path.hasPrefix("file://") ? URL(string: path)! : URL(fileURLWithPath: path)
+  }
+
+  /// Re-encodes [startMs, endMs) of the video at the highest quality preset,
+  /// which cuts on the exact frame regardless of where the keyframes are.
+  private static func trim(
+    path: String, outputPath: String, startMs: Int64, endMs: Int64,
+    completion: @escaping (Error?) -> Void
+  ) {
+    let asset = AVURLAsset(url: url(for: path))
+    guard
+      let session = AVAssetExportSession(
+        asset: asset, presetName: AVAssetExportPresetHighestQuality)
+    else {
+      completion(TrimError.message("This video cannot be exported on this device."))
+      return
+    }
+    let output = URL(fileURLWithPath: outputPath)
+    // The export fails outright if the destination already exists.
+    try? FileManager.default.removeItem(at: output)
+    let type: AVFileType
+    switch output.pathExtension.lowercased() {
+    case "mov": type = .mov
+    case "m4v": type = .m4v
+    default: type = .mp4
+    }
+    session.timeRange = CMTimeRange(
+      start: CMTime(value: startMs, timescale: 1000),
+      end: CMTime(value: endMs, timescale: 1000))
+    session.shouldOptimizeForNetworkUse = true
+
+    if #available(iOS 18.0, *) {
+      Task {
+        do {
+          try await session.export(to: output, as: type)
+          completion(nil)
+        } catch {
+          completion(error)
+        }
+      }
+    } else {
+      session.outputURL = output
+      session.outputFileType = type
+      session.exportAsynchronously {
+        switch session.status {
+        case .completed: completion(nil)
+        case .cancelled: completion(TrimError.message("The export was cancelled."))
+        default: completion(session.error ?? TrimError.message("The export failed."))
+        }
+      }
+    }
+  }
+
+  private enum TrimError: LocalizedError {
+    case message(String)
+    var errorDescription: String? {
+      switch self {
+      case .message(let text): return text
+      }
+    }
+  }
+
   private func generator(for path: String, maxWidth: Int, maxHeight: Int) -> AVAssetImageGenerator {
     let generator: AVAssetImageGenerator
     if let cached = self.generator, generatorPath == path {
       generator = cached
     } else {
-      let url = path.hasPrefix("file://") ? URL(string: path)! : URL(fileURLWithPath: path)
-      generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+      generator = AVAssetImageGenerator(asset: AVURLAsset(url: Self.url(for: path)))
       // Without this, portrait recordings come back sideways.
       generator.appliesPreferredTrackTransform = true
       // Exact frames, matching what the scrubber shows at that timestamp.
