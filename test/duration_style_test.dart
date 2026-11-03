@@ -54,8 +54,10 @@ void main() {
     test('rolls over at exactly one hour', () {
       expect(const Duration(hours: 1).format(DurationStyle.FORMAT_HH_MM_SS),
           '01:00:00');
-      expect(const Duration(minutes: 59, seconds: 59)
-          .format(DurationStyle.FORMAT_HH_MM_SS), '00:59:59');
+      expect(
+          const Duration(minutes: 59, seconds: 59)
+              .format(DurationStyle.FORMAT_HH_MM_SS),
+          '00:59:59');
     });
 
     test('does not truncate the largest requested unit', () {
@@ -69,13 +71,17 @@ void main() {
             .format(DurationStyle.FORMAT_SS_MS),
         '90.25',
       );
-      expect(const Duration(hours: 2, minutes: 5)
-          .format(DurationStyle.FORMAT_MM_SS), '125:00');
+      expect(
+          const Duration(hours: 2, minutes: 5)
+              .format(DurationStyle.FORMAT_MM_SS),
+          '125:00');
     });
 
     test('handles durations beyond a day', () {
-      expect(const Duration(hours: 30, minutes: 5, seconds: 1)
-          .format(DurationStyle.FORMAT_HH_MM_SS), '30:05:01');
+      expect(
+          const Duration(hours: 30, minutes: 5, seconds: 1)
+              .format(DurationStyle.FORMAT_HH_MM_SS),
+          '30:05:01');
     });
   });
 }

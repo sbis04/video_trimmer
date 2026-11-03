@@ -2,44 +2,20 @@ PODS:
   - Flutter (1.0.0)
   - flutter_native_video_trimmer (1.0.0):
     - Flutter
-  - get_thumbnail_video (0.0.1):
-    - Flutter
-    - libwebp
-  - libwebp (1.5.0):
-    - libwebp/demux (= 1.5.0)
-    - libwebp/mux (= 1.5.0)
-    - libwebp/sharpyuv (= 1.5.0)
-    - libwebp/webp (= 1.5.0)
-  - libwebp/demux (1.5.0):
-    - libwebp/webp
-  - libwebp/mux (1.5.0):
-    - libwebp/demux
-  - libwebp/sharpyuv (1.5.0)
-  - libwebp/webp (1.5.0):
-    - libwebp/sharpyuv
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_native_video_trimmer (from `.symlinks/plugins/flutter_native_video_trimmer/ios`)
-  - get_thumbnail_video (from `.symlinks/plugins/get_thumbnail_video/ios`)
-
-SPEC REPOS:
-  trunk:
-    - libwebp
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   flutter_native_video_trimmer:
     :path: ".symlinks/plugins/flutter_native_video_trimmer/ios"
-  get_thumbnail_video:
-    :path: ".symlinks/plugins/get_thumbnail_video/ios"
 
 SPEC CHECKSUMS:
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   flutter_native_video_trimmer: 11f6c679971dc3844519b485b9c878df8675ae3a
-  get_thumbnail_video: 1a754d46b860dffefcc57b7290a43089cd5d7e58
-  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
 
 PODFILE CHECKSUM: 57c8aed26fba39d3ec9424816221f294a07c58eb
 

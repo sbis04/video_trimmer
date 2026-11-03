@@ -2,8 +2,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:get_thumbnail_video/index.dart';
-import 'package:get_thumbnail_video/video_thumbnail.dart';
+import 'package:video_trimmer/src/utils/thumbnail_generator.dart';
 
 /// Formats a [Duration] object to a human-readable string.
 ///
@@ -86,9 +85,8 @@ Stream<List<Uint8List?>> generateThumbnail({
           _formatDuration(Duration(milliseconds: timestamp));
 
       // Generate the thumbnail image bytes
-      bytes = await VideoThumbnail.thumbnailData(
-        video: videoPath,
-        imageFormat: ImageFormat.JPEG,
+      bytes = await ThumbnailGenerator.thumbnailData(
+        videoPath: videoPath,
         timeMs: timestamp,
         maxHeight: thumbnailHeight.toInt(),
         quality: quality,

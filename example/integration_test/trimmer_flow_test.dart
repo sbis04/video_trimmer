@@ -101,6 +101,28 @@ void main() {
     expect(length, lessThanOrEqualTo(10.5));
   });
 
+  testWidgets('the strip shows JPEG frames from the native thumbnailer',
+      (tester) async {
+    await openSampleTrimmer(tester);
+
+    // Each loaded thumbnail is a FadeInImage over a transparent PNG
+    // placeholder; its `image` holds the frame the plugin returned.
+    final frames = find
+        .descendant(
+          of: find.byType(TrimViewer),
+          matching: find.byType(FadeInImage),
+        )
+        .evaluate()
+        .map((e) => (e.widget as FadeInImage).image)
+        .whereType<MemoryImage>()
+        .toList();
+    expect(frames, isNotEmpty, reason: 'no thumbnails in the strip');
+    for (final frame in frames) {
+      // Every JPEG starts with the SOI marker FF D8.
+      expect(frame.bytes.take(2), [0xFF, 0xD8]);
+    }
+  });
+
   /// Default `viewerHeight` from `TrimmerConfig`, and so the height of the
   /// thumbnail strip.
   const stripHeight = 50.0;
