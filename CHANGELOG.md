@@ -20,9 +20,9 @@ when upgrading.
 * The Android `minSdk` is 24, the minimum `video_player_android` already
   requires.
 * A trimmed video's extension matches the container actually written:
-  always `.mp4` on Android, and `.mp4` on iOS except for `.mov` and `.m4v`
-  sources, which keep theirs. It used to copy the source's extension, so a
-  `.webm` or `.mkv` source on Android produced MP4 data under that name.
+  always `.mp4` on Android, and `.mp4` on iOS and macOS except for `.mov` and
+  `.m4v` sources, which keep theirs. It used to copy the source's extension,
+  so a `.webm` or `.mkv` source on Android produced MP4 data under that name.
 * `onChangePlaybackState` fires only when playback starts or stops, not on
   every position update. ([#236])
 * `Trimmer.loadVideo` throws a `FileSystemException` when the file does not
@@ -45,6 +45,10 @@ when upgrading.
 
 #### New
 
+* macOS support. The iOS plugin code now lives in `darwin/` and is shared
+  with macOS (`sharedDarwinSource`), so thumbnails and trimming use the same
+  AVFoundation code on both. JPEG encoding moved from UIKit to ImageIO for
+  that. The example app runs on macOS too.
 * Line drag handles. `TrimEditorProperties.handleStyle` picks
   `TrimHandleStyle.line` (the new default) or `TrimHandleStyle.circle`, and
   `handleHeight` sets a line's height in pixels or as a percentage of the trim
