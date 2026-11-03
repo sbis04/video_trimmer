@@ -62,6 +62,45 @@ class TrimAreaProperties {
   /// By default it is set to `4.0`.
   final double borderRadius;
 
+  /// Whether the thumbnail strip can be scrolled directly, by dragging
+  /// anywhere outside the trim frame.
+  ///
+  /// When `false`, the strip can only be moved by dragging a trim handle
+  /// into the edge zone and letting it auto-scroll.
+  ///
+  /// Only applies to the `ScrollableTrimViewer`.
+  ///
+  /// By default it is set to `true`.
+  final bool allowManualScroll;
+
+  /// The width, in logical pixels, of the zone at each end of the trim area
+  /// that triggers auto-scrolling when a trim handle is dragged into it.
+  ///
+  /// The scroll speed ramps up the further the handle is pushed into the
+  /// zone, so a wider zone gives finer control.
+  ///
+  /// Only applies to the `ScrollableTrimViewer`.
+  ///
+  /// By default it is set to `48.0`.
+  final double autoScrollEdgeZone;
+
+  /// The maximum auto-scroll speed, in logical pixels per second, reached
+  /// when a trim handle is pushed to the very edge of the trim area.
+  ///
+  /// Only applies to the `ScrollableTrimViewer`.
+  ///
+  /// By default it is set to `600.0`.
+  final double maxAutoScrollVelocity;
+
+  /// How long a trim handle must rest inside the edge zone before
+  /// auto-scrolling begins.
+  ///
+  /// Only applies to the `ScrollableTrimViewer`.
+  ///
+  /// By default it is set to `Duration.zero`, so scrolling starts as soon as
+  /// the handle enters the zone.
+  final Duration autoScrollStartDelay;
+
   /// Helps defining the Trim Area properties.
   ///
   /// A better look at the structure of the **Trim Viewer**:
@@ -103,6 +142,25 @@ class TrimAreaProperties {
   /// to be applied to each corner of the trimmer area Container.
   /// By default it is set to `4.0`.
   ///
+  ///
+  /// * [allowManualScroll] for allowing the thumbnail strip to be scrolled
+  /// directly, by dragging anywhere outside the trim frame. By default it is
+  /// set to `true`.
+  ///
+  ///
+  /// * [autoScrollEdgeZone] for specifying the width, in logical pixels, of
+  /// the zone at each end of the trim area that triggers auto-scrolling when
+  /// a trim handle is dragged into it. By default it is set to `48.0`.
+  ///
+  ///
+  /// * [maxAutoScrollVelocity] for specifying the maximum auto-scroll speed,
+  /// in logical pixels per second. By default it is set to `600.0`.
+  ///
+  ///
+  /// * [autoScrollStartDelay] for specifying how long a trim handle must rest
+  /// inside the edge zone before auto-scrolling begins. By default it is set
+  /// to `Duration.zero`.
+  ///
   const TrimAreaProperties({
     this.thumbnailFit = BoxFit.fitHeight,
     this.thumbnailQuality = 75,
@@ -111,6 +169,10 @@ class TrimAreaProperties {
     this.startIcon,
     this.endIcon,
     this.borderRadius = 4.0,
+    this.allowManualScroll = true,
+    this.autoScrollEdgeZone = 48.0,
+    this.maxAutoScrollVelocity = 600.0,
+    this.autoScrollStartDelay = Duration.zero,
   });
 
   /// Helps defining the Fixed Trim Area properties.
@@ -155,6 +217,10 @@ class TrimAreaProperties {
     Widget? startIcon,
     Widget? endIcon,
     double borderRadius,
+    bool allowManualScroll,
+    double autoScrollEdgeZone,
+    double maxAutoScrollVelocity,
+    Duration autoScrollStartDelay,
   }) = _TrimAreaPropertiesWithBlur;
 }
 
@@ -189,25 +255,29 @@ class FixedTrimAreaProperties extends TrimAreaProperties {
 }
 
 class _TrimAreaPropertiesWithBlur extends TrimAreaProperties {
-  _TrimAreaPropertiesWithBlur({
+  /// Blurred edges with an arrow at each end.
+  ///
+  /// [startIcon] and [endIcon] default to chevrons, and passing `null` for
+  /// either one explicitly hides that end's icon.
+  const _TrimAreaPropertiesWithBlur({
     super.thumbnailFit,
     super.thumbnailQuality,
-    blurEdges,
     super.blurColor,
     super.borderRadius,
-    endIcon,
-    startIcon,
-  }) : super(
-          blurEdges: true,
-          startIcon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-            size: 16,
-          ),
-          endIcon: const Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.white,
-            size: 16,
-          ),
-        );
+    super.allowManualScroll,
+    super.autoScrollEdgeZone,
+    super.maxAutoScrollVelocity,
+    super.autoScrollStartDelay,
+    super.blurEdges = true,
+    super.startIcon = const Icon(
+      Icons.arrow_back_ios_new_rounded,
+      color: Colors.white,
+      size: 16,
+    ),
+    super.endIcon = const Icon(
+      Icons.arrow_forward_ios_rounded,
+      color: Colors.white,
+      size: 16,
+    ),
+  });
 }

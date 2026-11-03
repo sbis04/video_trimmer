@@ -57,10 +57,14 @@ class ScrollableThumbnailViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The strip never handles pointers itself. `ScrollableTrimViewer` owns the
+    // whole gesture and drives [scrollController], which keeps trim-frame
+    // drags and strip panning from competing in the gesture arena.
     return IgnorePointer(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         controller: scrollController,
+        physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
           width: numberOfThumbnails * thumbnailHeight,
           height: thumbnailHeight,
