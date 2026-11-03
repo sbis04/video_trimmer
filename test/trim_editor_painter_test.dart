@@ -20,8 +20,8 @@ void main() {
     });
 
     test('has value equality', () {
-      expect(const TrimHandleHeight.pixels(20),
-          const TrimHandleHeight.pixels(20));
+      expect(
+          const TrimHandleHeight.pixels(20), const TrimHandleHeight.pixels(20));
       expect(const TrimHandleHeight.pixels(20),
           isNot(const TrimHandleHeight.percent(20)));
     });

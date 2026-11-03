@@ -91,6 +91,57 @@ void main() {
       expect(decide(_value(positionMs: 9000, playing: false)),
           TrimPlaybackAction.none);
     });
+    test('a looping player that wraps to 0 on its own goes back to the start',
+        () {
+      // Trim end at the very end of the video: the player loops before it
+      // ever reports the trim end.
+      expect(
+        decideTrimPlayback(
+          value: _value(positionMs: 40, looping: true),
+          startMs: 24000,
+          endMs: 30000,
+          previousPositionMs: 29900,
+        ),
+        TrimPlaybackAction.loop,
+      );
+    });
+    test('a jump back is only a wrap when the player loops', () {
+      expect(
+        decideTrimPlayback(
+          value: _value(positionMs: 40),
+          startMs: 24000,
+          endMs: 30000,
+          previousPositionMs: 29900,
+        ),
+        TrimPlaybackAction.none,
+      );
+    });
+    test('a loop seek that lands just before the start is left alone', () {
+      expect(
+        decide(_value(positionMs: 1950, looping: true)),
+        TrimPlaybackAction.none,
+      );
+      expect(
+        decideTrimPlayback(
+          value: _value(positionMs: 1950, looping: true),
+          startMs: 2000,
+          endMs: 8000,
+          previousPositionMs: 8050,
+        ),
+        TrimPlaybackAction.none,
+      );
+    });
+    test('moving forward from before the start is not a wrap', () {
+      expect(
+        decideTrimPlayback(
+          value: _value(positionMs: 600, looping: true),
+          startMs: 2000,
+          endMs: 8000,
+          previousPositionMs: 300,
+        ),
+        TrimPlaybackAction.none,
+      );
+    });
     test('ignores an empty range', () {
       expect(
         decideTrimPlayback(

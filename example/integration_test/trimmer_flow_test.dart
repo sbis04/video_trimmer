@@ -520,6 +520,58 @@ void main() {
     expect(find.byIcon(Icons.pause_circle_filled), findsOneWidget);
   });
 
+  testWidgets(
+      'looping a range that ends at the end of the video wraps to '
+      'the trim start, not to 0', (tester) async {
+    // The player loops on its own at the end of the file, usually before it
+    // reports a position at the trim end.
+    final file = await sampleCopy('loop_to_end.mp4');
+    final trimmer = Trimmer();
+    addTearDown(trimmer.dispose);
+    await trimmer.loadVideo(videoFile: file);
+    final controller = trimmer.videoPlayerController!;
+    final durationMs = controller.value.duration.inMilliseconds;
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: TrimViewer(
+            trimmer: trimmer,
+            viewerWidth: 360,
+            viewerHeight: 50,
+            maxVideoLength: const Duration(seconds: 10),
+            initialStartValue: durationMs - 5000.0,
+            initialEndValue: durationMs.toDouble(),
+          ),
+        ),
+      ),
+    ));
+    await run(tester, const Duration(seconds: 1));
+
+    await controller.setLooping(true);
+    await controller.seekTo(Duration(milliseconds: durationMs - 1500));
+    await controller.play();
+    await pumpUntil(
+      tester,
+      () => controller.value.position.inMilliseconds >= durationMs - 700,
+      timeout: const Duration(seconds: 15),
+      reason: 'playback to approach the end of the video',
+    );
+    await pumpUntil(
+      tester,
+      () => controller.value.position.inMilliseconds < durationMs - 1500,
+      timeout: const Duration(seconds: 15),
+      reason: 'playback to wrap',
+    );
+    await run(tester, const Duration(milliseconds: 800));
+
+    expect(controller.value.isPlaying, isTrue);
+    expect(controller.value.position.inMilliseconds,
+        greaterThanOrEqualTo(durationMs - 5000 - 200),
+        reason: 'the wrap should land on the trim start, not the video start');
+    await controller.pause();
+  });
+
   testWidgets('the scrubber tracks the player through repeated pauses',
       (tester) async {
     await openSampleTrimmer(tester);

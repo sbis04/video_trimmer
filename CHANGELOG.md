@@ -64,7 +64,8 @@ when upgrading.
   `maxAutoScrollVelocity`, and `autoScrollStartDelay`. ([#199])
 * Looping works inside the trim range. With
   `videoPlayerController.setLooping(true)`, playback wraps from the trim end
-  back to the trim start instead of pausing. ([#237])
+  back to the trim start instead of pausing, including when the range ends at
+  the end of the video and the player loops on its own. ([#237])
 * The scrubber follows the player's real position and playback speed instead
   of running its own clock, so it no longer drifts after repeated pauses and
   stays correct at 0.5x–2x. ([#137], [#212], [#218])
