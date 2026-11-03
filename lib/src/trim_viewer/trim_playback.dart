@@ -80,6 +80,32 @@ TrimPlaybackAction decideTrimPlayback({
   return wrapped ? TrimPlaybackAction.loop : TrimPlaybackAction.none;
 }
 
+/// How early, in milliseconds of video at 1x, the per-frame check acts when
+/// the trim end is the end of the video. The player loops there on its own,
+/// so the seek back has to land first or the video's first frame flashes.
+const int videoEndLeadMs = 120;
+
+/// The per-frame counterpart of [decideTrimPlayback], run on the estimated
+/// playhead between the player's position reports, which only arrive every
+/// few hundred milliseconds. Without it playback overshoots the trim end by up
+/// to one report interval, and a looping player at the end of the video wraps
+/// to its first frame before the seek back to the trim start.
+TrimPlaybackAction decideTrimPlaybackOnFrame({
+  required int estimatedPositionMs,
+  required bool isPlaying,
+  required bool isLooping,
+  required int durationMs,
+  required double startMs,
+  required double endMs,
+  double speed = 1.0,
+}) {
+  if (!isPlaying || endMs <= startMs) return TrimPlaybackAction.none;
+  final atVideoEnd = endMs >= durationMs - 50;
+  final lead = atVideoEnd ? (videoEndLeadMs * speed).round() : 0;
+  if (estimatedPositionMs < endMs - lead) return TrimPlaybackAction.none;
+  return isLooping ? TrimPlaybackAction.loop : TrimPlaybackAction.pause;
+}
+
 /// Keeps a trim viewer's scrubber and playback state in step with the shared
 /// [VideoPlayerController], and confines playback to the trim range.
 class TrimPlayback {
@@ -90,7 +116,10 @@ class TrimPlayback {
     required this.onPlayingChanged,
     required this.onFrame,
   }) {
-    _ticker = vsync.createTicker((_) => onFrame());
+    _ticker = vsync.createTicker((_) {
+      _checkEdgeOnFrame();
+      onFrame();
+    });
   }
 
   final VideoPlayerController player;
@@ -110,6 +139,7 @@ class TrimPlayback {
   late final Ticker _ticker;
   bool? _reportedPlaying;
   bool _loopSeekInFlight = false;
+  bool _pauseRequested = false;
   int? _lastPositionMs;
 
   void attach() {
@@ -146,6 +176,44 @@ class TrimPlayback {
     return startX + (positionMs - r.start) / span * (endX - startX);
   }
 
+  void _loopToStart(double startMs) {
+    if (_loopSeekInFlight) return;
+    _loopSeekInFlight = true;
+    _playhead.jumpTo(startMs.toInt());
+    player
+        .seekTo(Duration(milliseconds: startMs.toInt()))
+        .whenComplete(() => _loopSeekInFlight = false);
+  }
+
+  void _pause() {
+    if (_pauseRequested) return;
+    _pauseRequested = true;
+    player.pause().whenComplete(() => _pauseRequested = false);
+  }
+
+  void _checkEdgeOnFrame() {
+    final value = player.value;
+    if (!value.isInitialized || _loopSeekInFlight) return;
+    final r = range();
+    final action = decideTrimPlaybackOnFrame(
+      estimatedPositionMs: _playhead.positionMs,
+      isPlaying: value.isPlaying,
+      isLooping: value.isLooping,
+      durationMs: value.duration.inMilliseconds,
+      startMs: r.start,
+      endMs: r.end,
+      speed: value.playbackSpeed,
+    );
+    switch (action) {
+      case TrimPlaybackAction.loop:
+        _loopToStart(r.start);
+      case TrimPlaybackAction.pause:
+        _pause();
+      case TrimPlaybackAction.none:
+        break;
+    }
+  }
+
   void _onPlayerValue() {
     final value = player.value;
     if (!value.isInitialized) return;
@@ -161,15 +229,9 @@ class TrimPlayback {
     _lastPositionMs = value.position.inMilliseconds;
     switch (action) {
       case TrimPlaybackAction.loop:
-        if (!_loopSeekInFlight) {
-          _loopSeekInFlight = true;
-          _playhead.jumpTo(r.start.toInt());
-          player
-              .seekTo(Duration(milliseconds: r.start.toInt()))
-              .whenComplete(() => _loopSeekInFlight = false);
-        }
+        _loopToStart(r.start);
       case TrimPlaybackAction.pause:
-        player.pause();
+        _pause();
       case TrimPlaybackAction.none:
         break;
     }

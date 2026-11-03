@@ -65,7 +65,10 @@ when upgrading.
 * Looping works inside the trim range. With
   `videoPlayerController.setLooping(true)`, playback wraps from the trim end
   back to the trim start instead of pausing, including when the range ends at
-  the end of the video and the player loops on its own. ([#237])
+  the end of the video and the player loops on its own. ([#237]) Playback
+  stops or wraps at the trim end within a frame, instead of overshooting it by
+  up to one of the player's position reports, and a wrap at the end of the
+  video no longer flashes the video's first frame.
 * The scrubber follows the player's real position and playback speed instead
   of running its own clock, so it no longer drifts after repeated pauses and
   stays correct at 0.5x–2x. ([#137], [#212], [#218])

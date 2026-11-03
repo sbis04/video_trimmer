@@ -73,6 +73,38 @@ void main() {
     });
   });
 
+  group('decideTrimPlaybackOnFrame', () {
+    TrimPlaybackAction decide(int pos,
+            {bool looping = false,
+            bool playing = true,
+            double end = 8000,
+            double speed = 1.0}) =>
+        decideTrimPlaybackOnFrame(
+          estimatedPositionMs: pos,
+          isPlaying: playing,
+          isLooping: looping,
+          durationMs: 30000,
+          startMs: 2000,
+          endMs: end,
+          speed: speed,
+        );
+
+    test('acts exactly at a trim end inside the video', () {
+      expect(decide(7990), TrimPlaybackAction.none);
+      expect(decide(8000), TrimPlaybackAction.pause);
+      expect(decide(8000, looping: true), TrimPlaybackAction.loop);
+    });
+    test('acts early at the end of the video, scaled by speed', () {
+      expect(decide(29870, looping: true, end: 30000), TrimPlaybackAction.none);
+      expect(decide(29880, looping: true, end: 30000), TrimPlaybackAction.loop);
+      expect(decide(29770, looping: true, end: 30000, speed: 2.0),
+          TrimPlaybackAction.loop);
+    });
+    test('ignores a paused player', () {
+      expect(decide(9000, playing: false), TrimPlaybackAction.none);
+    });
+  });
+
   group('decideTrimPlayback', () {
     TrimPlaybackAction decide(VideoPlayerValue v) =>
         decideTrimPlayback(value: v, startMs: 2000, endMs: 8000);
@@ -143,6 +175,17 @@ void main() {
       );
     });
     test('ignores an empty range', () {
+      expect(
+        decideTrimPlaybackOnFrame(
+          estimatedPositionMs: 9000,
+          isPlaying: true,
+          isLooping: true,
+          durationMs: 30000,
+          startMs: 5000,
+          endMs: 5000,
+        ),
+        TrimPlaybackAction.none,
+      );
       expect(
         decideTrimPlayback(
             value: _value(positionMs: 9000), startMs: 5000, endMs: 5000),

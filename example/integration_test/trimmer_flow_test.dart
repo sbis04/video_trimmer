@@ -563,6 +563,11 @@ void main() {
       timeout: const Duration(seconds: 15),
       reason: 'playback to wrap',
     );
+    // The first position after the wrap: a native loop to the start of the
+    // video (which flashes its first frame) reports close to 0 here.
+    expect(controller.value.position.inMilliseconds,
+        greaterThanOrEqualTo(durationMs - 5000 - 200),
+        reason: 'the wrap should never pass through the video start');
     await run(tester, const Duration(milliseconds: 800));
 
     expect(controller.value.isPlaying, isTrue);
