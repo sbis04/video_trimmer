@@ -39,6 +39,12 @@ integrations hit first, plus a rework of the scrollable timeline.
 
 #### Fixes
 
+* Apps that also depend on `video_thumbnail` no longer crash at launch on iOS
+  with `Duplicate plugin key: VideoThumbnailPlugin`. Thumbnails now come from
+  this package's own native code instead of `get_thumbnail_video`, so that
+  dependency (and its `libwebp` pod) is gone. ([#271], [#266], [#275])
+* `intl` is accepted from 0.19.0, so apps whose Flutter SDK pins it through
+  `flutter_localizations` resolve again. ([#261])
 * `TrimViewer` and `VideoViewer` rendered nothing forever when the video
   finished initializing before they mounted — the `await loadVideo()` then
   `setState` pattern, conditional builds, and hot reload. They now check the
@@ -68,6 +74,11 @@ integrations hit first, plus a rework of the scrollable timeline.
 
 #### Other changes
 
+* video_trimmer is now a Flutter plugin (Android and iOS) and supports Swift
+  Package Manager.
+* Dependencies upgraded: `image` 4.12, `video_player` 2.14, `flutter_lints` 6.
+  The example moves to `file_picker` 13 and the Flutter 3.47 Android template
+  (Gradle 9.3, AGP 9.1, Kotlin 2.4).
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
 * Add a unit test suite, and an integration test suite that drives the example
@@ -83,8 +94,12 @@ integrations hit first, plus a rework of the scrollable timeline.
 [#225]: https://github.com/sbis04/video_trimmer/issues/225
 [#234]: https://github.com/sbis04/video_trimmer/issues/234
 [#250]: https://github.com/sbis04/video_trimmer/issues/250
+[#261]: https://github.com/sbis04/video_trimmer/issues/261
 [#263]: https://github.com/sbis04/video_trimmer/issues/263
+[#266]: https://github.com/sbis04/video_trimmer/issues/266
 [#268]: https://github.com/sbis04/video_trimmer/issues/268
+[#271]: https://github.com/sbis04/video_trimmer/issues/271
+[#275]: https://github.com/sbis04/video_trimmer/issues/275
 
 ## 5.0.0
 
