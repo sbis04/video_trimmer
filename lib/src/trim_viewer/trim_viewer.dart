@@ -41,6 +41,11 @@ class TrimViewer extends StatefulWidget {
   /// specifying this property is mandatory.
   final Duration maxVideoLength;
 
+  /// The shortest selection allowed. The handles stop rather than bring the
+  /// frame closer together than this. Set it equal to [maxVideoLength] for a
+  /// fixed-length selection that can only be moved. Defaults to no minimum.
+  final Duration minVideoLength;
+
   /// For showing the start and the end point of the
   /// video on top of the trimmer area.
   ///
@@ -185,6 +190,7 @@ class TrimViewer extends StatefulWidget {
     super.key,
     required this.trimmer,
     this.maxVideoLength = const Duration(milliseconds: 0),
+    this.minVideoLength = Duration.zero,
     this.type = ViewerType.auto,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
@@ -200,7 +206,10 @@ class TrimViewer extends StatefulWidget {
     this.onThumbnailLoadingComplete,
     this.initialStartValue,
     this.initialEndValue,
-  });
+  }) : assert(
+          maxVideoLength == Duration.zero || minVideoLength <= maxVideoLength,
+          'minVideoLength must not exceed maxVideoLength',
+        );
 
   @override
   State<TrimViewer> createState() => _TrimViewerState();
@@ -281,6 +290,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
     final scrollableViewer = ScrollableTrimViewer(
       trimmer: widget.trimmer,
       maxVideoLength: widget.maxVideoLength,
+      minVideoLength: widget.minVideoLength,
       viewerWidth: widget.viewerWidth,
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,
@@ -304,6 +314,7 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
     final fixedTrimViewer = FixedTrimViewer(
       trimmer: widget.trimmer,
       maxVideoLength: widget.maxVideoLength,
+      minVideoLength: widget.minVideoLength,
       viewerWidth: widget.viewerWidth,
       viewerHeight: widget.viewerHeight,
       showDuration: widget.showDuration,

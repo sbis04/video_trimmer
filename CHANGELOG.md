@@ -46,6 +46,10 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
   into view, and the preview starts on its first frame. Either can be given
   alone, so `initialEndValue` also sets a shorter default selection than
   `maxVideoLength`. ([#73], [#274], [#209])
+* `TrimViewer.minVideoLength` sets the shortest selection allowed. The
+  handles stop rather than close in past it, and a saved range shorter than
+  it grows to fit. Set it equal to `maxVideoLength` for a fixed-length
+  selection that can only be moved. ([#188], [#269])
 
 #### Fixes
 
@@ -119,6 +123,7 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 [#73]: https://github.com/sbis04/video_trimmer/issues/73
 [#137]: https://github.com/sbis04/video_trimmer/issues/137
 [#187]: https://github.com/sbis04/video_trimmer/issues/187
+[#188]: https://github.com/sbis04/video_trimmer/issues/188
 [#192]: https://github.com/sbis04/video_trimmer/issues/192
 [#199]: https://github.com/sbis04/video_trimmer/issues/199
 [#203]: https://github.com/sbis04/video_trimmer/issues/203
@@ -138,6 +143,7 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 [#263]: https://github.com/sbis04/video_trimmer/issues/263
 [#266]: https://github.com/sbis04/video_trimmer/issues/266
 [#268]: https://github.com/sbis04/video_trimmer/issues/268
+[#269]: https://github.com/sbis04/video_trimmer/issues/269
 [#271]: https://github.com/sbis04/video_trimmer/issues/271
 [#274]: https://github.com/sbis04/video_trimmer/issues/274
 [#275]: https://github.com/sbis04/video_trimmer/issues/275

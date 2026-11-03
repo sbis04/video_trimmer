@@ -7,11 +7,12 @@ import 'dart:math' as math;
 /// default selection (#209). Either can be given alone; the other is derived
 /// from the length cap. Everything is clamped to the video, and the range is
 /// never longer than [maxLengthMs] (`0` or anything at least [durationMs]
-/// means no cap). With neither given, this is the viewers' long-standing
+/// means no cap) or shorter than [minLengthMs]. With neither given, this is the viewers' long-standing
 /// default: from the start, as long as the cap allows.
 ({double start, double end}) resolveInitialTrimRange({
   required double durationMs,
   required double maxLengthMs,
+  double minLengthMs = 0,
   double? initialStart,
   double? initialEnd,
 }) {
@@ -37,6 +38,12 @@ import 'dart:math' as math;
     } else {
       end = start + cap;
     }
+  }
+  final min = minLengthMs.clamp(0.0, cap);
+  if (end - start < min) {
+    // Grow to the minimum, forwards first, then backwards from the clip end.
+    end = math.min(durationMs, start + min);
+    start = math.max(0.0, end - min);
   }
   return (start: start.toDouble(), end: end.toDouble());
 }
