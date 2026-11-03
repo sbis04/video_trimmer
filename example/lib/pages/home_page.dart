@@ -30,8 +30,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _pickVideo() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.video);
-    final path = result?.files.single.path;
+    final picked = await FilePicker.pickFile(type: FileType.video);
+    final path = picked?.path;
     if (path == null) return;
     await _openTrimmer(File(path));
   }
