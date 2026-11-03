@@ -11,9 +11,11 @@ Extracts JPEG frames for the video_trimmer trim viewer and trims videos with AVF
   s.source           = { :path => '.' }
   s.source_files     = 'video_trimmer/Sources/video_trimmer/**/*.swift'
   s.resource_bundles = { 'video_trimmer_privacy' => ['video_trimmer/Sources/video_trimmer/PrivacyInfo.xcprivacy'] }
-  s.dependency 'Flutter'
-  s.frameworks       = 'AVFoundation'
-  s.platform         = :ios, '12.0'
+  s.ios.dependency 'Flutter'
+  s.osx.dependency 'FlutterMacOS'
+  s.frameworks       = 'AVFoundation', 'ImageIO'
+  s.ios.deployment_target = '12.0'
+  s.osx.deployment_target = '10.15'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'

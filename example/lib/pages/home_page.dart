@@ -54,6 +54,8 @@ class _HomePageState extends State<HomePage> {
     try {
       final bytes = await rootBundle.load('assets/sample.mp4');
       final dir = await getTemporaryDirectory();
+      // On macOS this is a per-app Caches folder that may not exist yet.
+      await dir.create(recursive: true);
       final file = File('${dir.path}/sample.mp4');
       await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
       await _openTrimmer(file);

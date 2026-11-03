@@ -37,3 +37,7 @@ flutter:
         pluginClass: VideoTrimmerNativePlugin
       ios:
         pluginClass: VideoTrimmerNativePlugin
+        sharedDarwinSource: true
+      macos:
+        pluginClass: VideoTrimmerNativePlugin
+        sharedDarwinSource: true

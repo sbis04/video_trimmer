@@ -1,8 +1,13 @@
 import AVFoundation
-import Flutter
-import UIKit
+import ImageIO
 
-/// The package's native side on iOS: JPEG thumbnails for the trim viewer
+#if os(iOS)
+  import Flutter
+#elseif os(macOS)
+  import FlutterMacOS
+#endif
+
+/// The package's native side on iOS and macOS: JPEG thumbnails for the trim viewer
 /// (`video_trimmer/thumbnails`) and trimming (`video_trimmer/trim`).
 ///
 /// The class name is deliberately specific: Flutter registers plugins by class
@@ -19,8 +24,13 @@ public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = VideoTrimmerNativePlugin()
+    #if os(iOS)
+      let messenger = registrar.messenger()
+    #else
+      let messenger = registrar.messenger
+    #endif
     for name in ["video_trimmer/thumbnails", "video_trimmer/trim"] {
-      let channel = FlutterMethodChannel(name: name, binaryMessenger: registrar.messenger())
+      let channel = FlutterMethodChannel(name: name, binaryMessenger: messenger)
       registrar.addMethodCallDelegate(instance, channel: channel)
     }
   }
@@ -41,10 +51,7 @@ public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
         let time = CMTime(value: timeMs, timescale: 1000)
         Self.image(from: generator, at: time) { image, error in
           let reply: Any
-          if let image = image,
-            let data = UIImage(cgImage: image).jpegData(
-              compressionQuality: CGFloat(min(max(quality, 0), 100)) / 100)
-          {
+          if let image = image, let data = Self.jpeg(image, quality: quality) {
             reply = FlutterStandardTypedData(bytes: data)
           } else {
             reply = FlutterError(
@@ -89,6 +96,21 @@ public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
     }
   }
 
+  /// JPEG-encodes [image] with ImageIO, which both platforms share; UIImage
+  /// would tie this file to iOS.
+  private static func jpeg(_ image: CGImage, quality: Int) -> Data? {
+    let data = NSMutableData()
+    guard
+      let destination = CGImageDestinationCreateWithData(
+        data as CFMutableData, "public.jpeg" as CFString, 1, nil)
+    else { return nil }
+    let options =
+      [kCGImageDestinationLossyCompressionQuality: Double(min(max(quality, 0), 100)) / 100]
+      as CFDictionary
+    CGImageDestinationAddImage(destination, image, options)
+    return CGImageDestinationFinalize(destination) ? data as Data : nil
+  }
+
   private static func url(for path: String) -> URL {
     path.hasPrefix("file://") ? URL(string: path)! : URL(fileURLWithPath: path)
   }
@@ -121,7 +143,7 @@ public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
       end: CMTime(value: endMs, timescale: 1000))
     session.shouldOptimizeForNetworkUse = true
 
-    if #available(iOS 18.0, *) {
+    if #available(iOS 18.0, macOS 15.0, *) {
       Task {
         do {
           try await session.export(to: output, as: type)
@@ -183,7 +205,7 @@ public class VideoTrimmerNativePlugin: NSObject, FlutterPlugin {
     from generator: AVAssetImageGenerator, at time: CMTime,
     completion: @escaping (CGImage?, Error?) -> Void
   ) {
-    if #available(iOS 16.0, *) {
+    if #available(iOS 16.0, macOS 13.0, *) {
       generator.generateCGImageAsynchronously(for: time) { image, _, error in
         completion(image, error)
       }

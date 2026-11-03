@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "video_trimmer",
     platforms: [
-        .iOS("12.0")
+        .iOS("12.0"),
+        .macOS("10.15")
     ],
     products: [
         .library(name: "video-trimmer", targets: ["video_trimmer"])

@@ -19,7 +19,7 @@
 
 ### Features
 
-* Trim videos natively on Android and iOS, with no FFmpeg.
+* Trim videos natively on Android, iOS, and macOS, with no FFmpeg.
 * Two trim viewers: a fixed one that shows the whole video, and a scrollable one for long videos, with smooth auto-scroll and a draggable timeline.
 * Limit the selection with `maxVideoLength` and `minVideoLength`, or set them equal for a fixed-length selection.
 * Restore a saved selection with `initialStartValue` / `initialEndValue`.
@@ -55,7 +55,9 @@ dependencies:
 
 **Android:** no setup needed.
 
-**iOS:** no setup needed. The package works with both CocoaPods and Swift Package Manager. It needs no `Info.plist` keys of its own. If you let users pick videos from their library with a plugin such as `file_picker` or `image_picker`, add the usage description that plugin asks for (usually `NSPhotoLibraryUsageDescription`).
+**iOS and macOS:** no setup needed. The package works with both CocoaPods and Swift Package Manager, and the two platforms share the same AVFoundation code. It needs no `Info.plist` keys of its own. If you let users pick videos from their library with a plugin such as `file_picker` or `image_picker`, add the usage description that plugin asks for (usually `NSPhotoLibraryUsageDescription`).
+
+**macOS:** a sandboxed app can only read files the user picks if it has the `com.apple.security.files.user-selected.read-only` entitlement (`read-write` if you also save next to the source). Add it to `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`. Trimmed videos are saved inside the app container by default.
 
 ## Usage
 
@@ -202,7 +204,7 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 * **`StorageDir` is a real `enum`.** Usage is unchanged, but it can no longer be subclassed.
 * **video_trimmer is now a plugin.** It generates thumbnails and trims with its own native code instead of `get_thumbnail_video` and `flutter_native_video_trimmer`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS) after upgrading if your build complains.
 * **Android `minSdk` is 24**, which `video_player` already requires.
-* **Trimmed videos are `.mp4`** on Android, and on iOS unless the source is `.mov` or `.m4v`. The extension used to be copied from the source.
+* **Trimmed videos are `.mp4`** on Android, and on iOS and macOS unless the source is `.mov` or `.m4v`. The extension used to be copied from the source.
 
 See the [changelog](https://pub.dev/packages/video_trimmer/changelog) for the full list.
 

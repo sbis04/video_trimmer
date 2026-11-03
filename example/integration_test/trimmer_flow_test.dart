@@ -146,6 +146,11 @@ void main() {
     );
   }
 
+  /// How far to drag the frame from 35% of the strip to reach the right edge
+  /// zone, whatever the screen width (a phone, or a wide desktop window).
+  Offset toRightEdge(WidgetTester tester) =>
+      Offset(stripPoint(tester, 0.97).dx - stripPoint(tester, 0.35).dx, 0);
+
   testWidgets('dragging the frame into the edge zone auto-scrolls forward',
       (tester) async {
     await openSampleTrimmer(tester);
@@ -158,7 +163,7 @@ void main() {
     await dragHandleAndHold(
       tester,
       from: stripPoint(tester, 0.35),
-      by: const Offset(140, 0),
+      by: toRightEdge(tester),
     );
 
     final startAfter = readout('start');
@@ -183,8 +188,9 @@ void main() {
 
     final gesture = await tester.startGesture(stripPoint(tester, 0.35));
     await tester.pump();
+    final step = toRightEdge(tester) / 10;
     for (var i = 0; i < 10; i++) {
-      await gesture.moveBy(const Offset(16, 0));
+      await gesture.moveBy(step);
       await tester.pump(const Duration(milliseconds: 16));
     }
     // Hold in the edge zone until the strip has scrolled as far as it goes.
@@ -284,7 +290,7 @@ void main() {
     await dragHandleAndHold(
       tester,
       from: stripPoint(tester, 0.35),
-      by: const Offset(140, 0),
+      by: toRightEdge(tester),
       holdFrames: 150,
     );
     final scrolledStart = readout('start');
@@ -462,7 +468,9 @@ void main() {
   /// Trimmer instead of going through the example's pages.
   Future<File> sampleCopy(String name) async {
     final data = await rootBundle.load('assets/sample.mp4');
-    final file = File('${(await getTemporaryDirectory()).path}/$name');
+    final dir = await getTemporaryDirectory();
+    await dir.create(recursive: true); // may not exist yet on macOS
+    final file = File('${dir.path}/$name');
     await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
     return file;
   }
@@ -761,7 +769,7 @@ void main() {
     await dragHandleAndHold(
       tester,
       from: stripPoint(tester, 0.35),
-      by: const Offset(140, 0),
+      by: toRightEdge(tester),
       holdFrames: 120,
     );
     final start = readout('start');
