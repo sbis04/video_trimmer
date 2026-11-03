@@ -7,10 +7,12 @@ void main() {
     double? end,
     double duration = 30000,
     double max = 10000,
+    double min = 0,
   }) =>
       resolveInitialTrimRange(
         durationMs: duration,
         maxLengthMs: max,
+        minLengthMs: min,
         initialStart: start,
         initialEnd: end,
       );
@@ -49,5 +51,17 @@ void main() {
     final r = resolve(start: 9000, end: 3000);
     expect(r.end, greaterThan(r.start));
     expect(r.end - r.start, lessThanOrEqualTo(10000));
+  });
+  test('a saved range shorter than minLength grows to it', () {
+    expect(resolve(start: 4000, end: 5000, min: 3000),
+        (start: 4000.0, end: 7000.0));
+  });
+  test('growing to minLength near the end reaches backwards', () {
+    expect(resolve(start: 29000, end: 30000, min: 3000),
+        (start: 27000.0, end: 30000.0));
+  });
+  test('min == max gives exactly that length', () {
+    expect(resolve(start: 5000, min: 4000, max: 4000),
+        (start: 5000.0, end: 9000.0));
   });
 }

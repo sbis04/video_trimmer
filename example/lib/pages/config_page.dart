@@ -64,6 +64,17 @@ class _ConfigPageState extends State<ConfigPage> {
                     _update(_config.copyWith(maxVideoLengthSeconds: v.round())),
               ),
               SliderTile(
+                label: 'minVideoLength',
+                value: _config.minVideoLengthSeconds.toDouble(),
+                min: 0,
+                max: 30,
+                divisions: 30,
+                decimals: 0,
+                suffix: 's',
+                onChanged: (v) =>
+                    _update(_config.copyWith(minVideoLengthSeconds: v.round())),
+              ),
+              SliderTile(
                 label: 'viewerHeight',
                 value: _config.viewerHeight,
                 min: 30,

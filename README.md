@@ -122,6 +122,18 @@ TrimViewer(
 )
 ```
 
+### Limit the selection length
+
+`maxVideoLength` caps how long the selection can be, and `minVideoLength` sets how short it can get. Set them equal for a fixed-length selection that can only be moved.
+
+```dart
+TrimViewer(
+  trimmer: _trimmer,
+  maxVideoLength: const Duration(seconds: 30),
+  minVideoLength: const Duration(seconds: 3),
+)
+```
+
 ### Restore a saved selection
 
 Pass back the values that `onChangeStart` / `onChangeEnd` reported (in milliseconds) to open the trimmer on that range again. The scrollable viewer scrolls it into view, and the preview starts on its first frame. Either value can be given alone: the other is derived from `maxVideoLength`. So `initialEndValue: 3000` opens with the first 3 seconds selected, even when `maxVideoLength` is longer.

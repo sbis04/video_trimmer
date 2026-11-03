@@ -691,4 +691,105 @@ void main() {
     expect(readout('start'), closeTo(start, 0.06));
     expect(readout('end'), closeTo(end, 0.06));
   });
+
+  // ---- minVideoLength (#188, #269) ----
+
+  /// Global position of a handle, read off the painter.
+  Offset handleAt(WidgetTester tester, {required bool end}) {
+    final paintFinder = find.descendant(
+      of: find.byType(TrimViewer),
+      matching: find.byWidgetPredicate(
+          (w) => w is CustomPaint && w.foregroundPainter is TrimEditorPainter),
+    );
+    final p = painter(tester);
+    final box = tester.getRect(paintFinder.first);
+    final x = end ? p.endPos.dx : p.startPos.dx;
+    return Offset(box.left + x, box.top + box.height / 2);
+  }
+
+  Future<void> dragFrom(WidgetTester tester, Offset from, double dx) async {
+    final g = await tester.startGesture(from);
+    await tester.pump();
+    final steps = (dx.abs() / 12).ceil();
+    for (var i = 0; i < steps; i++) {
+      await g.moveBy(Offset(dx / steps, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await g.up();
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  Future<({double Function() start, double Function() end})> pumpMinViewer(
+    WidgetTester tester, {
+    required ViewerType type,
+    required Duration min,
+    required Duration max,
+  }) async {
+    final file = await sampleCopy('min_${type.name}.mp4');
+    final trimmer = Trimmer();
+    addTearDown(trimmer.dispose);
+    await trimmer.loadVideo(videoFile: file);
+    var start = 0.0;
+    var end = 0.0;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: TrimViewer(
+            trimmer: trimmer,
+            type: type,
+            viewerWidth: 360,
+            viewerHeight: 50,
+            maxVideoLength: max,
+            minVideoLength: min,
+            onChangeStart: (v) => start = v,
+            onChangeEnd: (v) => end = v,
+          ),
+        ),
+      ),
+    ));
+    await run(tester, const Duration(seconds: 2));
+    return (start: () => start, end: () => end);
+  }
+
+  for (final type in [ViewerType.fixed, ViewerType.scrollable]) {
+    testWidgets('the ${type.name} viewer keeps the selection >= minVideoLength',
+        (tester) async {
+      final values = await pumpMinViewer(tester,
+          type: type,
+          min: const Duration(seconds: 4),
+          max: const Duration(seconds: 10));
+
+      // Pull the right handle far left, past the left one.
+      await dragFrom(tester, handleAt(tester, end: true), -320);
+      expect(values.end() - values.start(), closeTo(4000, 80),
+          reason: 'the right handle should stop 4 s after the start');
+
+      // Push the left handle far right, past the right one.
+      await dragFrom(tester, handleAt(tester, end: false), 320);
+      expect(values.end() - values.start(), closeTo(4000, 80),
+          reason: 'the left handle should stop 4 s before the end');
+    });
+  }
+
+  testWidgets('minVideoLength == maxVideoLength makes a fixed-length frame',
+      (tester) async {
+    final values = await pumpMinViewer(tester,
+        type: ViewerType.fixed,
+        min: const Duration(seconds: 6),
+        max: const Duration(seconds: 6));
+    expect(values.end() - values.start(), closeTo(6000, 60));
+
+    await dragFrom(tester, handleAt(tester, end: true), -120);
+    await dragFrom(tester, handleAt(tester, end: false), 120);
+    expect(values.end() - values.start(), closeTo(6000, 60),
+        reason: 'neither handle can change the length');
+
+    // The frame still moves as a whole.
+    final before = values.start();
+    final mid = Offset.lerp(
+        handleAt(tester, end: false), handleAt(tester, end: true), 0.5)!;
+    await dragFrom(tester, mid, 90);
+    expect(values.start(), greaterThan(before + 1000));
+    expect(values.end() - values.start(), closeTo(6000, 60));
+  });
 }

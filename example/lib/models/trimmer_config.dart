@@ -37,6 +37,7 @@ class TrimmerConfig {
     this.viewerType = ViewerType.auto,
     this.viewerHeight = 50.0,
     this.maxVideoLengthSeconds = 10,
+    this.minVideoLengthSeconds = 0,
     this.paddingFraction = 0.2,
     this.showDuration = true,
     this.durationStyle = DurationStyle.FORMAT_MM_SS,
@@ -86,6 +87,7 @@ class TrimmerConfig {
   final ViewerType viewerType;
   final double viewerHeight;
   final int maxVideoLengthSeconds;
+  final int minVideoLengthSeconds;
   final double paddingFraction;
   final bool showDuration;
   final DurationStyle durationStyle;
@@ -138,6 +140,12 @@ class TrimmerConfig {
   final bool attachCallbacks;
 
   Duration get maxVideoLength => Duration(seconds: maxVideoLengthSeconds);
+
+  /// Never above [maxVideoLength], which TrimViewer asserts.
+  Duration get minVideoLength => Duration(
+      seconds: minVideoLengthSeconds < maxVideoLengthSeconds
+          ? minVideoLengthSeconds
+          : maxVideoLengthSeconds);
 
   Duration get autoScrollStartDelay =>
       Duration(milliseconds: autoScrollStartDelayMs);
@@ -224,6 +232,7 @@ class TrimmerConfig {
     ViewerType? viewerType,
     double? viewerHeight,
     int? maxVideoLengthSeconds,
+    int? minVideoLengthSeconds,
     double? paddingFraction,
     bool? showDuration,
     DurationStyle? durationStyle,
@@ -267,6 +276,8 @@ class TrimmerConfig {
       viewerHeight: viewerHeight ?? this.viewerHeight,
       maxVideoLengthSeconds:
           maxVideoLengthSeconds ?? this.maxVideoLengthSeconds,
+      minVideoLengthSeconds:
+          minVideoLengthSeconds ?? this.minVideoLengthSeconds,
       paddingFraction: paddingFraction ?? this.paddingFraction,
       showDuration: showDuration ?? this.showDuration,
       durationStyle: durationStyle ?? this.durationStyle,

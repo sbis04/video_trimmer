@@ -179,6 +179,7 @@ class _TrimmerPageState extends State<TrimmerPage> {
                 viewerWidth: MediaQuery.of(context).size.width - 16,
                 type: _config.viewerType,
                 maxVideoLength: _config.maxVideoLength,
+                minVideoLength: _config.minVideoLength,
                 paddingFraction: _config.paddingFraction,
                 showDuration: _config.showDuration,
                 durationStyle: _config.durationStyle,

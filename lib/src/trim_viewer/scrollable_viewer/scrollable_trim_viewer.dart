@@ -34,6 +34,11 @@ class ScrollableTrimViewer extends StatefulWidget {
   /// For defining the maximum length of the output video.
   final Duration maxVideoLength;
 
+  /// The shortest selection allowed. The handles stop rather than bring the
+  /// frame closer together than this. Set it equal to [maxVideoLength] for a
+  /// fixed-length selection that can only be moved. Defaults to no minimum.
+  final Duration minVideoLength;
+
   /// For showing the start and the end point of the
   /// video on top of the trimmer area.
   ///
@@ -138,6 +143,7 @@ class ScrollableTrimViewer extends StatefulWidget {
     super.key,
     required this.trimmer,
     required this.maxVideoLength,
+    this.minVideoLength = Duration.zero,
     required this.onThumbnailLoadingComplete,
     this.initialStartValue,
     this.initialEndValue,
@@ -187,6 +193,9 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   double? fraction;
   double? maxLengthPixels;
+
+  /// [ScrollableTrimViewer.minVideoLength] in strip pixels.
+  double minLengthPixels = 0;
 
   ScrollableThumbnailViewer? thumbnailWidget;
 
@@ -454,10 +463,14 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         log('trimmerFraction: $trimmerFraction');
         final trimmerCover = trimmerFraction * trimAreaLength;
         maxLengthPixels = trimmerCover;
+        minLengthPixels = trimAreaLength *
+            (widget.minVideoLength.inMilliseconds /
+                preciseAreaDuration.inMilliseconds);
 
         final range = resolveInitialTrimRange(
           durationMs: totalDuration.inMilliseconds.toDouble(),
           maxLengthMs: maxVideoLength.inMilliseconds.toDouble(),
+          minLengthMs: widget.minVideoLength.inMilliseconds.toDouble(),
           initialStart: widget.initialStartValue,
           initialEnd: widget.initialEndValue,
         );
@@ -615,6 +628,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       dx: details.delta.dx,
       viewerWidth: _thumbnailViewerW,
       maxLength: maxLengthPixels!,
+      minLength: minLengthPixels,
     );
     if (moved.start != _startPos.dx || moved.end != _endPos.dx) {
       _startPos = Offset(moved.start, _startPos.dy);
