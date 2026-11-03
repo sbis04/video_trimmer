@@ -39,6 +39,13 @@ integrations hit first, plus a rework of the scrollable timeline.
 
 #### Fixes
 
+* The scrollable viewer could not select the last part of a clip: with a 30 s
+  clip and a 10 s max, the selection stopped 0.6–0.8 s before the end,
+  depending on screen width. The scroll range now covers exactly what the
+  visible area doesn't. ([#192], [#223], [#207])
+* Fast drags in both viewers stop exactly on the strip's edge, the
+  `maxVideoLength` cap, or the other handle, instead of up to one pointer
+  delta short. Diagonal drags no longer shift the handles vertically.
 * Apps that also depend on `video_thumbnail` no longer crash at launch on iOS
   with `Duplicate plugin key: VideoThumbnailPlugin`. Thumbnails now come from
   this package's own native code instead of `get_thumbnail_video`, so that
@@ -88,9 +95,12 @@ integrations hit first, plus a rework of the scrollable timeline.
 
 [#187]: https://github.com/sbis04/video_trimmer/issues/187
 [#199]: https://github.com/sbis04/video_trimmer/issues/199
+[#192]: https://github.com/sbis04/video_trimmer/issues/192
 [#203]: https://github.com/sbis04/video_trimmer/issues/203
+[#207]: https://github.com/sbis04/video_trimmer/issues/207
 [#214]: https://github.com/sbis04/video_trimmer/issues/214
 [#215]: https://github.com/sbis04/video_trimmer/issues/215
+[#223]: https://github.com/sbis04/video_trimmer/issues/223
 [#225]: https://github.com/sbis04/video_trimmer/issues/225
 [#234]: https://github.com/sbis04/video_trimmer/issues/234
 [#250]: https://github.com/sbis04/video_trimmer/issues/250

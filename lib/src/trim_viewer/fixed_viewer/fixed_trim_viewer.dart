@@ -9,6 +9,7 @@ import 'package:video_trimmer/src/trimmer.dart';
 import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
+import '../../utils/trim_drag.dart';
 import '../trim_area_properties.dart';
 import '../trim_editor_properties.dart';
 import 'fixed_thumbnail_viewer.dart';
@@ -343,32 +344,27 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
   void _onDragUpdate(DragUpdateDetails details) {
     if (!_allowDrag) return;
 
-    if (_dragType == EditorDragType.left) {
+    if (_dragType != EditorDragType.right) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_startPos.dx + details.delta.dx <= _endPos.dx) &&
-          !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
-        _startPos += details.delta;
-        _onStartDragged();
-      }
-    } else if (_dragType == EditorDragType.center) {
-      _startCircleSize = widget.editorProperties.circleSizeOnDrag;
+    }
+    if (_dragType != EditorDragType.left) {
       _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_endPos.dx + details.delta.dx <= _thumbnailViewerW)) {
-        _startPos += details.delta;
-        _endPos += details.delta;
-        _onStartDragged();
-        _onEndDragged();
-      }
-    } else {
-      _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
-          !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
-        _endPos += details.delta;
-        _onEndDragged();
-      }
+    }
+    // Only the x axis moves: the painter reads the positions' dy to place the
+    // handles, so adding a diagonal drag's dy used to shift them vertically.
+    final moved = clampTrimDrag(
+      type: _dragType,
+      start: _startPos.dx,
+      end: _endPos.dx,
+      dx: details.delta.dx,
+      viewerWidth: _thumbnailViewerW,
+      maxLength: maxLengthPixels!,
+    );
+    if (moved.start != _startPos.dx || moved.end != _endPos.dx) {
+      _startPos = Offset(moved.start, _startPos.dy);
+      _endPos = Offset(moved.end, _endPos.dy);
+      if (_dragType != EditorDragType.right) _onStartDragged();
+      if (_dragType != EditorDragType.left) _onEndDragged();
     }
     setState(() {});
   }

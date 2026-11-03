@@ -13,6 +13,7 @@ import 'package:video_trimmer/src/trimmer.dart';
 import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
+import '../../utils/trim_drag.dart';
 import 'scrollable_thumbnail_viewer.dart';
 
 /// Tolerance for comparing scroll offsets, which are doubles.
@@ -402,9 +403,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                 ((paddingFraction * maxVideoLength.inMilliseconds) * 2)
                     .toInt()));
         log('Trim Area Duration: $trimAreaDuration');
-        final remainingDuration = totalDuration - trimAreaDuration;
-        log('Remaining Duration: $remainingDuration');
-        _remainingDuration = remainingDuration.inMilliseconds;
         final trimAreaLength = _thumbnailViewerW;
         log('TRIM AREA LENGTH: $trimAreaLength');
         final thumbnailHeight = widget.viewerHeight;
@@ -440,6 +438,14 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
             milliseconds: (totalDuration.inMilliseconds * trimAreaLength) ~/
                 preciseTotalLength);
         _trimmerAreaDuration = preciseAreaDuration.inMilliseconds;
+        // The scroll extent has to cover exactly what the visible area does
+        // not. Using the nominal trimAreaDuration here instead left the last
+        // (trimAreaDuration - preciseAreaDuration) of the clip unreachable,
+        // since rounding the thumbnail count up makes the precise area
+        // slightly shorter (#192, #223, #207).
+        _remainingDuration =
+            totalDuration.inMilliseconds - _trimmerAreaDuration;
+        log('Remaining Duration: $_remainingDuration ms');
         log('preciseAreaDuration: $preciseAreaDuration');
         final trimmerFraction =
             maxVideoLength.inMilliseconds / preciseAreaDuration.inMilliseconds;
@@ -602,32 +608,27 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       return;
     }
 
-    if (_dragType == EditorDragType.left) {
+    if (_dragType != EditorDragType.right) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_startPos.dx + details.delta.dx <= _endPos.dx) &&
-          !(_endPos.dx - _startPos.dx - details.delta.dx > maxLengthPixels!)) {
-        _startPos += details.delta;
-        _onStartDragged();
-      }
-    } else if (_dragType == EditorDragType.center) {
-      _startCircleSize = widget.editorProperties.circleSizeOnDrag;
+    }
+    if (_dragType != EditorDragType.left) {
       _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_endPos.dx + details.delta.dx <= _thumbnailViewerW)) {
-        _startPos += details.delta;
-        _endPos += details.delta;
-        _onStartDragged();
-        _onEndDragged();
-      }
-    } else {
-      _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
-          !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
-        _endPos += details.delta;
-        _onEndDragged();
-      }
+    }
+    // Only the x axis moves: the painter reads the positions' dy to place the
+    // handles, so adding a diagonal drag's dy used to shift them vertically.
+    final moved = clampTrimDrag(
+      type: _dragType,
+      start: _startPos.dx,
+      end: _endPos.dx,
+      dx: details.delta.dx,
+      viewerWidth: _thumbnailViewerW,
+      maxLength: maxLengthPixels!,
+    );
+    if (moved.start != _startPos.dx || moved.end != _endPos.dx) {
+      _startPos = Offset(moved.start, _startPos.dy);
+      _endPos = Offset(moved.end, _endPos.dy);
+      if (_dragType != EditorDragType.right) _onStartDragged();
+      if (_dragType != EditorDragType.left) _onEndDragged();
     }
     _updateAutoScroll();
     setState(() {});

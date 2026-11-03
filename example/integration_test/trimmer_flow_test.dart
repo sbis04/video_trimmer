@@ -166,6 +166,92 @@ void main() {
         reason: 'selection must stay inside the clip');
   });
 
+  testWidgets('the whole clip is reachable, not just the first trim area',
+      (tester) async {
+    // #192, #223, #207: with a 30 s clip and a 10 s max the strip shows
+    // maxVideoLength * (1 + 2 * paddingFraction) = 14 s at a time, and the
+    // rest is only reachable by scrolling. Scroll all the way, then push the
+    // frame to the right edge: the selection must end on the clip's last
+    // frame.
+    await openSampleTrimmer(tester);
+
+    final gesture = await tester.startGesture(stripPoint(tester, 0.35));
+    await tester.pump();
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(const Offset(16, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    // Hold in the edge zone until the strip has scrolled as far as it goes.
+    ScrollPosition strip() => tester
+        .widgetList<SingleChildScrollView>(find.descendant(
+            of: find.byType(TrimViewer),
+            matching: find.byType(SingleChildScrollView)))
+        .first
+        .controller!
+        .position;
+    final deadline = DateTime.now().add(const Duration(seconds: 20));
+    while (strip().pixels < strip().maxScrollExtent - 0.5 &&
+        DateTime.now().isBefore(deadline)) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(strip().pixels, closeTo(strip().maxScrollExtent, 0.5),
+        reason: 'auto-scroll should reach the end of the strip');
+    // Then push the frame the rest of the way to the strip's right edge, as a
+    // user would once the scrolling stops.
+    for (var i = 0; i < 20; i++) {
+      await gesture.moveBy(const Offset(16, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final end = readout('end');
+    expect(end, greaterThanOrEqualTo(29.7),
+        reason: 'the tail of the clip must be selectable');
+    expect(end, lessThanOrEqualTo(30.1),
+        reason: 'the selection must not run past the clip');
+    expect(readout('length'), lessThanOrEqualTo(10.2),
+        reason: 'reaching the end must keep the maxVideoLength cap');
+  });
+
+  testWidgets('a fast drag in the fixed viewer lands exactly on the edge',
+      (tester) async {
+    // Drags that would cross a bound used to be rejected outright, so a fast
+    // drag stopped up to one pointer delta short of the strip's edge.
+    await openSampleTrimmer(tester);
+    await tester.tap(find.byKey(const Key('open_config')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('fixed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('APPLY'));
+    await pumpUntil(
+      tester,
+      () => find.byType(FixedTrimViewer).evaluate().isNotEmpty,
+      reason: 'fixed viewer to mount',
+    );
+    await pumpUntil(
+      tester,
+      () => find.byIcon(Icons.check_circle_outline).evaluate().isNotEmpty,
+      timeout: const Duration(seconds: 90),
+      reason: 'thumbnails to finish generating',
+    );
+
+    // Grab the middle of the 10 s frame and throw it right in big steps.
+    final gesture = await tester.startGesture(stripPoint(tester, 0.15));
+    await tester.pump();
+    for (var i = 0; i < 12; i++) {
+      await gesture.moveBy(const Offset(45, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(readout('end'), closeTo(30.0, 0.15),
+        reason: 'the frame should stop on the last frame of the clip');
+    expect(readout('length'), closeTo(10.0, 0.15),
+        reason: 'moving the frame must keep its length');
+  });
+
   testWidgets('the right handle stays pinned at maxVideoLength',
       (tester) async {
     await openSampleTrimmer(tester);
