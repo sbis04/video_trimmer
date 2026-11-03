@@ -26,6 +26,9 @@ class _TrimmerPageState extends State<TrimmerPage> {
   double _endValue = 0.0;
 
   bool _isPlaying = false;
+  bool _looping = false;
+  double _speed = 1.0;
+  static const _speeds = [1.0, 1.5, 2.0, 0.5];
   bool _saving = false;
   bool _thumbnailsLoaded = false;
 
@@ -185,20 +188,49 @@ class _TrimmerPageState extends State<TrimmerPage> {
                     : null,
               ),
             ),
-            IconButton(
-              key: const Key('play_pause'),
-              iconSize: 64,
-              color: Colors.white,
-              icon: Icon(_isPlaying
-                  ? Icons.pause_circle_filled
-                  : Icons.play_circle_fill),
-              onPressed: () async {
-                final playing = await _trimmer.videoPlaybackControl(
-                  startValue: _startValue,
-                  endValue: _endValue,
-                );
-                if (mounted) setState(() => _isPlaying = playing);
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  key: const Key('loop_toggle'),
+                  tooltip: _looping ? 'Looping' : 'Not looping',
+                  color: _looping ? Colors.tealAccent : Colors.white54,
+                  icon: Icon(_looping ? Icons.repeat_on : Icons.repeat),
+                  onPressed: () async {
+                    await _trimmer.videoPlayerController?.setLooping(!_looping);
+                    if (mounted) setState(() => _looping = !_looping);
+                  },
+                ),
+                const SizedBox(width: 16),
+                IconButton(
+                  key: const Key('play_pause'),
+                  iconSize: 64,
+                  color: Colors.white,
+                  icon: Icon(_isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_fill),
+                  onPressed: () async {
+                    final playing = await _trimmer.videoPlaybackControl(
+                      startValue: _startValue,
+                      endValue: _endValue,
+                    );
+                    if (mounted) setState(() => _isPlaying = playing);
+                  },
+                ),
+                const SizedBox(width: 16),
+                TextButton(
+                  key: const Key('speed_toggle'),
+                  onPressed: () async {
+                    final next =
+                        _speeds[(_speeds.indexOf(_speed) + 1) % _speeds.length];
+                    await _trimmer.videoPlayerController
+                        ?.setPlaybackSpeed(next);
+                    if (mounted) setState(() => _speed = next);
+                  },
+                  child: Text('${_speed}x',
+                      style: const TextStyle(color: Colors.white70)),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
           ],

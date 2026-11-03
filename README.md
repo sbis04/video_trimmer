@@ -50,7 +50,7 @@ For using main version of FFmpeg package:
 
 ```yaml
 dependencies:
-  video_trimmer: ^5.0.0
+  video_trimmer: ^6.0.0
 ```
 
 ### Android configuration

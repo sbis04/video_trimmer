@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -9,6 +8,7 @@ import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_area_properties.dart';
 import 'package:video_trimmer/src/trim_viewer/trim_editor_properties.dart';
+import 'package:video_trimmer/src/trim_viewer/trim_playback.dart';
 import 'package:video_trimmer/src/trimmer.dart';
 import 'package:video_trimmer/src/utils/duration_style.dart';
 
@@ -159,7 +159,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   double _endFraction = 1.0;
 
   int _videoDuration = 0;
-  int _currentPosition = 0;
   int _trimmerAreaDuration = 0;
   int _remainingDuration = 0;
 
@@ -177,12 +176,9 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   ScrollableThumbnailViewer? thumbnailWidget;
 
-  Animation<double>? _scrubberAnimation;
-  AnimationController? _animationController;
-
-  /// Initialized eagerly so a scroll arriving before the first layout pass
-  /// can't trip a late-initialization error.
-  Tween<double> _linearTween = Tween<double>(begin: 0.0, end: 0.0);
+  /// Drives the scrubber from the player and confines playback to the trim
+  /// range. Created once the video is initialized.
+  TrimPlayback? _playback;
 
   /// Quick access to VideoPlayerController, only not null after [TrimmerEvent.initialized]
   /// has been emitted.
@@ -247,14 +243,6 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
     widget.onChangeStart?.call(_videoStartPos);
     widget.onChangeEnd?.call(_videoEndPos);
-
-    _linearTween
-      ..begin = _startPos.dx
-      ..end = _endPos.dx;
-    _animationController?.duration = Duration(
-      milliseconds: math.max(1, (_videoEndPos - _videoStartPos).toInt()),
-    );
-    _animationController?.reset();
   }
 
   /// Keeps the trim range in step with the strip, whether it moved because of
@@ -460,68 +448,26 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         log('Video End Pos: $_videoEndPos ms');
         widget.onChangeEnd?.call(_videoEndPos);
         log('Video Selected Duration: ${_videoEndPos - _videoStartPos}');
-
-        // Defining the tween points
-        _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
-        _animationController = AnimationController(
-          vsync: this,
-          duration:
-              Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
-        );
-
-        _scrubberAnimation = _linearTween.animate(_animationController!)
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _animationController!.stop();
-            }
-          });
       });
     });
   }
 
   Future<void> _initializeVideoController() async {
     if (_videoFile == null) return;
-    videoPlayerController.addListener(_onPlayerValueChanged);
+    _playback?.dispose();
+    _playback = TrimPlayback(
+      player: videoPlayerController,
+      vsync: this,
+      range: () => (start: _videoStartPos, end: _videoEndPos),
+      onPlayingChanged: (playing) =>
+          widget.onChangePlaybackState?.call(playing),
+      onFrame: () {
+        if (mounted) setState(() {});
+      },
+    )..attach();
 
     videoPlayerController.setVolume(1.0);
     _videoDuration = videoPlayerController.value.duration.inMilliseconds;
-  }
-
-  void _onPlayerValueChanged() {
-    if (!mounted) return;
-    final bool isPlaying = videoPlayerController.value.isPlaying;
-
-    if (isPlaying) {
-      widget.onChangePlaybackState?.call(true);
-      setState(() {
-        _currentPosition = videoPlayerController.value.position.inMilliseconds;
-
-        if (_currentPosition > _videoEndPos.toInt()) {
-          videoPlayerController.pause();
-          widget.onChangePlaybackState?.call(false);
-          _animationController!.stop();
-        } else {
-          if (!_animationController!.isAnimating) {
-            widget.onChangePlaybackState?.call(true);
-            _animationController!.forward();
-          }
-        }
-      });
-    } else {
-      if (videoPlayerController.value.isInitialized) {
-        if (_animationController != null) {
-          if ((_scrubberAnimation?.value ?? 0).toInt() ==
-              (_endPos.dx).toInt()) {
-            _animationController!.reset();
-          }
-          _animationController!.stop();
-          widget.onChangePlaybackState?.call(false);
-        }
-      }
-    }
   }
 
   /// Called when the user starts dragging the frame, on either side on the whole frame.
@@ -680,7 +626,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     // Detach before pausing: pause() notifies listeners synchronously, and
     // dispose runs inside a locked build scope, so the listener's setState
     // (and the playback-state callback it fires) would throw.
-    videoPlayerController.removeListener(_onPlayerValueChanged);
+    _playback?.dispose();
     videoPlayerController.pause();
     _autoScrollDelayTimer?.cancel();
     _autoScrollTicker?.dispose();
@@ -713,7 +659,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                       ),
                       videoPlayerController.value.isPlaying
                           ? Text(
-                              Duration(milliseconds: _currentPosition.toInt())
+                              Duration(milliseconds: _playback?.positionMs ?? 0)
                                   .format(widget.durationStyle),
                               style: widget.durationTextStyle,
                             )
@@ -755,7 +701,11 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                   foregroundPainter: TrimEditorPainter(
                     startPos: _startPos,
                     endPos: _endPos,
-                    scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
+                    scrubberAnimationDx: _playback?.scrubberX(
+                          startX: _startPos.dx,
+                          endX: _endPos.dx,
+                        ) ??
+                        _startPos.dx,
                     startCircleSize: _startCircleSize,
                     endCircleSize: _endCircleSize,
                     borderRadius: _borderRadius,

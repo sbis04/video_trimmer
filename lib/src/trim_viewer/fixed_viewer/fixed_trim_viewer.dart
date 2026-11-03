@@ -11,6 +11,7 @@ import 'package:video_trimmer/src/utils/duration_style.dart';
 import '../../utils/editor_drag_type.dart';
 import '../../utils/trim_drag.dart';
 import '../trim_area_properties.dart';
+import '../trim_playback.dart';
 import '../trim_editor_properties.dart';
 import 'fixed_thumbnail_viewer.dart';
 
@@ -149,7 +150,6 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
   double _endFraction = 1.0;
 
   int _videoDuration = 0;
-  int _currentPosition = 0;
 
   double _thumbnailViewerW = 0.0;
   double _thumbnailViewerH = 0.0;
@@ -165,9 +165,9 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
 
   FixedThumbnailViewer? thumbnailWidget;
 
-  Animation<double>? _scrubberAnimation;
-  AnimationController? _animationController;
-  late Tween<double> _linearTween;
+  /// Drives the scrubber from the player and confines playback to the trim
+  /// range. Created once the video is initialized.
+  TrimPlayback? _playback;
 
   /// Quick access to VideoPlayerController, only not null after [TrimmerEvent.initialized]
   /// has been emitted.
@@ -239,68 +239,26 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
           maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
           _thumbnailViewerH,
         );
-
-        // Defining the tween points
-        _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
-        _animationController = AnimationController(
-          vsync: this,
-          duration:
-              Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt()),
-        );
-
-        _scrubberAnimation = _linearTween.animate(_animationController!)
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _animationController!.stop();
-            }
-          });
       });
     });
   }
 
   Future<void> _initializeVideoController() async {
     if (_videoFile != null) {
-      videoPlayerController.addListener(_onPlayerValueChanged);
+      _playback?.dispose();
+      _playback = TrimPlayback(
+        player: videoPlayerController,
+        vsync: this,
+        range: () => (start: _videoStartPos, end: _videoEndPos),
+        onPlayingChanged: (playing) =>
+            widget.onChangePlaybackState?.call(playing),
+        onFrame: () {
+          if (mounted) setState(() {});
+        },
+      )..attach();
 
       videoPlayerController.setVolume(1.0);
       _videoDuration = videoPlayerController.value.duration.inMilliseconds;
-    }
-  }
-
-  void _onPlayerValueChanged() {
-    if (!mounted) return;
-    final bool isPlaying = videoPlayerController.value.isPlaying;
-
-    if (isPlaying) {
-      widget.onChangePlaybackState?.call(true);
-      setState(() {
-        _currentPosition = videoPlayerController.value.position.inMilliseconds;
-
-        if (_currentPosition > _videoEndPos.toInt()) {
-          videoPlayerController.pause();
-          widget.onChangePlaybackState?.call(false);
-          _animationController!.stop();
-        } else {
-          if (!_animationController!.isAnimating) {
-            widget.onChangePlaybackState?.call(true);
-            _animationController!.forward();
-          }
-        }
-      });
-    } else {
-      if (videoPlayerController.value.isInitialized) {
-        if (_animationController != null) {
-          if ((_scrubberAnimation?.value ?? 0).toInt() ==
-              (_endPos.dx).toInt()) {
-            _animationController!.reset();
-          }
-          _animationController!.stop();
-          widget.onChangePlaybackState?.call(false);
-        }
-      }
     }
   }
 
@@ -373,20 +331,12 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     _startFraction = (_startPos.dx / _thumbnailViewerW);
     _videoStartPos = _videoDuration * _startFraction;
     widget.onChangeStart?.call(_videoStartPos);
-    _linearTween.begin = _startPos.dx;
-    _animationController!.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController!.reset();
   }
 
   void _onEndDragged() {
     _endFraction = _endPos.dx / _thumbnailViewerW;
     _videoEndPos = _videoDuration * _endFraction;
     widget.onChangeEnd?.call(_videoEndPos);
-    _linearTween.end = _endPos.dx;
-    _animationController!.duration =
-        Duration(milliseconds: (_videoEndPos - _videoStartPos).toInt());
-    _animationController!.reset();
   }
 
   /// Drag gesture ended, update UI accordingly.
@@ -409,7 +359,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
     // Detach before pausing: pause() notifies listeners synchronously, and
     // dispose runs inside a locked build scope, so the listener's setState
     // (and the playback-state callback it fires) would throw.
-    videoPlayerController.removeListener(_onPlayerValueChanged);
+    _playback?.dispose();
     videoPlayerController.pause();
     // The controller belongs to the Trimmer, not to this widget, so it is
     // not disposed here. Rebuilding or replacing the viewer used to kill the
@@ -442,7 +392,9 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
                         ),
                         videoPlayerController.value.isPlaying
                             ? Text(
-                                Duration(milliseconds: _currentPosition.toInt())
+                                Duration(
+                                        milliseconds:
+                                            _playback?.positionMs ?? 0)
                                     .format(widget.durationStyle),
                                 style: widget.durationTextStyle,
                               )
@@ -461,7 +413,11 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
             foregroundPainter: TrimEditorPainter(
               startPos: _startPos,
               endPos: _endPos,
-              scrubberAnimationDx: _scrubberAnimation?.value ?? 0,
+              scrubberAnimationDx: _playback?.scrubberX(
+                    startX: _startPos.dx,
+                    endX: _endPos.dx,
+                  ) ??
+                  _startPos.dx,
               startCircleSize: _startCircleSize,
               endCircleSize: _endCircleSize,
               borderRadius: _borderRadius,

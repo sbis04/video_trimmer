@@ -39,6 +39,19 @@ integrations hit first, plus a rework of the scrollable timeline.
 
 #### Fixes
 
+* Looping now works inside the trim range. With
+  `videoPlayerController.setLooping(true)`, playback wraps from the trim end
+  back to the trim start instead of pausing. ([#237])
+* `onChangePlaybackState` fires only when playback starts or stops, not on
+  every position update. Callbacks that seek or play from it no longer
+  re-enter until the stack overflows. ([#236])
+* The scrubber follows the player's real position and playback speed instead
+  of running its own clock, so it no longer drifts after repeated pauses and
+  stays correct at 0.5x–2x. ([#137], [#212], [#218])
+* `videoPlaybackControl` starts from the trim start when the playhead is
+  before it, not only after the end.
+* The viewers' scrubber animation controllers were never disposed. They are
+  replaced by a single ticker that is.
 * The scrollable viewer could not select the last part of a clip: with a 30 s
   clip and a 10 s max, the selection stopped 0.6–0.8 s before the end,
   depending on screen width. The scroll range now covers exactly what the
@@ -93,16 +106,21 @@ integrations hit first, plus a rework of the scrollable timeline.
 * Rebuild the example as a customization playground covering every option the
   package exposes.
 
+[#137]: https://github.com/sbis04/video_trimmer/issues/137
 [#187]: https://github.com/sbis04/video_trimmer/issues/187
-[#199]: https://github.com/sbis04/video_trimmer/issues/199
 [#192]: https://github.com/sbis04/video_trimmer/issues/192
+[#199]: https://github.com/sbis04/video_trimmer/issues/199
 [#203]: https://github.com/sbis04/video_trimmer/issues/203
 [#207]: https://github.com/sbis04/video_trimmer/issues/207
+[#212]: https://github.com/sbis04/video_trimmer/issues/212
 [#214]: https://github.com/sbis04/video_trimmer/issues/214
 [#215]: https://github.com/sbis04/video_trimmer/issues/215
+[#218]: https://github.com/sbis04/video_trimmer/issues/218
 [#223]: https://github.com/sbis04/video_trimmer/issues/223
 [#225]: https://github.com/sbis04/video_trimmer/issues/225
 [#234]: https://github.com/sbis04/video_trimmer/issues/234
+[#236]: https://github.com/sbis04/video_trimmer/issues/236
+[#237]: https://github.com/sbis04/video_trimmer/issues/237
 [#250]: https://github.com/sbis04/video_trimmer/issues/250
 [#261]: https://github.com/sbis04/video_trimmer/issues/261
 [#263]: https://github.com/sbis04/video_trimmer/issues/263
