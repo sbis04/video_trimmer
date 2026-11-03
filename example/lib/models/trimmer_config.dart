@@ -56,7 +56,7 @@ class TrimmerConfig {
     this.sideTapSize = 24,
     // Area
     this.areaStyle = AreaPropertiesStyle.edgeBlur,
-    this.thumbnailFit = BoxFit.fitHeight,
+    this.thumbnailFit = BoxFit.cover,
     this.thumbnailQuality = 50,
     this.blurEdges = true,
     this.blurColor = Colors.black,

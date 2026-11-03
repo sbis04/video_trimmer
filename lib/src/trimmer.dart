@@ -278,8 +278,9 @@ class Trimmer {
   /// The `@required` parameter [endValue] is for providing an ending point
   /// to the trimmed video. To be specified in `milliseconds`.
   ///
-  /// The `@required` parameter [onSave] is a callback Function that helps to
-  /// retrieve the output path as the processing is complete. Returns a `String`.
+  /// The `@required` parameter [onSave] receives the output path once the
+  /// processing is complete, or `null` if the native trimmer could not
+  /// produce a file.
   ///
   /// The parameter [videoFolderName] is used to
   /// pass a folder name which will be used for creating a new
@@ -380,8 +381,15 @@ class Trimmer {
         endTimeMs: endValue.toInt(),
       );
 
+      if (trimmedPath == null) {
+        // The native trimmer reports failure with a null path. This used to
+        // hit a null check and throw instead of telling the caller.
+        onSave(null);
+        return;
+      }
+
       // Copy the trimmed video to the output path
-      await File(trimmedPath!).copy(outputPath);
+      await File(trimmedPath).copy(outputPath);
       onSave(outputPath);
     }
   }
