@@ -154,6 +154,34 @@ class _ConfigPageState extends State<ConfigPage> {
                 onChanged: (v) =>
                     _update(_config.copyWith(borderPaintColor: v)),
               ),
+              ChoiceTile<TrimHandleStyle>(
+                label: 'handleStyle',
+                value: _config.handleStyle,
+                options: TrimHandleStyle.values,
+                labelBuilder: (v) => v.name,
+                onChanged: (v) => _update(_config.copyWith(handleStyle: v)),
+              ),
+              if (_config.handleStyle == TrimHandleStyle.line) ...[
+                ChoiceTile<bool>(
+                  label: 'handleHeight',
+                  value: _config.handleHeightInPixels,
+                  options: const [false, true],
+                  labelBuilder: (v) => v ? '.pixels' : '.percent',
+                  onChanged: (v) =>
+                      _update(_config.copyWith(handleHeightInPixels: v)),
+                ),
+                SliderTile(
+                  label: _config.handleHeightInPixels
+                      ? 'handleHeight (px)'
+                      : 'handleHeight (%)',
+                  value: _config.handleHeightValue,
+                  min: 0,
+                  max: 100,
+                  divisions: 20,
+                  onChanged: (v) =>
+                      _update(_config.copyWith(handleHeightValue: v)),
+                ),
+              ],
               ColorTile(
                 label: 'circlePaintColor',
                 value: _config.circlePaintColor,

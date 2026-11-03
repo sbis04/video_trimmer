@@ -45,6 +45,9 @@ class TrimmerConfig {
     this.durationFontSize = 14.0,
     this.durationBold = false,
     // Editor
+    this.handleStyle = TrimHandleStyle.line,
+    this.handleHeightInPixels = false,
+    this.handleHeightValue = 50,
     this.circleSize = 5.0,
     this.circleSizeOnDrag = 8.0,
     this.borderWidth = 4.0,
@@ -96,6 +99,12 @@ class TrimmerConfig {
   final bool durationBold;
 
   // ---- Trim editor ----
+  final TrimHandleStyle handleStyle;
+
+  /// Whether [handleHeightValue] is in pixels rather than a percentage of the
+  /// trim area's height.
+  final bool handleHeightInPixels;
+  final double handleHeightValue;
   final double circleSize;
   final double circleSizeOnDrag;
   final double borderWidth;
@@ -183,6 +192,10 @@ class TrimmerConfig {
       };
 
   TrimEditorProperties get editorProperties => TrimEditorProperties(
+        handleStyle: handleStyle,
+        handleHeight: handleHeightInPixels
+            ? TrimHandleHeight.pixels(handleHeightValue)
+            : TrimHandleHeight.percent(handleHeightValue),
         circleSize: circleSize,
         circleSizeOnDrag: circleSizeOnDrag,
         borderWidth: borderWidth,
@@ -239,6 +252,9 @@ class TrimmerConfig {
     Color? durationTextColor,
     double? durationFontSize,
     bool? durationBold,
+    TrimHandleStyle? handleStyle,
+    bool? handleHeightInPixels,
+    double? handleHeightValue,
     double? circleSize,
     double? circleSizeOnDrag,
     double? borderWidth,
@@ -284,6 +300,9 @@ class TrimmerConfig {
       durationTextColor: durationTextColor ?? this.durationTextColor,
       durationFontSize: durationFontSize ?? this.durationFontSize,
       durationBold: durationBold ?? this.durationBold,
+      handleStyle: handleStyle ?? this.handleStyle,
+      handleHeightInPixels: handleHeightInPixels ?? this.handleHeightInPixels,
+      handleHeightValue: handleHeightValue ?? this.handleHeightValue,
       circleSize: circleSize ?? this.circleSize,
       circleSizeOnDrag: circleSizeOnDrag ?? this.circleSizeOnDrag,
       borderWidth: borderWidth ?? this.borderWidth,

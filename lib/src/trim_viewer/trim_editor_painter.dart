@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_trimmer/src/trim_viewer/trim_editor_properties.dart';
 
 class TrimEditorPainter extends CustomPainter {
   /// To define the start offset
@@ -39,9 +40,17 @@ class TrimEditorPainter extends CustomPainter {
   /// the trim area. By default it is set to `Colors.white`.
   final Color borderPaintColor;
 
-  /// For specifying a color to the circle.
+  /// For specifying a color to the drag handles.
   /// By default it is set to `Colors.white`
   final Color circlePaintColor;
+
+  /// The shape of the drag handles. By default it is set to
+  /// [TrimHandleStyle.line].
+  final TrimHandleStyle handleStyle;
+
+  /// The height of a [TrimHandleStyle.line] handle. By default it is set to
+  /// half of the trim area's height.
+  final TrimHandleHeight handleHeight;
 
   /// For specifying a color to the video
   /// scrubber inside the trim area. By default it is set to
@@ -94,8 +103,16 @@ class TrimEditorPainter extends CustomPainter {
   /// the trim area. By default it is set to `Colors.white`.
   ///
   ///
-  /// * [circlePaintColor] for specifying a color to the circle.
+  /// * [circlePaintColor] for specifying a color to the drag handles.
   /// By default it is set to `Colors.white`.
+  ///
+  ///
+  /// * [handleStyle] for the shape of the drag handles, a line or a circle.
+  /// By default it is set to [TrimHandleStyle.line].
+  ///
+  ///
+  /// * [handleHeight] for the height of a line handle.
+  /// By default it is set to `TrimHandleHeight.percent(50)`.
   ///
   ///
   /// * [scrubberPaintColor] for specifying a color to the video
@@ -115,6 +132,8 @@ class TrimEditorPainter extends CustomPainter {
     this.borderPaintColor = Colors.white,
     this.circlePaintColor = Colors.white,
     this.scrubberPaintColor = Colors.white,
+    this.handleStyle = TrimHandleStyle.line,
+    this.handleHeight = const TrimHandleHeight.percent(50),
   });
 
   @override
@@ -155,11 +174,29 @@ class TrimEditorPainter extends CustomPainter {
 
     canvas.drawRRect(roundedRect, borderPaint);
     // Paint start holder
-    canvas.drawCircle(
-        startPos + Offset(0, endPos.dy / 2), startCircleSize, circlePaint);
+    _paintHandle(canvas, Offset(startPos.dx, rect.center.dy), rect.height,
+        startCircleSize, circlePaint);
     // Paint end holder
-    canvas.drawCircle(
-        endPos + Offset(0, -endPos.dy / 2), endCircleSize, circlePaint);
+    _paintHandle(canvas, Offset(endPos.dx, rect.center.dy), rect.height,
+        endCircleSize, circlePaint);
+  }
+
+  void _paintHandle(Canvas canvas, Offset center, double areaHeight,
+      double size, Paint paint) {
+    switch (handleStyle) {
+      case TrimHandleStyle.circle:
+        canvas.drawCircle(center, size, paint);
+      case TrimHandleStyle.line:
+        final height = handleHeight.resolve(areaHeight);
+        if (height <= 0 || size <= 0) return;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: center, width: size, height: height),
+            Radius.circular(size / 2),
+          ),
+          paint,
+        );
+    }
   }
 
   @override
