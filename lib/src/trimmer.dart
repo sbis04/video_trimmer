@@ -348,21 +348,19 @@ class Trimmer {
     required double startValue,
     required double endValue,
   }) async {
-    if (videoPlayerController!.value.isPlaying) {
-      await videoPlayerController!.pause();
+    final controller = videoPlayerController!;
+    if (controller.value.isPlaying) {
+      await controller.pause();
       return false;
-    } else {
-      if (videoPlayerController!.value.position.inMilliseconds >=
-          endValue.toInt()) {
-        await videoPlayerController!
-            .seekTo(Duration(milliseconds: startValue.toInt()));
-        await videoPlayerController!.play();
-        return true;
-      } else {
-        await videoPlayerController!.play();
-        return true;
-      }
     }
+    // Start from the trim start whenever the playhead sits outside the range,
+    // including before it, e.g. after the start handle was dragged past it.
+    final position = controller.value.position.inMilliseconds;
+    if (position < startValue.toInt() || position >= endValue.toInt()) {
+      await controller.seekTo(Duration(milliseconds: startValue.toInt()));
+    }
+    await controller.play();
+    return true;
   }
 
   /// Releases the video controller and the event stream.

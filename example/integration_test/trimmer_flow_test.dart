@@ -3,7 +3,13 @@ import 'dart:io';
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
+// The painter is not exported; the tests read the scrubber position off it.
+// ignore: implementation_imports
+import 'package:video_trimmer/src/trim_viewer/trim_editor_painter.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 /// End-to-end coverage for the trimmer running against the bundled sample
@@ -412,5 +418,162 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
     }
     expect(tester.takeException(), isNull);
+  });
+
+  // ---- Playback: looping, scrubber sync and speed (#237, #236, #137, #212,
+  // #218) ----
+
+  VideoPlayerController player(WidgetTester tester) =>
+      tester.widget<VideoPlayer>(find.byType(VideoPlayer)).controller;
+
+  TrimEditorPainter painter(WidgetTester tester) => tester
+      .widgetList<CustomPaint>(find.descendant(
+        of: find.byType(TrimViewer),
+        matching: find.byType(CustomPaint),
+      ))
+      .map((p) => p.foregroundPainter)
+      .whereType<TrimEditorPainter>()
+      .single;
+
+  /// Pumps real frames for [d] so the player keeps running.
+  Future<void> run(WidgetTester tester, Duration d) async {
+    final until = DateTime.now().add(d);
+    while (DateTime.now().isBefore(until)) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+  }
+
+  /// Where the scrubber should be for the player's reported position.
+  double expectedScrubberX(WidgetTester tester) {
+    final p = painter(tester);
+    final start = readout('start') * 1000;
+    final end = readout('end') * 1000;
+    final pos = player(tester)
+        .value
+        .position
+        .inMilliseconds
+        .clamp(start, end)
+        .toDouble();
+    return p.startPos.dx +
+        (pos - start) / (end - start) * (p.endPos.dx - p.startPos.dx);
+  }
+
+  testWidgets('without looping, playback pauses at the trim end',
+      (tester) async {
+    await openSampleTrimmer(tester);
+    await player(tester).seekTo(const Duration(milliseconds: 8800));
+    await tester.tap(find.byKey(const Key('play_pause')));
+    await run(tester, const Duration(milliseconds: 2500));
+
+    expect(player(tester).value.isPlaying, isFalse);
+    expect(player(tester).value.position.inMilliseconds,
+        inInclusiveRange(9800, 10600));
+    expect(find.byIcon(Icons.play_circle_fill), findsOneWidget,
+        reason: 'the play button should report the pause');
+  });
+
+  testWidgets('with looping on, playback wraps back to the trim start',
+      (tester) async {
+    await openSampleTrimmer(tester);
+    await tester.tap(find.byKey(const Key('loop_toggle')));
+    await tester.pump();
+    expect(player(tester).value.isLooping, isTrue);
+
+    await player(tester).seekTo(const Duration(milliseconds: 8800));
+    await tester.tap(find.byKey(const Key('play_pause')));
+    await run(tester, const Duration(milliseconds: 2800));
+
+    final value = player(tester).value;
+    expect(value.isPlaying, isTrue, reason: 'looping must not pause');
+    expect(value.position.inMilliseconds, lessThan(3000),
+        reason: 'should have wrapped to the trim start (0 s)');
+    expect(find.byIcon(Icons.pause_circle_filled), findsOneWidget);
+  });
+
+  testWidgets('the scrubber tracks the player through repeated pauses',
+      (tester) async {
+    await openSampleTrimmer(tester);
+    for (var i = 0; i < 8; i++) {
+      await tester.tap(find.byKey(const Key('play_pause')));
+      await run(tester, const Duration(milliseconds: 450));
+      await tester.tap(find.byKey(const Key('play_pause')));
+      await run(tester, const Duration(milliseconds: 250));
+    }
+    expect(player(tester).value.isPlaying, isFalse);
+    final position = player(tester).value.position.inMilliseconds;
+    expect(position, greaterThan(2000), reason: 'precondition: it played');
+    expect(painter(tester).scrubberAnimationDx,
+        closeTo(expectedScrubberX(tester), 1.5),
+        reason: 'paused scrubber must sit on the paused frame');
+  });
+
+  testWidgets('the scrubber follows playback speed', (tester) async {
+    await openSampleTrimmer(tester);
+    await tester.tap(find.byKey(const Key('speed_toggle'))); // 1.5x
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('speed_toggle'))); // 2x
+    await tester.pump();
+    expect(player(tester).value.playbackSpeed, 2.0);
+
+    await tester.tap(find.byKey(const Key('play_pause')));
+    await run(tester, const Duration(milliseconds: 1500));
+    // Sample mid-playback: the estimate may lead the last report by at most
+    // one update interval at 2x.
+    expect(painter(tester).scrubberAnimationDx,
+        closeTo(expectedScrubberX(tester), 12),
+        reason: 'scrubber should move at the player\'s speed');
+    await tester.tap(find.byKey(const Key('play_pause')));
+    await run(tester, const Duration(milliseconds: 300));
+
+    expect(player(tester).value.position.inMilliseconds, greaterThan(2400),
+        reason: '1.5 s at 2x should cover about 3 s of video');
+    expect(painter(tester).scrubberAnimationDx,
+        closeTo(expectedScrubberX(tester), 1.5));
+  });
+
+  testWidgets(
+      'a consumer that seeks from onChangePlaybackState does not re-enter',
+      (tester) async {
+    // #236: onChangePlaybackState used to fire on every position update, so
+    // a callback that seeks or plays re-triggered itself until the stack
+    // overflowed. It must only fire on transitions now.
+    final data = await rootBundle.load('assets/sample.mp4');
+    final file = File('${(await getTemporaryDirectory()).path}/loop.mp4');
+    await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
+
+    final trimmer = Trimmer();
+    addTearDown(trimmer.dispose);
+    await trimmer.loadVideo(videoFile: file);
+    final reports = <bool>[];
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: TrimViewer(
+            trimmer: trimmer,
+            viewerWidth: 360,
+            viewerHeight: 50,
+            maxVideoLength: const Duration(seconds: 10),
+            onChangePlaybackState: (playing) {
+              reports.add(playing);
+              // The pattern from the issue: rewind whenever playback stops.
+              if (!playing) {
+                trimmer.videoPlayerController!.seekTo(Duration.zero);
+              }
+            },
+          ),
+        ),
+      ),
+    ));
+    await run(tester, const Duration(seconds: 2));
+
+    await trimmer.videoPlayerController!.play();
+    await run(tester, const Duration(seconds: 2));
+    await trimmer.videoPlayerController!.pause();
+    await run(tester, const Duration(seconds: 1));
+
+    expect(tester.takeException(), isNull);
+    expect(reports.where((p) => p).length, 1,
+        reason: 'one report per start, not one per position update');
+    expect(reports.last, isFalse);
   });
 }
