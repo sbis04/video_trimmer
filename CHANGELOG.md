@@ -145,8 +145,8 @@ when upgrading.
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
 * README rewritten for 6.0.0: up-to-date usage, a migration guide, a full
-  example that compiles against the current API, and a new demo that also
-  renders on pub.dev.
+  example that compiles against the current API, a new demo that also
+  renders on pub.dev, a new cover, and a labeled TrimViewer diagram.
 * The example is now a customization playground covering every option, with
   loop and speed controls, per-file selection restore, a bundled sample clip,
   no iOS swipe-back on the trimmer page (it stole drags on the start handle),

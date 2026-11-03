@@ -33,7 +33,7 @@
 The `TrimViewer` consists of the `Duration` row on top (start, scrubber and end time), the `TrimArea` of thumbnails, and the `TrimEditor` overlay you drag to select a portion of the video.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_preview.png"/>
+  <img src="https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_viewer_anatomy.png" alt="Parts of the TrimViewer: Duration, TrimEditor, handles, scrubber and TrimArea"/>
 </p>
 
 ## Example
