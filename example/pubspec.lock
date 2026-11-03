@@ -594,7 +594,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "5.0.0"
+    version: "6.0.0"
   vm_service:
     dependency: transitive
     description:

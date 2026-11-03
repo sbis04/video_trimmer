@@ -20,11 +20,21 @@ class _HomePageState extends State<HomePage> {
   TrimmerConfig _config = const TrimmerConfig();
   bool _preparingSample = false;
 
+  /// The last selection per file, restored through `initialStartValue` /
+  /// `initialEndValue` when the same video is opened again. A real app would
+  /// persist this.
+  final Map<String, TrimRange> _savedRanges = {};
+
   Future<void> _openTrimmer(File file) async {
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => TrimmerPage(file: file, config: _config),
+        builder: (_) => TrimmerPage(
+          file: file,
+          config: _config,
+          savedRange: _savedRanges[file.path],
+          onRangeSaved: (range) => _savedRanges[file.path] = range,
+        ),
       ),
     );
   }

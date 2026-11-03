@@ -14,6 +14,7 @@ import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
 import '../../utils/trim_drag.dart';
+import '../../utils/initial_trim_range.dart';
 import 'scrollable_thumbnail_viewer.dart';
 
 /// Tolerance for comparing scroll offsets, which are doubles.
@@ -79,6 +80,17 @@ class ScrollableTrimViewer extends StatefulWidget {
 
   final VoidCallback onThumbnailLoadingComplete;
 
+  /// The trim range to start with, in milliseconds: for example a range
+  /// saved from [onChangeStart] / [onChangeEnd] earlier, so returning to the
+  /// trimmer shows it again. Either can be given alone; the other is derived
+  /// from [maxVideoLength]. Values are clamped to the video and to
+  /// [maxVideoLength]. Leave both null for the default (the start of the
+  /// video, as long as [maxVideoLength] allows).
+  final double? initialStartValue;
+
+  /// See [initialStartValue].
+  final double? initialEndValue;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -127,6 +139,8 @@ class ScrollableTrimViewer extends StatefulWidget {
     required this.trimmer,
     required this.maxVideoLength,
     required this.onThumbnailLoadingComplete,
+    this.initialStartValue,
+    this.initialEndValue,
     this.viewerWidth = 50 * 8,
     this.viewerHeight = 50,
     this.showDuration = true,
@@ -377,7 +391,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
       _thumbnailViewerW = trimmerActualWidth;
       _initializeVideoController();
       // The video has been initialized, now we can load stuff
-      videoPlayerController.seekTo(const Duration(milliseconds: 0));
+      var initialScrollFraction = 0.0;
       setState(() {
         final totalDuration = videoPlayerController.value.duration;
         log('Total Video Length: $totalDuration');
@@ -440,15 +454,47 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         log('trimmerFraction: $trimmerFraction');
         final trimmerCover = trimmerFraction * trimAreaLength;
         maxLengthPixels = trimmerCover;
-        _endPos = Offset(trimmerCover, thumbnailHeight);
-        log('START: $_startPos, END: $_endPos');
 
-        _videoEndPos =
-            preciseAreaDuration.inMilliseconds.toDouble() * trimmerFraction;
-        log('Video End Pos: $_videoEndPos ms');
+        final range = resolveInitialTrimRange(
+          durationMs: totalDuration.inMilliseconds.toDouble(),
+          maxLengthMs: maxVideoLength.inMilliseconds.toDouble(),
+          initialStart: widget.initialStartValue,
+          initialEnd: widget.initialEndValue,
+        );
+        // Centre the range in the visible area, scroll the strip there, and
+        // place the handles relative to that scroll. With no initial values
+        // this is the old default: no scroll, frame from 0 to the cap.
+        final areaMs = _trimmerAreaDuration.toDouble();
+        final scrollMs =
+            (range.start - (areaMs - (range.end - range.start)) / 2)
+                .clamp(0.0, _remainingDuration.toDouble());
+        initialScrollFraction =
+            _remainingDuration > 0 ? scrollMs / _remainingDuration : 0.0;
+        _startPos =
+            Offset((range.start - scrollMs) / areaMs * trimAreaLength, 0);
+        _endPos = Offset(
+          (range.end - scrollMs) / areaMs * trimAreaLength,
+          thumbnailHeight,
+        );
+        log('START: $_startPos, END: $_endPos, scroll: $scrollMs ms');
+
+        _videoStartPos = range.start;
+        _videoEndPos = range.end;
+        widget.onChangeStart?.call(_videoStartPos);
         widget.onChangeEnd?.call(_videoEndPos);
         log('Video Selected Duration: ${_videoEndPos - _videoStartPos}');
       });
+      videoPlayerController
+          .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
+      if (initialScrollFraction > 0) {
+        // The strip only has a scroll extent once it has been laid out.
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          final position = _scrollController.position;
+          _scrollController
+              .jumpTo(initialScrollFraction * position.maxScrollExtent);
+        });
+      }
     });
   }
 

@@ -1,7 +1,8 @@
 ## 6.0.0
 
-Bug-fix release focused on the crashes and dead-UI reports that new
-integrations hit first, plus a rework of the scrollable timeline.
+Fixes the crashes and dead-UI reports that new integrations hit first,
+reworks the scrollable timeline and playback, and replaces the thumbnail
+dependency that crashed iOS apps. Also adds restoring a saved selection.
 
 #### Smoother scrolling
 
@@ -36,6 +37,15 @@ integrations hit first, plus a rework of the scrollable timeline.
 * `ViewerType.scrollable` on a video too short to scroll now reports a Flutter
   error and falls back to the fixed viewer, rather than throwing a bare
   `String` from a stream listener.
+
+#### New
+
+* `TrimViewer` takes `initialStartValue` / `initialEndValue` (milliseconds,
+  the same values `onChangeStart` / `onChangeEnd` report) to open on a saved
+  selection. Both viewers honor them; the scrollable viewer scrolls the range
+  into view, and the preview starts on its first frame. Either can be given
+  alone, so `initialEndValue` also sets a shorter default selection than
+  `maxVideoLength`. ([#73], [#274], [#209])
 
 #### Fixes
 
@@ -106,12 +116,14 @@ integrations hit first, plus a rework of the scrollable timeline.
 * Rebuild the example as a customization playground covering every option the
   package exposes.
 
+[#73]: https://github.com/sbis04/video_trimmer/issues/73
 [#137]: https://github.com/sbis04/video_trimmer/issues/137
 [#187]: https://github.com/sbis04/video_trimmer/issues/187
 [#192]: https://github.com/sbis04/video_trimmer/issues/192
 [#199]: https://github.com/sbis04/video_trimmer/issues/199
 [#203]: https://github.com/sbis04/video_trimmer/issues/203
 [#207]: https://github.com/sbis04/video_trimmer/issues/207
+[#209]: https://github.com/sbis04/video_trimmer/issues/209
 [#212]: https://github.com/sbis04/video_trimmer/issues/212
 [#214]: https://github.com/sbis04/video_trimmer/issues/214
 [#215]: https://github.com/sbis04/video_trimmer/issues/215
@@ -127,6 +139,7 @@ integrations hit first, plus a rework of the scrollable timeline.
 [#266]: https://github.com/sbis04/video_trimmer/issues/266
 [#268]: https://github.com/sbis04/video_trimmer/issues/268
 [#271]: https://github.com/sbis04/video_trimmer/issues/271
+[#274]: https://github.com/sbis04/video_trimmer/issues/274
 [#275]: https://github.com/sbis04/video_trimmer/issues/275
 
 ## 5.0.0
