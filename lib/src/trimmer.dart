@@ -45,25 +45,77 @@ class Trimmer {
   bool get isVideoInitialized =>
       _videoPlayerController?.value.isInitialized ?? false;
 
+  /// Bumped by every [loadVideo] and by [dispose], so a load that is still in
+  /// flight can tell it has been superseded.
+  int _loadGeneration = 0;
+  bool _disposed = false;
+
+  /// The current controller's pending initialize(), if any.
+  Future<void>? _initializing;
+
+  /// Disposes [controller] once its [initializing] future has settled.
+  ///
+  /// Disposing a VideoPlayerController while initialize() is still pending
+  /// makes that initialize() never complete on Android, and can stall later
+  /// controllers too. So a controller is never torn down mid-initialize.
+  static Future<void> _release(
+    VideoPlayerController? controller,
+    Future<void>? initializing,
+  ) async {
+    if (controller == null) return;
+    if (initializing != null) {
+      try {
+        await initializing;
+      } catch (_) {
+        // A failed initialize still leaves a controller to dispose.
+      }
+    }
+    await controller.dispose();
+  }
+
   /// Loads a video using the path provided.
   ///
   /// Throws a [FileSystemException] if [videoFile] does not exist, rather than
   /// silently doing nothing.
+  ///
+  /// When called again before an earlier call finished, the newer call wins
+  /// and only it emits [TrimmerEvent.initialized]. After [dispose], this does
+  /// nothing.
   Future<void> loadVideo({required File videoFile}) async {
+    if (_disposed) return;
     if (!videoFile.existsSync()) {
       throw FileSystemException('Video file not found', videoFile.path);
     }
+    final generation = ++_loadGeneration;
+    bool superseded() => _disposed || generation != _loadGeneration;
 
     // Release the previous video before replacing it, otherwise every reload
     // leaks a controller and its platform-side player.
     final previous = _videoPlayerController;
+    final previousInit = _initializing;
     _videoPlayerController = null;
-    await previous?.dispose();
+    _initializing = null;
+    await _release(previous, previousInit);
+    // dispose() or a newer loadVideo() may have run during that await. Going
+    // on would create a controller nobody releases.
+    if (superseded()) return;
 
     currentVideoFile = videoFile;
     final controller = VideoPlayerController.file(videoFile);
     _videoPlayerController = controller;
-    await controller.initialize();
+    final initializing = controller.initialize();
+    _initializing = initializing;
+    try {
+      await initializing;
+    } catch (_) {
+      // A superseded load's failure is nobody's concern; whoever superseded it
+      // releases the controller.
+      if (superseded()) return;
+      rethrow;
+    } finally {
+      if (identical(_initializing, initializing)) _initializing = null;
+    }
+    if (superseded()) return;
     if (!_controller.isClosed) {
       _controller.add(TrimmerEvent.initialized);
     }
@@ -370,8 +422,11 @@ class Trimmer {
   /// controller, and tearing it down from a child broke every subsequent
   /// `loadVideo` on the same instance.
   void dispose() {
-    _videoPlayerController?.dispose();
+    _disposed = true;
+    _loadGeneration++;
+    unawaited(_release(_videoPlayerController, _initializing));
     _videoPlayerController = null;
+    _initializing = null;
     unawaited(ThumbnailGenerator.release());
     _controller.close();
   }

@@ -792,4 +792,80 @@ void main() {
     expect(values.start(), greaterThan(before + 1000));
     expect(values.end() - values.start(), closeTo(6000, 60));
   });
+
+  // ---- Trimmer lifecycle races (#280) ----
+
+  testWidgets('disposing while loadVideo is in flight is safe', (tester) async {
+    final file = await sampleCopy('race_dispose.mp4');
+    final trimmer = Trimmer();
+    final events = <TrimmerEvent>[];
+    trimmer.eventStream.listen(events.add);
+
+    final load = trimmer.loadVideo(videoFile: file);
+    trimmer.dispose();
+    Object? error;
+    try {
+      await load;
+    } catch (e) {
+      error = e;
+    }
+    await run(tester, const Duration(milliseconds: 500));
+
+    expect(error, isNull, reason: 'loadVideo should not throw after dispose');
+    expect(events, isEmpty, reason: 'no events after dispose');
+    expect(trimmer.videoPlayerController, isNull);
+  });
+
+  testWidgets('disposing while the player initializes is safe', (tester) async {
+    final file = await sampleCopy('race_init.mp4');
+    final trimmer = Trimmer();
+    final events = <TrimmerEvent>[];
+    trimmer.eventStream.listen(events.add);
+
+    final load = trimmer.loadVideo(videoFile: file);
+    // Let loadVideo get past releasing the (absent) previous controller, so
+    // the new controller exists and is mid-initialize.
+    while (trimmer.videoPlayerController == null) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    expect(trimmer.isVideoInitialized, isFalse,
+        reason: 'precondition: still initializing');
+    trimmer.dispose();
+    Object? error;
+    try {
+      await load;
+    } catch (e) {
+      error = e;
+    }
+    await run(tester, const Duration(milliseconds: 500));
+
+    expect(error, isNull);
+    expect(events, isEmpty);
+  });
+
+  testWidgets('a second loadVideo supersedes one still in flight',
+      (tester) async {
+    final first = await sampleCopy('race_first.mp4');
+    final second = await sampleCopy('race_second.mp4');
+    final trimmer = Trimmer();
+    addTearDown(trimmer.dispose);
+    var initializedEvents = 0;
+    trimmer.eventStream.listen((_) => initializedEvents++);
+
+    final a = trimmer.loadVideo(videoFile: first);
+    final b = trimmer.loadVideo(videoFile: second);
+    final errors = <Object>[];
+    await Future.wait([
+      a.catchError((Object e) => errors.add(e)),
+      b.catchError((Object e) => errors.add(e)),
+    ]);
+    await run(tester, const Duration(milliseconds: 500));
+
+    expect(errors, isEmpty, reason: 'neither load should throw');
+    expect(trimmer.currentVideoFile?.path, second.path);
+    expect(trimmer.isVideoInitialized, isTrue);
+    expect(trimmer.videoPlayerController!.dataSource, contains('race_second'));
+    expect(initializedEvents, 1,
+        reason: 'only the load that won should announce itself');
+  });
 }
