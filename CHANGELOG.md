@@ -18,10 +18,11 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
   releases it. Call `Trimmer.dispose()` from the `State` that created the
   instance. ([#250])
 * video_trimmer is now a Flutter plugin with its own native code for
-  thumbnails and trimming: AVFoundation on iOS, Media3 Transformer on Android.
-  `get_thumbnail_video` and `flutter_native_video_trimmer` are no longer
-  dependencies. Run `flutter clean` (and `pod install` on iOS) if a build
-  picks up stale plugin registrations.
+  thumbnails and trimming: AVFoundation on iOS and macOS, Media3 Transformer
+  on Android, and Mediabunny on the web. `get_thumbnail_video` and
+  `flutter_native_video_trimmer` are no longer dependencies. Run
+  `flutter clean` (and `pod install` on iOS and macOS) if a build picks up
+  stale plugin registrations.
 * The Android `minSdk` is 24, the minimum `video_player_android` already
   requires.
 * A trimmed video's extension matches the container actually written:
@@ -55,7 +56,8 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
   (MPL-2.0) on WebCodecs, producing MP4. `onSave` receives a blob: URL, and
   GIF output works too. Mediabunny is embedded in the web plugin only, so
   apps on other platforms don't carry it. No part of the package's shared
-  code imports `dart:io` any more, and it also compiles to WebAssembly.
+  code imports `dart:io` any more. Trimming needs a browser with WebCodecs:
+  current Chrome, Edge and Safari, and Firefox 130 or later.
 * macOS support. The iOS plugin code now lives in `darwin/` and is shared
   with macOS (`sharedDarwinSource`), so thumbnails and trimming use the same
   AVFoundation code on both. JPEG encoding moved from UIKit to ImageIO for
@@ -95,8 +97,9 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
 * The scrubber follows the player's real position and playback speed instead
   of running its own clock, so it no longer drifts after repeated pauses and
   stays correct at 0.5x–2x. ([#137], [#212], [#218])
-* Swift Package Manager support on iOS. With `flutter_native_video_trimmer`
-  gone, no dependency of the package lacks it, so iOS builds no longer warn.
+* Swift Package Manager support on iOS and macOS. With
+  `flutter_native_video_trimmer` gone, no dependency of the package lacks it,
+  so builds no longer warn.
 * Trimming writes straight to the destination instead of exporting to the
   cache and copying the result. Android uses Media3's trim optimization,
   which copies the samples it can instead of re-encoding them.
@@ -136,13 +139,11 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
 * Fast drags in both viewers stop exactly on the strip's edge, the
   `maxVideoLength` cap, or the other handle, instead of up to one pointer
   delta short. Diagonal drags no longer shift the handles vertically.
-* `intl` is accepted from 0.19.0, so apps whose Flutter SDK pins it through
-  `flutter_localizations` resolve again. ([#261])
 * `path` is accepted from 1.9.0. Flutter SDKs that pin `path` 1.9.0 through
   `flutter_test`, such as 3.22, could not resolve the package at all.
 * The supported range is now declared: Flutter 3.22 or later (Dart 3.4),
-  which the dependencies already required. It is verified by analyzing and
-  unit-testing the package on Flutter 3.22.3.
+  which the dependencies already required. It is verified by analyzing,
+  unit-testing, and building the example for the web on Flutter 3.22.3.
 * `videoPlaybackControl` starts from the trim start when the playhead is
   before it, not only after the end.
 * Both viewers invoked consumer callbacks from `dispose()`, which runs inside a
@@ -164,13 +165,15 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
 
 #### Other changes
 
-* Dependencies upgraded: `image` 4.12, `video_player` 2.14, `flutter_lints` 6.
+* Dependency ranges start where Flutter 3.22 can resolve them
+  (`video_player` 2.9.5, `image` 4.5.4, `path` 1.9.0) and allow the latest
+  releases. `flutter_lints` 6 is used for development.
 * `intl`, `transparent_image`, and `flutter_native_video_trimmer` are no
   longer dependencies. `intl` was only used to format output file names, and
   its version is pinned by the Flutter SDK through `flutter_localizations`, so
   every `intl` release risked a version conflict for apps that localize.
-  `transparent_image` supplied one placeholder image, now part of the
-  package.
+  Dropping it resolves those conflicts for good. ([#261]) `transparent_image`
+  supplied one placeholder image, now part of the package.
 * Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
   tested directly.
 * README rewritten for 6.0.0: up-to-date usage, a migration guide, a full
@@ -179,10 +182,12 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
 * The example is now a customization playground covering every option, with
   loop and speed controls, per-file selection restore, a bundled sample clip,
   no iOS swipe-back on the trimmer page (it stole drags on the start handle),
-  and the Flutter 3.47 Android template (Gradle 9.3, AGP 9.1, Kotlin 2.4).
+  macOS and web runners, and the Flutter 3.47 Android template (Gradle 9.3,
+  AGP 9.1, Kotlin 2.4).
 * Unit tests for the pure logic (drag clamping, initial ranges, playhead,
-  naming, durations) and an integration suite of 25 tests that drives the
-  example app on iOS and Android.
+  naming, durations, the native trim channel), an integration suite of 27
+  tests that drives the example app on iOS, Android, and macOS, and a web
+  suite that generates thumbnails and trims to MP4 and GIF in Chrome.
 
 [#73]: https://github.com/sbis04/video_trimmer/issues/73
 [#137]: https://github.com/sbis04/video_trimmer/issues/137

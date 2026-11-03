@@ -59,7 +59,7 @@ dependencies:
 
 **macOS:** a sandboxed app can only read files the user picks if it has the `com.apple.security.files.user-selected.read-only` entitlement (`read-write` if you also save next to the source). Add it to `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`. Trimmed videos are saved inside the app container by default.
 
-**Web:** no setup needed. Trimming runs in the browser with [Mediabunny](https://github.com/Vanilagy/mediabunny) on top of WebCodecs, so it needs a browser with WebCodecs (current Chrome, Edge, Safari, and Firefox). Mediabunny is bundled into web builds only; Android, iOS, and macOS apps don't carry it. A few things differ from the other platforms:
+**Web:** no setup needed. Trimming runs in the browser with [Mediabunny](https://github.com/Vanilagy/mediabunny) on top of WebCodecs, so it needs a browser with WebCodecs (current Chrome, Edge, and Safari, and Firefox 130 or later). Mediabunny is bundled into web builds only; Android, iOS, and macOS apps don't carry it. A few things differ from the other platforms:
 * `loadVideo` takes a blob: URL. A picker's `XFile.path` is one, and `XFile.fromData(bytes).path` turns bytes into one.
 * `onSave` receives a blob: URL instead of a file path, since there is no file system. Play it with `VideoPlayerController.networkUrl(Uri.parse(url))`, read it with `XFile(url).readAsBytes()`, or offer it as a download.
 * Output is always MP4 (or GIF), and `storageDir` and `videoFolderName` are ignored.
@@ -211,7 +211,7 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 * **`onChangePlaybackState` fires on changes only**, not on every position update.
 * **Handles are lines by default.** Set `handleStyle: TrimHandleStyle.circle` in `TrimEditorProperties` to keep the dots.
 * **`StorageDir` is a real `enum`.** Usage is unchanged, but it can no longer be subclassed.
-* **video_trimmer is now a plugin.** It generates thumbnails and trims with its own native code instead of `get_thumbnail_video` and `flutter_native_video_trimmer`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS) after upgrading if your build complains.
+* **video_trimmer is now a plugin.** It generates thumbnails and trims with its own native code instead of `get_thumbnail_video` and `flutter_native_video_trimmer`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS and macOS) after upgrading if your build complains.
 * **Android `minSdk` is 24**, which `video_player` already requires.
 * **Trimmed videos are `.mp4`** on Android, and on iOS and macOS unless the source is `.mov` or `.m4v`. The extension used to be copied from the source.
 
