@@ -53,6 +53,15 @@ dependency that crashed iOS apps. Also adds restoring a saved selection.
 
 #### Fixes
 
+* `Trimmer.dispose()` while `loadVideo` was still running left a live,
+  initialized player behind. Two overlapping `loadVideo` calls both emitted
+  `initialized` and leaked the loser's player. Now the newest call wins,
+  a disposed `Trimmer` ignores `loadVideo`, and superseded loads release
+  everything they created.
+* On Android, disposing a `Trimmer` (for example by leaving the page) while
+  its video was still loading made that load hang forever and could stall the
+  next one. A controller is now released only after its `initialize()`
+  settles.
 * Looping now works inside the trim range. With
   `videoPlayerController.setLooping(true)`, playback wraps from the trim end
   back to the trim start instead of pausing. ([#237])
