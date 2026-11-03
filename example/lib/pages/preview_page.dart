@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -26,6 +27,7 @@ class PreviewPage extends StatefulWidget {
 class _PreviewPageState extends State<PreviewPage> {
   VideoPlayerController? _controller;
   int? _fileSizeBytes;
+  Uint8List? _gifBytes;
 
   @override
   void initState() {
@@ -34,12 +36,16 @@ class _PreviewPageState extends State<PreviewPage> {
   }
 
   Future<void> _load() async {
-    final file = File(widget.path);
-    if (file.existsSync()) {
-      _fileSizeBytes = await file.length();
+    // A file path natively, a blob: URL on the web; XFile reads both.
+    final output = XFile(widget.path);
+    _fileSizeBytes = await output.length();
+    if (widget.outputType == OutputType.gif) {
+      _gifBytes = await output.readAsBytes();
     }
     if (widget.outputType == OutputType.video) {
-      final controller = VideoPlayerController.file(file);
+      final controller = kIsWeb
+          ? VideoPlayerController.networkUrl(Uri.parse(widget.path))
+          : VideoPlayerController.file(File(widget.path));
       await controller.initialize();
       await controller.setLooping(true);
       await controller.play();
@@ -80,7 +86,9 @@ class _PreviewPageState extends State<PreviewPage> {
           Expanded(
             child: Center(
               child: widget.outputType == OutputType.gif
-                  ? Image.file(File(widget.path))
+                  ? (_gifBytes == null
+                      ? const CircularProgressIndicator()
+                      : Image.memory(_gifBytes!))
                   : controller == null
                       ? const CircularProgressIndicator()
                       : AspectRatio(

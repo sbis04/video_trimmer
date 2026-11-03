@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
@@ -20,7 +18,7 @@ class TrimmerPage extends StatefulWidget {
     this.onRangeSaved,
   });
 
-  final File file;
+  final XFile file;
   final TrimmerConfig config;
 
   /// A selection to restore, e.g. from the last time this file was open.

@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:io';
+
+import 'package:cross_file/cross_file.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/src/platform/file_ops.dart';
 import 'package:video_trimmer/src/utils/native_trimmer.dart';
 import 'package:video_trimmer/src/utils/output_naming.dart';
 import 'package:video_trimmer/src/utils/storage_dir.dart';
@@ -31,7 +32,8 @@ class Trimmer {
 
   VideoPlayerController? get videoPlayerController => _videoPlayerController;
 
-  File? currentVideoFile;
+  /// The video passed to the last [loadVideo].
+  XFile? currentVideoFile;
 
   /// Listen to this stream to catch the events
   Stream<TrimmerEvent> get eventStream => _controller.stream;
@@ -72,19 +74,21 @@ class Trimmer {
     await controller.dispose();
   }
 
-  /// Loads a video using the path provided.
+  /// Loads [videoFile] into the player and the trim viewer.
   ///
-  /// Throws a [FileSystemException] if [videoFile] does not exist, rather than
-  /// silently doing nothing.
+  /// [videoFile] is an `XFile` from `package:cross_file`, which works on every
+  /// platform: wrap a path as `XFile(path)`, or pass the `XFile` a picker
+  /// returns. On the web its path is a blob: URL.
+  ///
+  /// On native platforms, throws a `FileSystemException` if the file does not
+  /// exist, rather than silently doing nothing.
   ///
   /// When called again before an earlier call finished, the newer call wins
   /// and only it emits [TrimmerEvent.initialized]. After [dispose], this does
   /// nothing.
-  Future<void> loadVideo({required File videoFile}) async {
+  Future<void> loadVideo({required XFile videoFile}) async {
     if (_disposed) return;
-    if (!videoFile.existsSync()) {
-      throw FileSystemException('Video file not found', videoFile.path);
-    }
+    await ensureVideoExists(videoFile);
     final generation = ++_loadGeneration;
     bool superseded() => _disposed || generation != _loadGeneration;
 
@@ -100,7 +104,7 @@ class Trimmer {
     if (superseded()) return;
 
     currentVideoFile = videoFile;
-    final controller = VideoPlayerController.file(videoFile);
+    final controller = createVideoController(videoFile);
     _videoPlayerController = controller;
     final initializing = controller.initialize();
     _initializing = initializing;
@@ -118,42 +122,6 @@ class Trimmer {
     if (!_controller.isClosed) {
       _controller.add(TrimmerEvent.initialized);
     }
-  }
-
-  Future<String> _createFolderInAppDocDir(
-    String folderName,
-    StorageDir? storageDir,
-  ) async {
-    Directory? directory;
-
-    // Exhaustive switch on a real enum. This used to dispatch on
-    // `storageDir.toString()` with no default arm, so an unmatched value left
-    // `directory` null and the next line dereferenced it.
-    switch (storageDir ?? StorageDir.applicationDocumentsDirectory) {
-      case StorageDir.temporaryDirectory:
-        directory = await getTemporaryDirectory();
-      case StorageDir.applicationDocumentsDirectory:
-        directory = await getApplicationDocumentsDirectory();
-      case StorageDir.externalStorageDirectory:
-        // Returns null on every platform except Android.
-        directory = await getExternalStorageDirectory();
-    }
-
-    if (directory == null) {
-      throw UnsupportedError(
-        'StorageDir.externalStorageDirectory is not available on this '
-        'platform. Use temporaryDirectory or applicationDocumentsDirectory.',
-      );
-    }
-
-    final Directory directoryFolder =
-        Directory(join(directory.path, folderName));
-
-    if (await directoryFolder.exists()) {
-      return directoryFolder.path;
-    }
-    final Directory created = await directoryFolder.create(recursive: true);
-    return created.path;
   }
 
   /// Generates thumbnails from a video file based on a target FPS and width.
@@ -257,10 +225,7 @@ class Trimmer {
     if (gifBytes == null) {
       throw Exception('Failed to encode GIF');
     }
-    final gifFile = File(outputGifPath);
-    await gifFile.writeAsBytes(gifBytes.toList());
-
-    return gifFile.path;
+    return writeOutputBytes(gifBytes, outputGifPath, 'image/gif');
   }
 
   /// Saves the trimmed video to file system.
@@ -333,26 +298,32 @@ class Trimmer {
     StorageDir? storageDir,
     OutputType outputType = OutputType.video,
   }) async {
-    final File? sourceFile = currentVideoFile;
+    final XFile? sourceFile = currentVideoFile;
     if (sourceFile == null) {
       throw StateError('No video loaded. Call loadVideo() before saving.');
     }
 
     final String videoPath = sourceFile.path;
+    // On the web the path is a blob: URL, so the name carries the real file
+    // name (and extension) when the picker provided one.
+    final String sourceName =
+        sourceFile.name.isNotEmpty ? sourceFile.name : videoPath;
     final String fileExtension = outputType == OutputType.gif
         ? '.gif'
-        : trimmedVideoExtension(videoPath, defaultTargetPlatform);
+        : kIsWeb
+            ? '.mp4'
+            : trimmedVideoExtension(sourceName, defaultTargetPlatform);
 
     videoFolderName = sanitizeFileName(videoFolderName ?? 'Trimmer');
     final String outputFileName = buildOutputFileName(
-      sourcePath: videoPath,
+      sourcePath: sourceName,
       timestamp: DateTime.now(),
       customName: videoFileName,
     );
 
-    final String path = await _createFolderInAppDocDir(
+    final String path = await prepareOutputFolder(
       videoFolderName,
-      storageDir,
+      storageDir ?? StorageDir.applicationDocumentsDirectory,
     );
 
     final String outputPath = join(path, '$outputFileName$fileExtension');
@@ -373,9 +344,11 @@ class Trimmer {
 
       onSave(gifPath);
     } else {
+      final String saved;
       try {
         // Written straight to the destination; there is no temporary copy.
-        await NativeTrimmer.trim(
+        // The web implementation returns a blob: URL instead.
+        saved = await NativeTrimmer.trim(
           inputPath: videoPath,
           outputPath: outputPath,
           startMs: startValue.toInt(),
@@ -387,7 +360,7 @@ class Trimmer {
         onSave(null);
         return;
       }
-      onSave(outputPath);
+      onSave(saved);
     }
   }
 

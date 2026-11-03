@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
 import '../models/trimmer_config.dart';
 import 'config_page.dart';
@@ -25,25 +27,29 @@ class _HomePageState extends State<HomePage> {
   /// persist this.
   final Map<String, TrimRange> _savedRanges = {};
 
-  Future<void> _openTrimmer(File file) async {
+  Future<void> _openTrimmer(XFile file) async {
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => TrimmerPage(
           file: file,
           config: _config,
-          savedRange: _savedRanges[file.path],
-          onRangeSaved: (range) => _savedRanges[file.path] = range,
+          savedRange: _savedRanges[_key(file)],
+          onRangeSaved: (range) => _savedRanges[_key(file)] = range,
         ),
       ),
     );
   }
 
+  /// Remembers selections per video. On the web every pick gets a new blob:
+  /// URL, so the name is what identifies a file there.
+  static String _key(XFile file) => kIsWeb ? file.name : file.path;
+
   Future<void> _pickVideo() async {
     final picked = await FilePicker.pickFile(type: FileType.video);
-    final path = picked?.path;
-    if (path == null) return;
-    await _openTrimmer(File(path));
+    if (picked == null) return;
+    // xFile works on every platform; on the web it wraps the picked blob.
+    await _openTrimmer(picked.xFile);
   }
 
   /// Copies the bundled 30-second clip out of the asset bundle so the trimmer
@@ -53,12 +59,18 @@ class _HomePageState extends State<HomePage> {
     setState(() => _preparingSample = true);
     try {
       final bytes = await rootBundle.load('assets/sample.mp4');
+      if (kIsWeb) {
+        // No file system in the browser: hand over the bytes directly.
+        await _openTrimmer(XFile.fromData(bytes.buffer.asUint8List(),
+            mimeType: 'video/mp4', name: 'sample.mp4'));
+        return;
+      }
       final dir = await getTemporaryDirectory();
       // On macOS this is a per-app Caches folder that may not exist yet.
       await dir.create(recursive: true);
       final file = File('${dir.path}/sample.mp4');
       await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
-      await _openTrimmer(file);
+      await _openTrimmer(XFile(file.path));
     } finally {
       if (mounted) setState(() => _preparingSample = false);
     }

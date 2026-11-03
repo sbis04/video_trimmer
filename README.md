@@ -19,7 +19,7 @@
 
 ### Features
 
-* Trim videos natively on Android, iOS, and macOS, with no FFmpeg.
+* Trim videos natively on Android, iOS, and macOS, and in the browser on the web, with no FFmpeg.
 * Two trim viewers: a fixed one that shows the whole video, and a scrollable one for long videos, with smooth auto-scroll and a draggable timeline.
 * Limit the selection with `maxVideoLength` and `minVideoLength`, or set them equal for a fixed-length selection.
 * Restore a saved selection with `initialStartValue` / `initialEndValue`.
@@ -59,11 +59,19 @@ dependencies:
 
 **macOS:** a sandboxed app can only read files the user picks if it has the `com.apple.security.files.user-selected.read-only` entitlement (`read-write` if you also save next to the source). Add it to `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`. Trimmed videos are saved inside the app container by default.
 
+**Web:** no setup needed. Trimming runs in the browser with [Mediabunny](https://github.com/Vanilagy/mediabunny) on top of WebCodecs, so it needs a browser with WebCodecs (current Chrome, Edge, Safari, and Firefox). Mediabunny is bundled into web builds only; Android, iOS, and macOS apps don't carry it. A few things differ from the other platforms:
+* Videos come from a picker as an `XFile` (a blob: URL underneath), or from bytes with `XFile.fromData`.
+* `onSave` receives a blob: URL instead of a file path, since there is no file system. Play it with `VideoPlayerController.networkUrl(Uri.parse(url))`, read it with `XFile(url).readAsBytes()`, or offer it as a download.
+* Output is always MP4 (or GIF), and `storageDir` and `videoFolderName` are ignored.
+* If your site sets a Content Security Policy, allow `blob:` in `script-src`: the bundled Mediabunny module is loaded from a blob: URL.
+
 ## Usage
 
 ### Load a video
 
-Create one `Trimmer` per screen, load a file into it, and dispose of it when the screen goes away. The viewer widgets don't dispose of it for you.
+Create one `Trimmer` per screen, load a video into it, and dispose of it when the screen goes away. The viewer widgets don't dispose of it for you.
+
+`loadVideo` takes an `XFile`, which `package:video_trimmer` re-exports and which works on every platform. Wrap a path as `XFile(path)`, or pass the `XFile` a picker gives you, for example `(await FilePicker.pickFile(type: FileType.video))?.xFile`.
 
 ```dart
 final Trimmer _trimmer = Trimmer();
@@ -125,7 +133,7 @@ _trimmer.videoPlayerController?.setPlaybackSpeed(2.0); // the scrubber keeps up
 
 ### Save the trimmed video
 
-`saveTrimmedVideo` writes the selection to disk and passes the output path to `onSave`, or `null` if it failed.
+`saveTrimmedVideo` writes the selection to disk and passes the output path to `onSave` (a blob: URL on the web), or `null` if it failed.
 
 ```dart
 await _trimmer.saveTrimmedVideo(
@@ -196,7 +204,8 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 ## Migrating to 6.0.0
 
 * **Dispose the `Trimmer` yourself.** `VideoViewer` and `TrimViewer` no longer dispose it or its `VideoPlayerController`. Call `_trimmer.dispose()` from the `State` that created it.
-* **`loadVideo` throws** a `FileSystemException` when the file doesn't exist, instead of doing nothing.
+* **`loadVideo` takes an `XFile`** instead of a `dart:io` `File`, so the same code works on the web. Change `loadVideo(videoFile: File(path))` to `loadVideo(videoFile: XFile(path))`, or pass a picker's `XFile` directly. `XFile` is exported by `package:video_trimmer`, and `Trimmer.currentVideoFile` is an `XFile` too.
+* **`loadVideo` throws** a `FileSystemException` when the file doesn't exist (on native platforms), instead of doing nothing.
 * **Default output names** changed from `<name>_trimmed:<localized date>` to `<name>_trimmed_<yyyyMMdd_HHmmss>`, which every platform and transcoder accepts.
 * **`DurationStyle` keeps the largest unit.** For example, `FORMAT_MM_SS` renders 1h30m15s as `90:15` (it used to be `30:15`).
 * **`onChangePlaybackState` fires on changes only**, not on every position update.
@@ -210,11 +219,9 @@ See the [changelog](https://pub.dev/packages/video_trimmer/changelog) for the fu
 
 ## Full example
 
-A minimal app that picks a video, trims it, and saves it. Add `video_trimmer` and `file_picker` to your `pubspec.yaml`, then replace `lib/main.dart` with:
+A minimal app that picks a video, trims it, and saves it, on any platform including the web. Add `video_trimmer` and `file_picker` to your `pubspec.yaml`, then replace `lib/main.dart` with:
 
 ```dart
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -233,10 +240,9 @@ class HomePage extends StatelessWidget {
           child: const Text('LOAD VIDEO'),
           onPressed: () async {
             final picked = await FilePicker.pickFile(type: FileType.video);
-            final path = picked?.path;
-            if (path == null || !context.mounted) return;
+            if (picked == null || !context.mounted) return;
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => TrimmerView(File(path)),
+              builder: (_) => TrimmerView(picked.xFile),
             ));
           },
         ),
@@ -248,7 +254,7 @@ class HomePage extends StatelessWidget {
 class TrimmerView extends StatefulWidget {
   const TrimmerView(this.file, {super.key});
 
-  final File file;
+  final XFile file;
 
   @override
   State<TrimmerView> createState() => _TrimmerViewState();
@@ -356,3 +362,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+### Third-party code
+
+Web builds include [Mediabunny](https://github.com/Vanilagy/mediabunny) (version in `lib/src/web/mediabunny_source.dart`), © Vanilagy and contributors, under the [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/). It is embedded unmodified, with its license header, and its source code is available from the linked repository.
