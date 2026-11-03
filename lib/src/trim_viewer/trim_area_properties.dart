@@ -105,7 +105,7 @@ class TrimAreaProperties {
   ///
   /// A better look at the structure of the **Trim Viewer**:
   ///
-  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png)
+  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_viewer_anatomy.png)
   ///
   ///
   /// All the parameters are optional:
@@ -179,7 +179,7 @@ class TrimAreaProperties {
   ///
   /// A better look at the structure of the **Trim Viewer**:
   ///
-  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png)
+  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_viewer_anatomy.png)
   ///
   ///
   /// All the parameters are optional:
@@ -207,7 +207,7 @@ class TrimAreaProperties {
   ///
   /// A better look at the structure of the **Trim Viewer**:
   ///
-  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png)
+  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_viewer_anatomy.png)
   ///
   factory TrimAreaProperties.edgeBlur({
     BoxFit thumbnailFit,
@@ -229,7 +229,7 @@ class FixedTrimAreaProperties extends TrimAreaProperties {
   ///
   /// A better look at the structure of the **Trim Viewer**:
   ///
-  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/new_editor/screenshots/trim_viewer_preview_small.png)
+  /// ![](https://raw.githubusercontent.com/sbis04/video_trimmer/refs/heads/main/screenshots/trim_viewer_anatomy.png)
   ///
   ///
   /// All the parameters are optional:
