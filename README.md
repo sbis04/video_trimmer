@@ -200,7 +200,9 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 * **`onChangePlaybackState` fires on changes only**, not on every position update.
 * **Handles are lines by default.** Set `handleStyle: TrimHandleStyle.circle` in `TrimEditorProperties` to keep the dots.
 * **`StorageDir` is a real `enum`.** Usage is unchanged, but it can no longer be subclassed.
-* **video_trimmer is now a plugin.** It generates thumbnails with its own native code instead of `get_thumbnail_video`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS) after upgrading if your build complains.
+* **video_trimmer is now a plugin.** It generates thumbnails and trims with its own native code instead of `get_thumbnail_video` and `flutter_native_video_trimmer`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS) after upgrading if your build complains.
+* **Android `minSdk` is 24**, which `video_player` already requires.
+* **Trimmed videos are `.mp4`** on Android, and on iOS unless the source is `.mov` or `.m4v`. The extension used to be copied from the source.
 
 See the [changelog](https://pub.dev/packages/video_trimmer/changelog) for the full list.
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 
 /// Characters that are safe in a file name on every platform this package
@@ -27,6 +28,20 @@ String sanitizeFileName(String name) {
   final collapsed = replaced.replaceAll(RegExp(r'_+'), '_');
   final trimmed = collapsed.replaceAll(RegExp(r'^[._-]+|[._-]+$'), '');
   return trimmed.isEmpty ? 'untitled' : trimmed;
+}
+
+/// The file extension (with the dot) for a trimmed video of [sourcePath].
+///
+/// Matches the container the native exporter actually writes: Media3 on
+/// Android always produces MP4, and AVFoundation on Apple platforms keeps a
+/// QuickTime source as `.mov` and writes MP4 otherwise. Naming the output
+/// after the source used to put MP4 data in, say, a `.webm` file.
+String trimmedVideoExtension(String sourcePath, TargetPlatform platform) {
+  final ext = extension(sourcePath).toLowerCase();
+  final apple =
+      platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+  if (apple && (ext == '.mov' || ext == '.m4v')) return ext;
+  return '.mp4';
 }
 
 /// Builds the output file name (without extension) for a trim of [sourcePath].

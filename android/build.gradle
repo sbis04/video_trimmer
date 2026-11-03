@@ -35,6 +35,16 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        // video_player_android already requires 24, so apps cannot go lower.
+        minSdk = 24
     }
+}
+
+dependencies {
+    // Keep in step with the Media3 version video_player_android uses: all
+    // Media3 modules in an app must share one version.
+    def media3Version = "1.9.2"
+    implementation("androidx.media3:media3-transformer:$media3Version")
+    implementation("androidx.media3:media3-common:$media3Version")
+    implementation("androidx.annotation:annotation-experimental:1.4.1")
 }

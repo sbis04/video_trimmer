@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-import 'package:flutter_native_video_trimmer/flutter_native_video_trimmer.dart';
 import 'package:path/path.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/src/utils/native_trimmer.dart';
 import 'package:video_trimmer/src/utils/output_naming.dart';
 import 'package:video_trimmer/src/utils/storage_dir.dart';
 import 'package:video_trimmer/src/utils/thumbnail_generator.dart';
@@ -31,8 +32,6 @@ class Trimmer {
   VideoPlayerController? get videoPlayerController => _videoPlayerController;
 
   File? currentVideoFile;
-
-  final _videoTrimmer = VideoTrimmer();
 
   /// Listen to this stream to catch the events
   Stream<TrimmerEvent> get eventStream => _controller.stream;
@@ -340,8 +339,9 @@ class Trimmer {
     }
 
     final String videoPath = sourceFile.path;
-    final String fileExtension =
-        outputType == OutputType.gif ? '.gif' : extension(videoPath);
+    final String fileExtension = outputType == OutputType.gif
+        ? '.gif'
+        : trimmedVideoExtension(videoPath, defaultTargetPlatform);
 
     videoFolderName = sanitizeFileName(videoFolderName ?? 'Trimmer');
     final String outputFileName = buildOutputFileName(
@@ -373,23 +373,20 @@ class Trimmer {
 
       onSave(gifPath);
     } else {
-      await _videoTrimmer.loadVideo(currentVideoFile!.path);
-
-      // Trim the video
-      final trimmedPath = await _videoTrimmer.trimVideo(
-        startTimeMs: startValue.toInt(),
-        endTimeMs: endValue.toInt(),
-      );
-
-      if (trimmedPath == null) {
-        // The native trimmer reports failure with a null path. This used to
-        // hit a null check and throw instead of telling the caller.
+      try {
+        // Written straight to the destination; there is no temporary copy.
+        await NativeTrimmer.trim(
+          inputPath: videoPath,
+          outputPath: outputPath,
+          startMs: startValue.toInt(),
+          endMs: endValue.toInt(),
+        );
+      } on PlatformException catch (e) {
+        // A null path is the documented failure signal for onSave.
+        debugPrint('video_trimmer: trimming failed: ${e.message}');
         onSave(null);
         return;
       }
-
-      // Copy the trimmed video to the output path
-      await File(trimmedPath).copy(outputPath);
       onSave(outputPath);
     }
   }
