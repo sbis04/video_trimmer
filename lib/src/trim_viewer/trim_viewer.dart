@@ -1,8 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
-
-import 'fixed_viewer/fixed_trim_viewer.dart';
-import 'scrollable_viewer/scrollable_trim_viewer.dart';
 
 enum ViewerType {
   /// Automatically decide whether to use the
@@ -192,30 +191,72 @@ class TrimViewer extends StatefulWidget {
 
 class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
   bool? _isScrollableAllowed;
+  StreamSubscription<TrimmerEvent>? _subscription;
 
   @override
   void initState() {
     super.initState();
-    widget.trimmer.eventStream.listen((event) {
-      if (event == TrimmerEvent.initialized) {
-        final totalDuration =
-            widget.trimmer.videoPlayerController!.value.duration;
-        final maxVideoLength = widget.maxVideoLength;
-        final paddingFraction = widget.paddingFraction;
-        final trimAreaDuration = Duration(
-            milliseconds: (maxVideoLength.inMilliseconds +
-                ((paddingFraction * maxVideoLength.inMilliseconds) * 2)
-                    .toInt()));
-
-        final shouldScroll = trimAreaDuration <= totalDuration &&
-            maxVideoLength.compareTo(const Duration(milliseconds: 0)) != 0;
-        if (widget.type == ViewerType.scrollable && !shouldScroll) {
-          throw 'Total video duration is less than maxVideoLength + padding. '
-              'Can\'t use `ScrollableTrimViewer`. Change the type to `ViewerType.auto`.';
-        }
-        setState(() => _isScrollableAllowed = shouldScroll);
-      }
+    _subscription = widget.trimmer.eventStream.listen((event) {
+      if (event == TrimmerEvent.initialized) _resolveViewerType(notify: true);
     });
+    // `eventStream` is a plain broadcast stream, so it never replays. If the
+    // video finished initializing before this widget mounted -- `await
+    // loadVideo()` then setState, a conditional build, a hot reload -- the
+    // event is already gone and waiting for it would leave this rendering an
+    // empty SizedBox forever.
+    if (widget.trimmer.isVideoInitialized) {
+      _resolveViewerType(notify: false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  /// Decides between the fixed and the scrollable viewer for the loaded video.
+  ///
+  /// Pass `notify: false` when called during [initState], where setState is
+  /// not allowed yet.
+  void _resolveViewerType({required bool notify}) {
+    final controller = widget.trimmer.videoPlayerController;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final totalDuration = controller.value.duration;
+    final maxVideoLength = widget.maxVideoLength;
+    final paddingFraction = widget.paddingFraction;
+    final trimAreaDuration = Duration(
+        milliseconds: (maxVideoLength.inMilliseconds +
+            ((paddingFraction * maxVideoLength.inMilliseconds) * 2).toInt()));
+
+    var shouldScroll = trimAreaDuration <= totalDuration &&
+        maxVideoLength.compareTo(const Duration(milliseconds: 0)) != 0;
+
+    if (widget.type == ViewerType.scrollable && !shouldScroll) {
+      // Report rather than throw, and fall back to the fixed viewer. Throwing
+      // from the stream listener produced an unhandled async error and left
+      // the user staring at a blank strip.
+      FlutterError.reportError(FlutterErrorDetails(
+        exception: FlutterError(
+          'ViewerType.scrollable needs a video longer than maxVideoLength '
+          'plus padding.\n'
+          'Video is $totalDuration but the trim area needs '
+          '$trimAreaDuration. Falling back to the fixed viewer; use '
+          'ViewerType.auto to select automatically.',
+        ),
+        library: 'video_trimmer',
+        context: ErrorDescription('resolving the TrimViewer type'),
+      ));
+      shouldScroll = false;
+    }
+
+    if (_isScrollableAllowed == shouldScroll) return;
+    if (notify) {
+      setState(() => _isScrollableAllowed = shouldScroll);
+    } else {
+      _isScrollableAllowed = shouldScroll;
+    }
   }
 
   @override
@@ -265,14 +306,13 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       },
     );
 
-    return _isScrollableAllowed == null
-        ? const SizedBox()
-        : widget.type == ViewerType.fixed
-            ? fixedTrimViewer
-            : widget.type == ViewerType.scrollable
-                ? scrollableViewer
-                : _isScrollableAllowed == true
-                    ? scrollableViewer
-                    : fixedTrimViewer;
+    // Null means the video has not initialized yet, so there is nothing to
+    // size a viewer against.
+    if (_isScrollableAllowed == null) return const SizedBox();
+    if (widget.type == ViewerType.fixed) return fixedTrimViewer;
+    // `scrollable` and `auto` both defer to the resolved answer, so an
+    // explicit `scrollable` that cannot be honored falls back rather than
+    // building a viewer that would fail.
+    return _isScrollableAllowed! ? scrollableViewer : fixedTrimViewer;
   }
 }

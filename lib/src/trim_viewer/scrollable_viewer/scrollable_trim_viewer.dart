@@ -685,12 +685,9 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     _autoScrollTicker?.dispose();
     _scrollController.removeListener(_onScrollChanged);
     _scrollController.dispose();
-    // No consumer callbacks from here: dispose runs inside a locked build
-    // scope, so a listener that calls setState would throw.
-    if (_videoFile != null) {
-      videoPlayerController.setVolume(0.0);
-      videoPlayerController.dispose();
-    }
+    // The controller belongs to the Trimmer, not to this widget, so it is
+    // not disposed here. Rebuilding or replacing the viewer used to kill the
+    // shared controller and leave every other widget with a dead player.
     super.dispose();
   }
 

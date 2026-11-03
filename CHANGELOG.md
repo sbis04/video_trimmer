@@ -1,3 +1,91 @@
+## 6.0.0
+
+Bug-fix release focused on the crashes and dead-UI reports that new
+integrations hit first, plus a rework of the scrollable timeline.
+
+#### Smoother scrolling
+
+* The scrollable trim viewer's auto-scroll now advances once per frame instead
+  of hopping on a 300 ms timer, and its trigger zone is touch-sized rather than
+  2% of the strip width. ([#187], [#263])
+* The thumbnail strip can be dragged directly, with a fling on release.
+* Drag start picks the nearest handle within `sideTapSize` instead of slicing
+  the frame into zones, so grabs near either end no longer move both
+  handles. ([#234])
+* New `TrimAreaProperties` options: `allowManualScroll`, `autoScrollEdgeZone`,
+  `maxAutoScrollVelocity`, and `autoScrollStartDelay` ([#199]).
+
+#### BREAKING CHANGES
+
+* `StorageDir` is now a real `enum`. Existing call sites
+  (`StorageDir.temporaryDirectory`, `.values`, `.index`, `toString()`) behave
+  as before, but it can no longer be subclassed.
+* The viewer widgets no longer dispose the `VideoPlayerController`. The
+  `Trimmer` owns it, and `Trimmer.dispose()` now releases it. Call
+  `Trimmer.dispose()` from the `State` that created the instance. ([#250])
+* `VideoViewer` no longer calls `Trimmer.dispose()`. It only owns its own
+  stream subscription.
+* `Trimmer.loadVideo` throws a `FileSystemException` when the file does not
+  exist, instead of silently doing nothing.
+* Default output file names changed from
+  `<name>_trimmed:<localized date>.<ext>` to
+  `<name>_trimmed_<yyyyMMdd_HHmmss>.<ext>`. ([#203], [#214])
+* `DurationStyle` no longer truncates the largest unit it is asked for:
+  `FORMAT_MM_SS` renders 1h30m15s as `90:15` rather than `30:15`, and
+  `FORMAT_SS` renders 90s as `90` rather than `30`.
+* `ViewerType.scrollable` on a video too short to scroll now reports a Flutter
+  error and falls back to the fixed viewer, rather than throwing a bare
+  `String` from a stream listener.
+
+#### Fixes
+
+* `TrimViewer` and `VideoViewer` rendered nothing forever when the video
+  finished initializing before they mounted — the `await loadVideo()` then
+  `setState` pattern, conditional builds, and hot reload. They now check the
+  `Trimmer`'s state directly. ([#215])
+* Omitting `onChangeStart`, `onChangeEnd`, or `onChangePlaybackState` threw
+  `Null check operator used on a null value`. ([#268])
+* Both viewers invoked consumer callbacks from `dispose()`, which runs inside a
+  locked build scope, so any consumer calling `setState` there crashed on
+  teardown.
+* Neither viewer removed its video-player listener, so `dispose()`'s `pause()`
+  notified it synchronously and crashed the same way.
+* `saveTrimmedVideo` dereferenced a null directory when
+  `StorageDir.externalStorageDirectory` was used off Android, and when the
+  storage value did not match its string-based switch. It now throws a clear
+  `UnsupportedError`. ([#225])
+* Default output names no longer truncate source file names containing dots:
+  `my.holiday.clip.mp4` kept only `my`.
+* `VideoViewer`'s `padding` argument was accepted and then ignored.
+* `TrimAreaProperties.edgeBlur()` declared `startIcon`, `endIcon`, and
+  `blurEdges` as untyped parameters and never forwarded them, so custom icons
+  were silently discarded.
+* The decorative edge chevrons hit-tested as opaque and swallowed drags right
+  where users reach to scroll.
+* `Trimmer.loadVideo` leaked the previous `VideoPlayerController` on every
+  reload.
+* `TrimViewer` and `VideoViewer` never cancelled their stream subscriptions.
+
+#### Other changes
+
+* Export `FixedTrimViewer` and `ScrollableTrimViewer` so they can be used and
+  tested directly.
+* Add a unit test suite, and an integration test suite that drives the example
+  app against a bundled sample clip.
+* Rebuild the example as a customization playground covering every option the
+  package exposes.
+
+[#187]: https://github.com/sbis04/video_trimmer/issues/187
+[#199]: https://github.com/sbis04/video_trimmer/issues/199
+[#203]: https://github.com/sbis04/video_trimmer/issues/203
+[#214]: https://github.com/sbis04/video_trimmer/issues/214
+[#215]: https://github.com/sbis04/video_trimmer/issues/215
+[#225]: https://github.com/sbis04/video_trimmer/issues/225
+[#234]: https://github.com/sbis04/video_trimmer/issues/234
+[#250]: https://github.com/sbis04/video_trimmer/issues/250
+[#263]: https://github.com/sbis04/video_trimmer/issues/263
+[#268]: https://github.com/sbis04/video_trimmer/issues/268
+
 ## 5.0.0
 
 Got rid of the `flutter_ffmpeg` package and now uses a **native video trimmer** (Android and iOS)! 🎉
