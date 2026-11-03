@@ -25,6 +25,7 @@
 * Restore a saved selection with `initialStartValue` / `initialEndValue`.
 * Playback confined to the selection, which honors looping and playback speed and keeps the scrubber in sync with the player.
 * Save the result as a video or a GIF.
+* Line or dot drag handles, with the line height in pixels or as a percentage of the strip.
 * Highly customizable: the trim frame, handles, thumbnails, durations, and scrolling behavior.
 
 > **Upgrading from 5.x?** 6.0.0 has a few breaking changes. See [Migrating to 6.0.0](#migrating-to-600).
@@ -174,7 +175,9 @@ TrimViewer(
     borderPaintColor: Colors.yellow,
     borderWidth: 4,
     borderRadius: 5,
-    circlePaintColor: Colors.yellow.shade800,
+    circlePaintColor: Colors.white,           // handle color
+    handleStyle: TrimHandleStyle.line,        // or TrimHandleStyle.circle
+    handleHeight: TrimHandleHeight.percent(50), // or TrimHandleHeight.pixels(24)
   ),
   areaProperties: TrimAreaProperties.edgeBlur(
     thumbnailQuality: 10,
@@ -195,6 +198,7 @@ The [example app](https://github.com/sbis04/video_trimmer/tree/main/example) exp
 * **Default output names** changed from `<name>_trimmed:<localized date>` to `<name>_trimmed_<yyyyMMdd_HHmmss>`, which every platform and transcoder accepts.
 * **`DurationStyle` keeps the largest unit.** For example, `FORMAT_MM_SS` renders 1h30m15s as `90:15` (it used to be `30:15`).
 * **`onChangePlaybackState` fires on changes only**, not on every position update.
+* **Handles are lines by default.** Set `handleStyle: TrimHandleStyle.circle` in `TrimEditorProperties` to keep the dots.
 * **`StorageDir` is a real `enum`.** Usage is unchanged, but it can no longer be subclassed.
 * **video_trimmer is now a plugin.** It generates thumbnails with its own native code instead of `get_thumbnail_video`, which fixes the iOS launch crash with `video_thumbnail` installed. Run `flutter clean` and `pod install` (iOS) after upgrading if your build complains.
 

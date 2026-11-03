@@ -31,9 +31,18 @@ when upgrading.
 * `ViewerType.scrollable` on a video too short to scroll now reports a Flutter
   error and falls back to the fixed viewer, rather than throwing a bare
   `String` from a stream listener.
+* The trim handles are drawn as lines instead of dots by default. Pass
+  `TrimEditorProperties(handleStyle: TrimHandleStyle.circle)` to keep the
+  previous look.
 
 #### New
 
+* Line drag handles. `TrimEditorProperties.handleStyle` picks
+  `TrimHandleStyle.line` (the new default) or `TrimHandleStyle.circle`, and
+  `handleHeight` sets a line's height in pixels or as a percentage of the trim
+  area: `TrimHandleHeight.pixels(24)` or `TrimHandleHeight.percent(50)` (the
+  default). `circleSize` and `circleSizeOnDrag` set the line's width, so it
+  still grows while it is dragged.
 * `TrimViewer.minVideoLength` sets the shortest selection allowed. The
   handles stop rather than close in past it, and a saved range shorter than
   it grows to fit. Set it equal to `maxVideoLength` for a fixed-length
@@ -55,7 +64,8 @@ when upgrading.
   `maxAutoScrollVelocity`, and `autoScrollStartDelay`. ([#199])
 * Looping works inside the trim range. With
   `videoPlayerController.setLooping(true)`, playback wraps from the trim end
-  back to the trim start instead of pausing. ([#237])
+  back to the trim start instead of pausing, including when the range ends at
+  the end of the video and the player loops on its own. ([#237])
 * The scrubber follows the player's real position and playback speed instead
   of running its own clock, so it no longer drifts after repeated pauses and
   stays correct at 0.5x–2x. ([#137], [#212], [#218])
@@ -132,6 +142,7 @@ when upgrading.
   renders on pub.dev.
 * The example is now a customization playground covering every option, with
   loop and speed controls, per-file selection restore, a bundled sample clip,
+  no iOS swipe-back on the trimmer page (it stole drags on the start handle),
   and the Flutter 3.47 Android template (Gradle 9.3, AGP 9.1, Kotlin 2.4).
 * Unit tests for the pure logic (drag clamping, initial ranges, playhead,
   naming, durations) and an integration suite of 25 tests that drives the

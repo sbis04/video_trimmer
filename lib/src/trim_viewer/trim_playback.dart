@@ -49,18 +49,35 @@ class Playhead {
 /// What the viewer should do with the player after a position update.
 enum TrimPlaybackAction { none, pause, loop }
 
+/// How far before the trim start a looping player has to land before a
+/// backwards jump counts as the player's own wrap, so a seek that lands a
+/// little early never triggers another one.
+const int loopWrapToleranceMs = 100;
+
 /// Playback has reached the end of the trim range: pause it, or wrap back to
 /// the start when the controller is set to loop (#237).
+///
+/// [previousPositionMs] is the position from the update before this one. When
+/// the trim end is the end of the video, a looping player wraps to `0` on its
+/// own, often before it ever reports a position at the trim end. A backwards
+/// jump to before the trim start is that wrap, and is also sent back to the
+/// trim start.
 TrimPlaybackAction decideTrimPlayback({
   required VideoPlayerValue value,
   required double startMs,
   required double endMs,
+  int? previousPositionMs,
 }) {
   if (!value.isPlaying || endMs <= startMs) return TrimPlaybackAction.none;
-  if (value.position.inMilliseconds < endMs.toInt()) {
-    return TrimPlaybackAction.none;
+  final position = value.position.inMilliseconds;
+  if (position >= endMs.toInt()) {
+    return value.isLooping ? TrimPlaybackAction.loop : TrimPlaybackAction.pause;
   }
-  return value.isLooping ? TrimPlaybackAction.loop : TrimPlaybackAction.pause;
+  final wrapped = value.isLooping &&
+      previousPositionMs != null &&
+      position < previousPositionMs &&
+      position < startMs - loopWrapToleranceMs;
+  return wrapped ? TrimPlaybackAction.loop : TrimPlaybackAction.none;
 }
 
 /// Keeps a trim viewer's scrubber and playback state in step with the shared
@@ -93,6 +110,7 @@ class TrimPlayback {
   late final Ticker _ticker;
   bool? _reportedPlaying;
   bool _loopSeekInFlight = false;
+  int? _lastPositionMs;
 
   void attach() {
     player.addListener(_onPlayerValue);
@@ -134,8 +152,13 @@ class TrimPlayback {
     _playhead.sync(value);
 
     final r = range();
-    final action =
-        decideTrimPlayback(value: value, startMs: r.start, endMs: r.end);
+    final action = decideTrimPlayback(
+      value: value,
+      startMs: r.start,
+      endMs: r.end,
+      previousPositionMs: _lastPositionMs,
+    );
+    _lastPositionMs = value.position.inMilliseconds;
     switch (action) {
       case TrimPlaybackAction.loop:
         if (!_loopSeekInFlight) {
