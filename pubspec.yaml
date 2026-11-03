@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
 
   video_player: ^2.9.5
-  get_thumbnail_video: ^0.7.3
   flutter_native_video_trimmer: ^1.1.9
   path_provider: ^2.1.5
   intl: ">=0.19.0 <0.21.0"
@@ -26,3 +25,10 @@ dev_dependencies:
   lints: ^6.0.0
 
 flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.souvikbiswas.video_trimmer
+        pluginClass: VideoTrimmerThumbnailsPlugin
+      ios:
+        pluginClass: VideoTrimmerThumbnailsPlugin

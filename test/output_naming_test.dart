@@ -43,7 +43,8 @@ void main() {
   group('buildOutputFileName', () {
     test('uses a filesystem-safe timestamp', () {
       expect(
-        buildOutputFileName(sourcePath: '/videos/clip.mp4', timestamp: timestamp),
+        buildOutputFileName(
+            sourcePath: '/videos/clip.mp4', timestamp: timestamp),
         'clip_trimmed_20230428_094554',
       );
     });
