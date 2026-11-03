@@ -1,21 +1,20 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:cross_file/cross_file.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_trimmer/src/utils/storage_dir.dart';
 
-/// Throws a [FileSystemException] if [file] does not exist.
-Future<void> ensureVideoExists(XFile file) async {
-  if (!await File(file.path).exists()) {
-    throw FileSystemException('Video file not found', file.path);
+/// Throws a [FileSystemException] if there is no file at [path].
+Future<void> ensureVideoExists(String path) async {
+  if (!await File(path).exists()) {
+    throw FileSystemException('Video file not found', path);
   }
 }
 
-VideoPlayerController createVideoController(XFile file) =>
-    VideoPlayerController.file(File(file.path));
+VideoPlayerController createVideoController(String path) =>
+    VideoPlayerController.file(File(path));
 
 Future<String> prepareOutputFolder(
     String folderName, StorageDir storageDir) async {

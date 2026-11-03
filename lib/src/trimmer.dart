@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:cross_file/cross_file.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 
@@ -32,8 +30,8 @@ class Trimmer {
 
   VideoPlayerController? get videoPlayerController => _videoPlayerController;
 
-  /// The video passed to the last [loadVideo].
-  XFile? currentVideoFile;
+  /// The video path passed to the last [loadVideo].
+  String? currentVideoPath;
 
   /// Listen to this stream to catch the events
   Stream<TrimmerEvent> get eventStream => _controller.stream;
@@ -74,11 +72,12 @@ class Trimmer {
     await controller.dispose();
   }
 
-  /// Loads [videoFile] into the player and the trim viewer.
+  /// Loads the video at [videoPath] into the player and the trim viewer.
   ///
-  /// [videoFile] is an `XFile` from `package:cross_file`, which works on every
-  /// platform: wrap a path as `XFile(path)`, or pass the `XFile` a picker
-  /// returns. On the web its path is a blob: URL.
+  /// [videoPath] is a file path on Android, iOS, and macOS (`File(...).path`),
+  /// and a blob: URL on the web. A picker's `XFile.path` is exactly that on
+  /// every platform, so `loadVideo(videoPath: picked.xFile.path)` works
+  /// everywhere.
   ///
   /// On native platforms, throws a `FileSystemException` if the file does not
   /// exist, rather than silently doing nothing.
@@ -86,9 +85,9 @@ class Trimmer {
   /// When called again before an earlier call finished, the newer call wins
   /// and only it emits [TrimmerEvent.initialized]. After [dispose], this does
   /// nothing.
-  Future<void> loadVideo({required XFile videoFile}) async {
+  Future<void> loadVideo({required String videoPath}) async {
     if (_disposed) return;
-    await ensureVideoExists(videoFile);
+    await ensureVideoExists(videoPath);
     final generation = ++_loadGeneration;
     bool superseded() => _disposed || generation != _loadGeneration;
 
@@ -103,8 +102,8 @@ class Trimmer {
     // on would create a controller nobody releases.
     if (superseded()) return;
 
-    currentVideoFile = videoFile;
-    final controller = createVideoController(videoFile);
+    currentVideoPath = videoPath;
+    final controller = createVideoController(videoPath);
     _videoPlayerController = controller;
     final initializing = controller.initialize();
     _initializing = initializing;
@@ -298,25 +297,23 @@ class Trimmer {
     StorageDir? storageDir,
     OutputType outputType = OutputType.video,
   }) async {
-    final XFile? sourceFile = currentVideoFile;
-    if (sourceFile == null) {
+    final String? sourcePath = currentVideoPath;
+    if (sourcePath == null) {
       throw StateError('No video loaded. Call loadVideo() before saving.');
     }
 
-    final String videoPath = sourceFile.path;
-    // On the web the path is a blob: URL, so the name carries the real file
-    // name (and extension) when the picker provided one.
-    final String sourceName =
-        sourceFile.name.isNotEmpty ? sourceFile.name : videoPath;
+    final String videoPath = sourcePath;
+    // On the web the path is a blob: URL with no file name in it; the output
+    // is a blob: URL too, so the generated name is never seen there.
     final String fileExtension = outputType == OutputType.gif
         ? '.gif'
         : kIsWeb
             ? '.mp4'
-            : trimmedVideoExtension(sourceName, defaultTargetPlatform);
+            : trimmedVideoExtension(videoPath, defaultTargetPlatform);
 
     videoFolderName = sanitizeFileName(videoFolderName ?? 'Trimmer');
     final String outputFileName = buildOutputFileName(
-      sourcePath: sourceName,
+      sourcePath: videoPath,
       timestamp: DateTime.now(),
       customName: videoFileName,
     );

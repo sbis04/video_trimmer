@@ -8,11 +8,11 @@ selection. See the README's "Migrating to 6.0.0" section when upgrading.
 
 #### BREAKING CHANGES
 
-* `Trimmer.loadVideo` takes an `XFile` (from `cross_file`, re-exported by
-  `package:video_trimmer`) instead of a `dart:io` `File`, so the same code
-  runs on the web. Replace `loadVideo(videoFile: File(path))` with
-  `loadVideo(videoFile: XFile(path))`, or pass a picker's `XFile` directly.
-  `Trimmer.currentVideoFile` is an `XFile` too.
+* `Trimmer.loadVideo` takes the video's path (`videoPath`) instead of a
+  `dart:io` `File`, so the same code runs on the web: replace
+  `loadVideo(videoFile: file)` with `loadVideo(videoPath: file.path)`. On the
+  web, pass a blob: URL, such as a picker's `XFile.path`.
+  `Trimmer.currentVideoFile` is now `currentVideoPath`.
 * The viewer widgets no longer dispose the `VideoPlayerController` or the
   `Trimmer`. The `Trimmer` owns the controller, and `Trimmer.dispose()`
   releases it. Call `Trimmer.dispose()` from the `State` that created the

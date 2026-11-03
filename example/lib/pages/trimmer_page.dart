@@ -1,3 +1,4 @@
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
@@ -57,7 +58,7 @@ class _TrimmerPageState extends State<TrimmerPage> {
   @override
   void initState() {
     super.initState();
-    _trimmer.loadVideo(videoFile: widget.file);
+    _trimmer.loadVideo(videoPath: widget.file.path);
   }
 
   bool get _hasSelection => _endValue > _startValue;

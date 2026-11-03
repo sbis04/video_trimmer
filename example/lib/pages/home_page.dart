@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:video_trimmer/video_trimmer.dart';
+import 'package:cross_file/cross_file.dart';
 
 import '../models/trimmer_config.dart';
 import 'config_page.dart';
@@ -28,6 +28,8 @@ class _HomePageState extends State<HomePage> {
   final Map<String, TrimRange> _savedRanges = {};
 
   Future<void> _openTrimmer(XFile file) async {
+    // XFile.path is a file path natively and a blob: URL on the web, which is
+    // exactly what Trimmer.loadVideo takes.
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(

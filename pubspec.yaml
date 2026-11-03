@@ -19,7 +19,6 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  cross_file: ^0.3.4
   web: ^1.0.0
 
   video_player: ^2.9.5
