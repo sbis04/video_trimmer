@@ -7,11 +7,27 @@ import '../models/trimmer_config.dart';
 import 'config_page.dart';
 import 'preview_page.dart';
 
+/// A trim selection in milliseconds, as reported by `onChangeStart` /
+/// `onChangeEnd`.
+typedef TrimRange = ({double start, double end});
+
 class TrimmerPage extends StatefulWidget {
-  const TrimmerPage({super.key, required this.file, required this.config});
+  const TrimmerPage({
+    super.key,
+    required this.file,
+    required this.config,
+    this.savedRange,
+    this.onRangeSaved,
+  });
 
   final File file;
   final TrimmerConfig config;
+
+  /// A selection to restore, e.g. from the last time this file was open.
+  final TrimRange? savedRange;
+
+  /// Called with the final selection when the page closes.
+  final ValueChanged<TrimRange>? onRangeSaved;
 
   @override
   State<TrimmerPage> createState() => _TrimmerPageState();
@@ -26,6 +42,10 @@ class _TrimmerPageState extends State<TrimmerPage> {
   double _endValue = 0.0;
 
   bool _isPlaying = false;
+
+  /// What the next TrimViewer starts with: the saved range on first build,
+  /// then the live selection whenever the viewer is rebuilt for a new config.
+  late TrimRange? _restore = widget.savedRange;
   bool _looping = false;
   double _speed = 1.0;
   static const _speeds = [1.0, 1.5, 2.0, 0.5];
@@ -42,8 +62,13 @@ class _TrimmerPageState extends State<TrimmerPage> {
     _trimmer.loadVideo(videoFile: widget.file);
   }
 
+  bool get _hasSelection => _endValue > _startValue;
+
   @override
   void dispose() {
+    if (_hasSelection) {
+      widget.onRangeSaved?.call((start: _startValue, end: _endValue));
+    }
     _trimmer.dispose();
     super.dispose();
   }
@@ -54,6 +79,7 @@ class _TrimmerPageState extends State<TrimmerPage> {
     );
     if (updated == null) return;
     setState(() {
+      if (_hasSelection) _restore = (start: _startValue, end: _endValue);
       _config = updated;
       _thumbnailsLoaded = false;
       _viewerGeneration++;
@@ -159,6 +185,8 @@ class _TrimmerPageState extends State<TrimmerPage> {
                 durationTextStyle: _config.durationTextStyle,
                 editorProperties: _config.editorProperties,
                 areaProperties: _config.areaProperties,
+                initialStartValue: _restore?.start,
+                initialEndValue: _restore?.end,
                 onThumbnailLoadingComplete: () {
                   // Deferred because the package can fire this while the tree
                   // is locked, and setState would throw.

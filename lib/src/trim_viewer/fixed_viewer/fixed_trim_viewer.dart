@@ -10,6 +10,7 @@ import 'package:video_trimmer/src/utils/duration_style.dart';
 
 import '../../utils/editor_drag_type.dart';
 import '../../utils/trim_drag.dart';
+import '../../utils/initial_trim_range.dart';
 import '../trim_area_properties.dart';
 import '../trim_playback.dart';
 import '../trim_editor_properties.dart';
@@ -70,6 +71,17 @@ class FixedTrimViewer extends StatefulWidget {
 
   final VoidCallback onThumbnailLoadingComplete;
 
+  /// The trim range to start with, in milliseconds: for example a range
+  /// saved from [onChangeStart] / [onChangeEnd] earlier, so returning to the
+  /// trimmer shows it again. Either can be given alone; the other is derived
+  /// from [maxVideoLength]. Values are clamped to the video and to
+  /// [maxVideoLength]. Leave both null for the default (the start of the
+  /// video, as long as [maxVideoLength] allows).
+  final double? initialStartValue;
+
+  /// See [initialStartValue].
+  final double? initialEndValue;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -118,6 +130,8 @@ class FixedTrimViewer extends StatefulWidget {
     super.key,
     required this.trimmer,
     required this.onThumbnailLoadingComplete,
+    this.initialStartValue,
+    this.initialEndValue,
     this.viewerWidth = 50.0 * 8,
     this.viewerHeight = 50,
     this.maxVideoLength = const Duration(milliseconds: 0),
@@ -198,7 +212,6 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
       if (trimmerActualWidth == null) return;
       _thumbnailViewerW = trimmerActualWidth;
       _initializeVideoController();
-      videoPlayerController.seekTo(const Duration(milliseconds: 0));
       _numberOfThumbnails = trimmerActualWidth ~/ _thumbnailViewerH;
       log('numberOfThumbnails: $_numberOfThumbnails');
       log('thumbnailViewerW: $_thumbnailViewerW');
@@ -229,17 +242,26 @@ class _FixedTrimViewerState extends State<FixedTrimViewer>
           maxLengthPixels = _thumbnailViewerW;
         }
 
-        _videoEndPos = fraction != null
-            ? _videoDuration.toDouble() * fraction!
-            : _videoDuration.toDouble();
-
-        widget.onChangeEnd?.call(_videoEndPos);
-
-        _endPos = Offset(
-          maxLengthPixels != null ? maxLengthPixels! : _thumbnailViewerW,
-          _thumbnailViewerH,
+        final range = resolveInitialTrimRange(
+          durationMs: _videoDuration.toDouble(),
+          maxLengthMs: widget.maxVideoLength.inMilliseconds.toDouble(),
+          initialStart: widget.initialStartValue,
+          initialEnd: widget.initialEndValue,
         );
+        _videoStartPos = range.start;
+        _videoEndPos = range.end;
+        if (_videoDuration > 0) {
+          _startFraction = range.start / _videoDuration;
+          _endFraction = range.end / _videoDuration;
+        }
+        _startPos = Offset(_thumbnailViewerW * _startFraction, 0);
+        _endPos = Offset(_thumbnailViewerW * _endFraction, _thumbnailViewerH);
+
+        widget.onChangeStart?.call(_videoStartPos);
+        widget.onChangeEnd?.call(_videoEndPos);
       });
+      videoPlayerController
+          .seekTo(Duration(milliseconds: _videoStartPos.toInt()));
     });
   }
 

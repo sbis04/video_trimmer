@@ -122,6 +122,21 @@ TrimViewer(
 )
 ```
 
+### Restore a saved selection
+
+Pass back the values that `onChangeStart` / `onChangeEnd` reported (in milliseconds) to open the trimmer on that range again. The scrollable viewer scrolls it into view, and the preview starts on its first frame. Either value can be given alone: the other is derived from `maxVideoLength`. So `initialEndValue: 3000` opens with the first 3 seconds selected, even when `maxVideoLength` is longer.
+
+```dart
+TrimViewer(
+  trimmer: _trimmer,
+  maxVideoLength: const Duration(seconds: 30),
+  initialStartValue: saved.startMs, // e.g. 4000.0
+  initialEndValue: saved.endMs,     // e.g. 9500.0
+  onChangeStart: (value) => saved.startMs = value,
+  onChangeEnd: (value) => saved.endMs = value,
+)
+```
+
 ## Example
 
 Before using this example directly in a Flutter app, don't forget to add the `video_trimmer` & `file_picker` packages to your `pubspec.yaml` file.

@@ -89,6 +89,17 @@ class TrimViewer extends StatefulWidget {
   /// thumbnails are loaded.
   final VoidCallback? onThumbnailLoadingComplete;
 
+  /// The trim range to start with, in milliseconds: for example a range
+  /// saved from [onChangeStart] / [onChangeEnd] earlier, so returning to the
+  /// trimmer shows it again. Either can be given alone; the other is derived
+  /// from [maxVideoLength]. Values are clamped to the video and to
+  /// [maxVideoLength]. Leave both null for the default (the start of the
+  /// video, as long as [maxVideoLength] allows).
+  final double? initialStartValue;
+
+  /// See [initialStartValue].
+  final double? initialEndValue;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -166,6 +177,10 @@ class TrimViewer extends StatefulWidget {
   /// * [onThumbnailLoadingComplete] is a callback for thumbnail loader to
   /// know when all the thumbnails are loaded.
   ///
+  ///
+  /// * [initialStartValue] and [initialEndValue] restore a trim range, in
+  /// milliseconds.
+  ///
   const TrimViewer({
     super.key,
     required this.trimmer,
@@ -183,6 +198,8 @@ class TrimViewer extends StatefulWidget {
     this.editorProperties = const TrimEditorProperties(),
     this.areaProperties = const TrimAreaProperties(),
     this.onThumbnailLoadingComplete,
+    this.initialStartValue,
+    this.initialEndValue,
   });
 
   @override
@@ -275,6 +292,8 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
       paddingFraction: widget.paddingFraction,
       editorProperties: widget.editorProperties,
       areaProperties: widget.areaProperties,
+      initialStartValue: widget.initialStartValue,
+      initialEndValue: widget.initialEndValue,
       onThumbnailLoadingComplete: () {
         if (widget.onThumbnailLoadingComplete != null) {
           widget.onThumbnailLoadingComplete!();
@@ -299,6 +318,8 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
         thumbnailQuality: widget.areaProperties.thumbnailQuality,
         borderRadius: widget.areaProperties.borderRadius,
       ),
+      initialStartValue: widget.initialStartValue,
+      initialEndValue: widget.initialEndValue,
       onThumbnailLoadingComplete: () {
         if (widget.onThumbnailLoadingComplete != null) {
           widget.onThumbnailLoadingComplete!();

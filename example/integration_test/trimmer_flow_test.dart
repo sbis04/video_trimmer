@@ -458,12 +458,29 @@ void main() {
         (pos - start) / (end - start) * (p.endPos.dx - p.startPos.dx);
   }
 
+  /// A private copy of the bundled sample, for tests that build their own
+  /// Trimmer instead of going through the example's pages.
+  Future<File> sampleCopy(String name) async {
+    final data = await rootBundle.load('assets/sample.mp4');
+    final file = File('${(await getTemporaryDirectory()).path}/$name');
+    await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    return file;
+  }
+
   testWidgets('without looping, playback pauses at the trim end',
       (tester) async {
     await openSampleTrimmer(tester);
     await player(tester).seekTo(const Duration(milliseconds: 8800));
     await tester.tap(find.byKey(const Key('play_pause')));
-    await run(tester, const Duration(milliseconds: 2500));
+    // Wait on the outcome rather than a fixed time: a loaded emulator can
+    // take a second or more just to start decoding.
+    await pumpUntil(
+      tester,
+      () => player(tester).value.position.inMilliseconds >= 9800,
+      timeout: const Duration(seconds: 15),
+      reason: 'playback to reach the trim end',
+    );
+    await run(tester, const Duration(milliseconds: 800));
 
     expect(player(tester).value.isPlaying, isFalse);
     expect(player(tester).value.position.inMilliseconds,
@@ -481,7 +498,20 @@ void main() {
 
     await player(tester).seekTo(const Duration(milliseconds: 8800));
     await tester.tap(find.byKey(const Key('play_pause')));
-    await run(tester, const Duration(milliseconds: 2800));
+    await pumpUntil(
+      tester,
+      () => player(tester).value.position.inMilliseconds >= 9500,
+      timeout: const Duration(seconds: 15),
+      reason: 'playback to approach the trim end',
+    );
+    // Then it must wrap to the start rather than stop.
+    await pumpUntil(
+      tester,
+      () => player(tester).value.position.inMilliseconds < 3000,
+      timeout: const Duration(seconds: 15),
+      reason: 'playback to wrap back to the trim start',
+    );
+    await run(tester, const Duration(milliseconds: 300));
 
     final value = player(tester).value;
     expect(value.isPlaying, isTrue, reason: 'looping must not pause');
@@ -537,9 +567,7 @@ void main() {
     // #236: onChangePlaybackState used to fire on every position update, so
     // a callback that seeks or plays re-triggered itself until the stack
     // overflowed. It must only fire on transitions now.
-    final data = await rootBundle.load('assets/sample.mp4');
-    final file = File('${(await getTemporaryDirectory()).path}/loop.mp4');
-    await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    final file = await sampleCopy('loop.mp4');
 
     final trimmer = Trimmer();
     addTearDown(trimmer.dispose);
@@ -575,5 +603,92 @@ void main() {
     expect(reports.where((p) => p).length, 1,
         reason: 'one report per start, not one per position update');
     expect(reports.last, isFalse);
+  });
+
+  // ---- Initial trim range (#73, #274, #209) ----
+
+  for (final type in [ViewerType.fixed, ViewerType.scrollable]) {
+    testWidgets('the ${type.name} viewer opens on initialStart/EndValue',
+        (tester) async {
+      final file = await sampleCopy('initial_${type.name}.mp4');
+      final trimmer = Trimmer();
+      addTearDown(trimmer.dispose);
+      await trimmer.loadVideo(videoFile: file);
+
+      double? start;
+      double? end;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: TrimViewer(
+              trimmer: trimmer,
+              type: type,
+              viewerWidth: 360,
+              viewerHeight: 50,
+              maxVideoLength: const Duration(seconds: 10),
+              initialStartValue: 12000,
+              initialEndValue: 18000,
+              onChangeStart: (v) => start = v,
+              onChangeEnd: (v) => end = v,
+            ),
+          ),
+        ),
+      ));
+      await run(tester, const Duration(seconds: 2));
+
+      expect(start, closeTo(12000, 60), reason: 'reported start');
+      expect(end, closeTo(18000, 60), reason: 'reported end');
+      expect(trimmer.videoPlayerController!.value.position.inMilliseconds,
+          closeTo(12000, 200),
+          reason: 'the preview should open on the restored start');
+
+      // The frame is drawn where the range is: 6 s of a strip that shows
+      // either the whole 30 s (fixed) or about 14 s (scrollable).
+      final p = painter(tester);
+      final strip = tester.getSize(find.byType(TrimViewer)).width;
+      final widthMs = type == ViewerType.fixed ? 30000 : 14000;
+      expect(p.endPos.dx - p.startPos.dx, closeTo(6000 / widthMs * strip, 25));
+      expect(p.startPos.dx, greaterThanOrEqualTo(0));
+      expect(p.endPos.dx, lessThanOrEqualTo(strip + 1));
+
+      if (type == ViewerType.scrollable) {
+        final scroll = tester
+            .widgetList<SingleChildScrollView>(find.descendant(
+                of: find.byType(TrimViewer),
+                matching: find.byType(SingleChildScrollView)))
+            .first
+            .controller!
+            .position;
+        expect(scroll.pixels, greaterThan(0),
+            reason: 'the strip should scroll the restored range into view');
+      }
+    });
+  }
+
+  testWidgets('reopening a video restores its last selection', (tester) async {
+    await openSampleTrimmer(tester);
+    await dragHandleAndHold(
+      tester,
+      from: stripPoint(tester, 0.35),
+      by: const Offset(140, 0),
+      holdFrames: 120,
+    );
+    final start = readout('start');
+    final end = readout('end');
+    expect(start, greaterThan(1.0), reason: 'precondition: moved off 0');
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('use_sample')));
+    await pumpUntil(
+      tester,
+      () => find.byIcon(Icons.check_circle_outline).evaluate().isNotEmpty,
+      timeout: const Duration(seconds: 90),
+      reason: 'trimmer to reopen',
+    );
+    await run(tester, const Duration(milliseconds: 500));
+
+    expect(readout('start'), closeTo(start, 0.06));
+    expect(readout('end'), closeTo(end, 0.06));
   });
 }
